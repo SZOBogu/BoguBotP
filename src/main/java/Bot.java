@@ -19,6 +19,21 @@ public class Bot extends DefaultBWListener {
                 }
             }
         }
+
+        UnitType toBuild = player.getRace().getSupplyProvider();
+
+        //Supply doubled cause Zerglings
+        if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400) {
+            Unit builder = null;
+            for (Unit unit : player.getUnits()) {
+                if (unit.getType().isWorker() && (unit.isIdle() || unit.isGatheringMinerals())) {
+                    builder = unit;
+                    break;
+                }
+            }
+            TilePosition buildLocation = game.getBuildLocation(toBuild, player.getStartLocation());
+            builder.build(toBuild, buildLocation);
+        }
     }
 
     public void onUnitComplete(Unit unit){
