@@ -1,9 +1,12 @@
 plugins {
+    id 'org.springframework.boot' version '2.5.1'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
 }
 
 group 'org.example'
 version '1.0-SNAPSHOT'
+sourceCompatibility = '8'
 
 repositories {
     mavenCentral()
@@ -14,6 +17,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     implementation 'com.github.JavaBWAPI:JBWAPI:1.5.1'
+    testImplementation "junit:junit:4.12"
+    implementation group: 'org.springframework', name: 'spring-core', version: '5.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {
