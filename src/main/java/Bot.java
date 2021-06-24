@@ -2,6 +2,7 @@ import bwapi.*;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
+    private Unit workerDelegatedToBuild;
 
     @Override
     public void onFrame(){
@@ -24,15 +25,18 @@ public class Bot extends DefaultBWListener {
 
         //Supply doubled cause Zerglings
         if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400) {
-            Unit builder = null;
-            for (Unit unit : player.getUnits()) {
-                if (unit.getType().isWorker() && (unit.isIdle() || unit.isGatheringMinerals())) {
-                    builder = unit;
-                    break;
+            if(workerDelegatedToBuild == null) {
+                for (Unit unit : player.getUnits()) {
+                    if (unit.getType().isWorker() && (unit.isIdle() || unit.isGatheringMinerals())) {
+                        workerDelegatedToBuild = unit;
+                        break;
+                    }
                 }
             }
-            TilePosition buildLocation = game.getBuildLocation(toBuild, player.getStartLocation());
-            builder.build(toBuild, buildLocation);
+            else{
+                TilePosition buildLocation = game.getBuildLocation(toBuild, player.getStartLocation());
+                workerDelegatedToBuild.build(toBuild, buildLocation);
+            }
         }
     }
 
