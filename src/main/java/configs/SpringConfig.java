@@ -21,21 +21,21 @@ public class SpringConfig {
         return new Bot();
     }
 
-    @Bean
-    @Autowired
-    public Player player(Game game){
-        return game.self();
-    }
-
-    @Bean
-    @Autowired
-    public BWClient bwClient(Bot bot){
-        return new BWClient(bot);
-    }
-
-    @Bean
-    @Autowired
-    public Game game(BWClient bwClient){
-        return bwClient.getGame();
-    }
+//    @Bean
+//    @Autowired
+//    public Player player(Game game){
+//        return game.self();
+//    }
+//
+//    @Bean
+//    @Autowired
+//    public BWClient bwClient(Bot bot){
+//        return new BWClient(bot);
+//    }
+//
+//    @Bean
+//    @Autowired
+//    public Game game(BWClient bwClient){
+//        return bwClient.getGame();
+//    }
 }

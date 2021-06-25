@@ -8,26 +8,27 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+//@Service
 public class WorkerService implements IBroodWarManager{
-    @Autowired
+//    @Autowired
     private Player player;
-    @Autowired
+//    @Autowired
     private Game game;
     private ArrayList<Unit> workers;
     private ArrayList<Unit> builders;
 
     public WorkerService(){
         this.workers = new ArrayList<>();
+        this.builders = new ArrayList<>();
     }
 
-    private void addWorker(Unit unit){
+    public void addWorker(Unit unit){
         if(unit.getType().isWorker()){
             workers.add(unit);
         }
     }
 
-    private void removeWorker(Unit unit){
+    public void removeWorker(Unit unit){
         if(unit.getType().isWorker()){
             workers.remove(unit);
         }
@@ -78,5 +79,13 @@ public class WorkerService implements IBroodWarManager{
         for(Unit idleWorker : idleWorkers){
             delegateWorkerToWork(idleWorker);
         }
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 }

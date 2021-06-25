@@ -1,5 +1,6 @@
 package bots;
 
+import applicationContext.MyApplicationContext;
 import bwapi.*;
 import configs.SpringConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +9,40 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import services.WorkerService;
 
-@SpringBootApplication(scanBasePackages = {"services",  "helpers", "configs"})
 public class Bot extends DefaultBWListener {
+//    @Autowired
     private BWClient bwClient;
 
-    @Autowired
+//    @Autowired
     private WorkerService workerService;
+
+    @Override
+    public void onStart(){
+        Game game = bwClient.getGame();
+        Player player = game.self();
+
+        System.out.print("BWClient: " + bwClient);
+        System.out.print("Game: " + game);
+        System.out.print("Player: " + player);
+
+        WorkerService workerService = new WorkerService();
+        workerService.setGame(game);
+        workerService.setPlayer(player);
+
+        this.setWorkerService(workerService);
+
+        for(Unit initialWorker : player.getUnits()){
+            this.workerService.addWorker(initialWorker);
+        }
+        this.workerService.manage();
+    }
+
 
     @Override
     public void onFrame(){
         Game game = bwClient.getGame();
         Player player = game.self();
-        game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + "minerals");
+        game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
 
         //TODO: check whether player.getUnits returns unit list of whole race or unit list player has at disposal
         for(Unit unit : player.getUnits()){
@@ -35,6 +58,9 @@ public class Bot extends DefaultBWListener {
     }
 
     public void onUnitComplete(Unit unit){
+        if(unit.getType().isWorker()){
+            this.workerService.addWorker(unit);
+        }
         this.workerService.manage();
     }
 
@@ -42,10 +68,7 @@ public class Bot extends DefaultBWListener {
         this.bwClient = bwClient;
     }
 
-    public static void main(String[] args) {
-//        ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
-        Bot bot = new Bot();
-        bot.bwClient = new BWClient(bot);
-        bot.bwClient.startGame();
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
     }
 }
