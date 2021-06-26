@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 //@Service
 public class WorkerService implements IBroodWarManager{
@@ -40,6 +41,7 @@ public class WorkerService implements IBroodWarManager{
             if(worker.isIdle()){
                 idleWorkers.add(worker);
             }
+            builders.remove(worker);
         }
         return idleWorkers;
     }
@@ -47,7 +49,12 @@ public class WorkerService implements IBroodWarManager{
     private void delegateWorkerToWork(Unit worker){
         if (builders.isEmpty() && (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400)) {
             this.builders.add(worker);
-            this.delegateWorkerToBuild();
+            if(this.getIdleWorkers().isEmpty()){
+                this.demandBuilding(UnitType.Protoss_Pylon);
+            }
+            else{
+                this.delegateWorkerToBuild();
+            }
         }
         else{
             delegateWorkerToGatheringResources(worker);
@@ -71,6 +78,14 @@ public class WorkerService implements IBroodWarManager{
             }
         }
         worker.gather(closestMineralPatch);
+    }
+
+    public void demandBuilding(UnitType buildingType){
+        Random random = new Random();
+        Unit worker = this.workers.get(random.nextInt(this.workers.size()));
+        builders.add(worker);
+        TilePosition buildLocation = game.getBuildLocation(buildingType, player.getStartLocation());
+        worker.build(buildingType, buildLocation);
     }
 
     @Override

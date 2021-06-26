@@ -50,7 +50,12 @@ public class Bot extends DefaultBWListener {
             if(unitType.isBuilding() && !unitType.buildsWhat().isEmpty()){
                 UnitType unitTypeToTrain = unitType.buildsWhat().get(0);
                 if(game.canMake(unitTypeToTrain, unit)){
-                    unit.train(unitTypeToTrain);
+                    try {
+                        unit.train(unitTypeToTrain);
+                    }
+                    catch(ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
+                        game.drawTextScreen(120, 120, "tried to queue 6th probe");
+                    }
                 }
             }
         }
