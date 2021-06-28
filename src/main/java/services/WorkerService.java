@@ -26,9 +26,7 @@ public class WorkerService implements IBroodWarManager{
     }
 
     public void addWorker(Unit unit){
-        if(unit.getType().isWorker()){
-            workers.add(unit);
-        }
+        workers.add(unit);
     }
 
     public void removeWorker(Unit unit){

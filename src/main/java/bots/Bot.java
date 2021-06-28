@@ -36,8 +36,13 @@ public class Bot extends DefaultBWListener {
 
         this.setWorkerService(workerService);
 
-        for(Unit initialWorker : player.getUnits()){
-            this.workerService.addWorker(initialWorker);
+        for(Unit unit : player.getUnits()){
+            if(unit.getType().isWorker()) {
+                this.workerService.addWorker(unit);
+            }
+            if(unit.getType() == UnitType.Protoss_Nexus){
+                this.trainUnit(UnitType.Protoss_Probe);
+            }
         }
         this.workerService.manage();
 
