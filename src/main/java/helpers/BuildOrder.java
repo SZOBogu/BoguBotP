@@ -19,7 +19,7 @@ public class BuildOrder {
     public BuildOrder(){
         this.buildOrder = new ArrayList<>(Arrays.asList(
 //                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, //initial 4 workers
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
                 new BuildOrderEntry(UnitType.Protoss_Pylon), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
                 new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
                 new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core),

@@ -4,6 +4,8 @@ import bwapi.*;
 import helpers.BuildOrder;
 import services.WorkerService;
 
+import java.util.Random;
+
 public class Bot extends DefaultBWListener {
 //    @Autowired
     private BWClient bwClient;
@@ -19,10 +21,6 @@ public class Bot extends DefaultBWListener {
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
-
-        System.out.println("BWClient: " + bwClient);
-        System.out.println("Game: " + game);
-        System.out.println("Player: " + player);
 
         WorkerService workerService = new WorkerService();
         workerService.setGame(game);
@@ -47,7 +45,6 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onFrame(){
         this.game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
-
         UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
 
         if (!buildOrder.isComplete()) {
@@ -61,17 +58,29 @@ public class Bot extends DefaultBWListener {
             }
         }
         else{
+            //queues too many pylons
             if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400  && !this.workerService.isWorkerDelegatedToBuild()) {
                 this.workerService.demandBuilding(UnitType.Protoss_Pylon);
             }
             else{
-                this.trainUnit(UnitType.Protoss_Dragoon);
+                Random random = new Random();
+                int randResult = random.nextInt(3);
+                if(randResult == 0 && player.minerals() > 125 && player.gas() > 25){
+                    this.trainUnit(UnitType.Protoss_Dragoon);
+                }
+                if(randResult == 1 && player.minerals() > 100){
+                    this.trainUnit(UnitType.Protoss_Zealot);
+                }
+                if(randResult == 2 && player.minerals() > 50){
+                    this.trainUnit(UnitType.Protoss_Probe);
+                }
             }
         }
         this.workerService.manage();
     }
     public void onUnitCreate(Unit unit){
         if(this.workerService.getBuildingsDemanded().contains(unit.getType())){
+            //doesn't work with assimilators
             this.workerService.fulfillDemandOnBuilding(unit.getType());
             //this.buildOrder.markAsBuilt();
         }
@@ -82,6 +91,10 @@ public class Bot extends DefaultBWListener {
         if(unit.getType().isWorker()){
             this.workerService.addWorker(unit);
             this.workerService.manage();
+        }
+        if(unit.getType() == UnitType.Protoss_Assimilator){
+            this.workerService.fulfillDemandOnBuilding(unit.getType());
+            this.workerService.delegateWorkersToGatherGas(unit);
         }
     }
 
