@@ -14,34 +14,34 @@ public class BuildOrder {
         13/17 — Cybernetics Core
         15/17 — Gateway
      */
-    private List<UnitType> buildOrder;
-    private int currentBuildOrderPosition;
+    private List<BuildOrderEntry> buildOrder;
 
     public BuildOrder(){
         this.buildOrder = new ArrayList<>(Arrays.asList(
 //                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, //initial 4 workers
-                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe,
-                UnitType.Protoss_Pylon, UnitType.Protoss_Probe, UnitType.Protoss_Probe,
-                UnitType.Protoss_Gateway, UnitType.Protoss_Probe, UnitType.Protoss_Assimilator,
-                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Cybernetics_Core,
-                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Gateway, UnitType.Protoss_Dragoon
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Pylon), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway),
+                new BuildOrderEntry(UnitType.Protoss_Dragoon)
         ));
-        this.currentBuildOrderPosition = 0;
-        System.out.println("Position in build order: " + this.currentBuildOrderPosition + " next thing in build order: " + this.getNextThingInBuildOrder());
+        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
     }
 
-    public List<UnitType> getBuildOrder() {
+    public List<BuildOrderEntry> getBuildOrder() {
         return buildOrder;
     }
 
     public void markAsBuilt(){
-        this.currentBuildOrderPosition++;
-        System.out.println("Position in build order: " + this.currentBuildOrderPosition + " next thing in build order: " + this.getNextThingInBuildOrder());
+        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
+        int index = this.getBuildOrderPosition();
+        this.buildOrder.get(index).setChecked(true);
     }
 
     public UnitType getNextThingInBuildOrder(){
         try{
-           return this.buildOrder.get(this.currentBuildOrderPosition);
+           return this.buildOrder.get(this.getBuildOrderPosition()).getUnitType();
         }
         catch(IndexOutOfBoundsException indexOutOfBoundsException){
             return UnitType.Protoss_Dragoon;
@@ -49,14 +49,24 @@ public class BuildOrder {
     }
 
     public boolean isComplete(){
-        return this.currentBuildOrderPosition > (this.buildOrder.size() - 1);
+        return this.getBuildOrderPosition() > (this.buildOrder.size() - 1);
+    }
+
+    public int getBuildOrderPosition(){
+        for(int i = 0; i < this.buildOrder.size(); i++){
+            if(!this.buildOrder.get(i).isChecked()){
+                return i;
+            }
+        }
+        //TODO: test
+        return buildOrder.size();
     }
 
     @Override
     public String toString() {
         return "BuildOrder{" +
                 "buildOrder=" + buildOrder +
-                ", currentBuildOrderPosition=" + currentBuildOrderPosition +
+                ", currentBuildOrderPosition=" + getBuildOrderPosition() +
                 '}';
     }
 }

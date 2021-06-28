@@ -73,15 +73,15 @@ public class WorkerService implements IBroodWarManager{
     }
 
     public void demandBuilding(UnitType buildingType){
-        System.out.printf("Building demanded " + buildingType);
-        System.out.printf(String.valueOf(buildingsDemanded));
+        System.out.println("Building demanded " + buildingType);
         this.buildingsDemanded.add(buildingType);
+        System.out.println(buildingsDemanded);
     }
 
     public void fulfillDemandOnBuilding(UnitType buildingType){
-        System.out.printf("Building demand fulfilled " + buildingType);
-        System.out.printf(String.valueOf(buildingsDemanded));
+        System.out.println("Building demand fulfilled " + buildingType);
         this.buildingsDemanded.remove(buildingType);
+        System.out.println(buildingsDemanded);
     }
 
     @Override

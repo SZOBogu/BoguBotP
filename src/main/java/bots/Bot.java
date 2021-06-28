@@ -1,13 +1,7 @@
 package bots;
 
-import applicationContext.MyApplicationContext;
 import bwapi.*;
-import configs.SpringConfig;
 import helpers.BuildOrder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import services.WorkerService;
 
 public class Bot extends DefaultBWListener {
@@ -56,23 +50,10 @@ public class Bot extends DefaultBWListener {
 
         UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
 
-//        for(Unit unit : player.getUnits()){
-//            UnitType unitType = unit.getType();
-//            if(unitType.isBuilding() && !unitType.buildsWhat().isEmpty()){
-//                UnitType unitTypeToTrain = unitType.buildsWhat().get(0);
-//                if(game.canMake(unitTypeToTrain, unit)){
-//                    try {
-//                        unit.train(unitTypeToTrain);
-//                    }
-//                    catch(ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
-//                        game.drawTextScreen(120, 120, "tried to queue 6th probe");
-//                    }
-//                }
-//            }
-//        }
         if (!buildOrder.isComplete()) {
-            if(nextInBuildOrder.isBuilding() && (nextInBuildOrder.mineralPrice() < player.minerals()) && !this.workerService.isWorkerDelegatedToBuild()) {
+            if(nextInBuildOrder.isBuilding()) {
                 this.workerService.demandBuilding(nextInBuildOrder);
+                buildOrder.markAsBuilt();
             }
             else if(nextInBuildOrder.mineralPrice() < player.minerals()){
                 this.trainUnit(nextInBuildOrder);
@@ -92,7 +73,7 @@ public class Bot extends DefaultBWListener {
     public void onUnitCreate(Unit unit){
         if(this.workerService.getBuildingsDemanded().contains(unit.getType())){
             this.workerService.fulfillDemandOnBuilding(unit.getType());
-            this.buildOrder.markAsBuilt();
+            //this.buildOrder.markAsBuilt();
         }
     }
 
