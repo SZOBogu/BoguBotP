@@ -26,9 +26,9 @@ public class Bot extends DefaultBWListener {
         this.game = bwClient.getGame();
         this.player = game.self();
 
-        System.out.print("BWClient: " + bwClient);
-        System.out.print("Game: " + game);
-        System.out.print("Player: " + player);
+        System.out.println("BWClient: " + bwClient);
+        System.out.println("Game: " + game);
+        System.out.println("Player: " + player);
 
         WorkerService workerService = new WorkerService();
         workerService.setGame(game);
@@ -71,7 +71,7 @@ public class Bot extends DefaultBWListener {
 //            }
 //        }
         if (!buildOrder.isComplete()) {
-            if(nextInBuildOrder.isBuilding() && (nextInBuildOrder.mineralPrice() < player.minerals())) {
+            if(nextInBuildOrder.isBuilding() && (nextInBuildOrder.mineralPrice() < player.minerals()) && !this.workerService.isWorkerDelegatedToBuild()) {
                 this.workerService.demandBuilding(nextInBuildOrder);
             }
             else if(nextInBuildOrder.mineralPrice() < player.minerals()){
@@ -80,7 +80,7 @@ public class Bot extends DefaultBWListener {
             }
         }
         else{
-            if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400) {
+            if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400  && !this.workerService.isWorkerDelegatedToBuild()) {
                 this.workerService.demandBuilding(UnitType.Protoss_Pylon);
             }
             else{
@@ -90,8 +90,8 @@ public class Bot extends DefaultBWListener {
         this.workerService.manage();
     }
     public void onUnitCreate(Unit unit){
-        if(this.workerService.getBuildingDemanded() != null && this.workerService.getBuildingDemanded().equals(unit.getType())){
-            this.workerService.setBuildingDemanded(null);
+        if(this.workerService.getBuildingsDemanded().contains(unit.getType())){
+            this.workerService.fulfillDemandOnBuilding(unit.getType());
             this.buildOrder.markAsBuilt();
         }
     }

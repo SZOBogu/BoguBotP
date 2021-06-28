@@ -17,12 +17,12 @@ public class WorkerService implements IBroodWarManager{
     private Game game;
     private List<Unit> workers;
     private Unit builder;
-    private UnitType buildingDemanded;
+    private List<UnitType> buildingsDemanded;
 
     public WorkerService(){
         this.workers = new ArrayList<>();
 //        this.builders = new ArrayList<>();
-//        this.buildingsDemanded = new ArrayList<>();
+        this.buildingsDemanded = new ArrayList<>();
     }
 
     public void addWorker(Unit unit){
@@ -73,8 +73,15 @@ public class WorkerService implements IBroodWarManager{
     }
 
     public void demandBuilding(UnitType buildingType){
-        if(this.buildingDemanded == null)
-            this.buildingDemanded = buildingType;
+        System.out.printf("Building demanded " + buildingType);
+        System.out.printf(String.valueOf(buildingsDemanded));
+        this.buildingsDemanded.add(buildingType);
+    }
+
+    public void fulfillDemandOnBuilding(UnitType buildingType){
+        System.out.printf("Building demand fulfilled " + buildingType);
+        System.out.printf(String.valueOf(buildingsDemanded));
+        this.buildingsDemanded.remove(buildingType);
     }
 
     @Override
@@ -87,14 +94,14 @@ public class WorkerService implements IBroodWarManager{
         Random random = new Random();
         Unit worker = this.workers.get(random.nextInt(this.workers.size()));
 
-        if (this.buildingDemanded != null && this.builder == null){
+        if (!this.buildingsDemanded.isEmpty() && this.builder == null){
             builder = worker;
-            TilePosition buildLocation = game.getBuildLocation(this.buildingDemanded, player.getStartLocation());
-            builder.build(this.buildingDemanded, buildLocation);
+            TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
+            builder.build(this.buildingsDemanded.get(0), buildLocation);
         }
-        else if(this.buildingDemanded != null){
-            TilePosition buildLocation = game.getBuildLocation(this.buildingDemanded, player.getStartLocation());
-            builder.build(this.buildingDemanded, buildLocation);
+        else if(!this.buildingsDemanded.isEmpty()){
+            TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
+            builder.build(this.buildingsDemanded.get(0), buildLocation);
         }
     }
 
@@ -106,11 +113,15 @@ public class WorkerService implements IBroodWarManager{
         this.game = game;
     }
 
-    public UnitType getBuildingDemanded() {
-        return buildingDemanded;
+    public List<UnitType> getBuildingsDemanded() {
+        return buildingsDemanded;
     }
 
-    public void setBuildingDemanded(UnitType buildingDemanded) {
-        this.buildingDemanded = buildingDemanded;
+    public void setBuildingsDemanded(List<UnitType> buildingsDemanded) {
+        this.buildingsDemanded = buildingsDemanded;
+    }
+
+    public boolean isWorkerDelegatedToBuild(){
+        return this.builder != null;
     }
 }
