@@ -57,25 +57,25 @@ public class Bot extends DefaultBWListener {
                 this.buildOrder.markAsBuilt();
             }
         }
-        else{
+//        else{
             //queues too many pylons
-            if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400  && !this.workerService.isWorkerDelegatedToBuild()) {
-                this.workerService.demandBuilding(UnitType.Protoss_Pylon);
-            }
-            else{
-                Random random = new Random();
-                int randResult = random.nextInt(3);
-                if(randResult == 0 && player.minerals() > 125 && player.gas() > 25){
-                    this.trainUnit(UnitType.Protoss_Dragoon);
-                }
-                if(randResult == 1 && player.minerals() > 100){
-                    this.trainUnit(UnitType.Protoss_Zealot);
-                }
-                if(randResult == 2 && player.minerals() > 50){
-                    this.trainUnit(UnitType.Protoss_Probe);
-                }
-            }
-        }
+//            if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400  && !this.workerService.isWorkerDelegatedToBuild()) {
+//                this.workerService.demandBuilding(UnitType.Protoss_Pylon);
+//            }
+//            else{
+//                Random random = new Random();
+//                int randResult = random.nextInt(3);
+//                if(randResult == 0 && player.minerals() > 125 && player.gas() > 25){
+//                    this.trainUnit(UnitType.Protoss_Dragoon);
+//                }
+//                if(randResult == 1 && player.minerals() > 100){
+//                    this.trainUnit(UnitType.Protoss_Zealot);
+//                }
+//                if(randResult == 2 && player.minerals() > 50){
+//                    this.trainUnit(UnitType.Protoss_Probe);
+//                }
+//            }
+//        }
         this.workerService.manage();
     }
     public void onUnitCreate(Unit unit){
@@ -92,9 +92,12 @@ public class Bot extends DefaultBWListener {
             this.workerService.addWorker(unit);
             this.workerService.manage();
         }
+        if(unit.getType().isBuilding()){
+            this.workerService.freeBuilder();
+        }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.workerService.fulfillDemandOnBuilding(unit.getType());
-            this.workerService.delegateWorkersToGatherGas(unit);
+            //this.workerService.delegateWorkersToGatherGas(unit);
         }
     }
 

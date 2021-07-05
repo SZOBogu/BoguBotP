@@ -1,13 +1,11 @@
 package services;
 
 import bwapi.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import enums.UnitState;
+import pojos.UnitList;
+import pojos.UnitStateEntry;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 //@Service
 public class WorkerService implements IBroodWarManager{
@@ -15,18 +13,14 @@ public class WorkerService implements IBroodWarManager{
     private Player player;
 //    @Autowired
     private Game game;
-    private List<Unit> workers;
-    private List<Unit> mineralMiners;
-    private List<Unit> gasMiners;
-    private Unit builder;
+    private UnitList workers;
+    private UnitStateEntry builder;
     private List<UnitType> buildingsDemanded;
 
     public WorkerService(){
-        this.workers = new ArrayList<>();
-        this.mineralMiners = new ArrayList<>();
+        this.workers = new UnitList();
 //        this.builders = new ArrayList<>();
         this.buildingsDemanded = new ArrayList<>();
-        this.gasMiners = new ArrayList<>();
     }
 
     public void addWorker(Unit unit){
@@ -39,85 +33,112 @@ public class WorkerService implements IBroodWarManager{
         }
     }
 
-    private List<Unit> getIdleWorkers(){
-        List<Unit> idleWorkers = new ArrayList<>();
-        for(Unit worker : this.workers){
-            if(worker.isIdle() && worker.equals(builder)){
-                idleWorkers.add(worker);
-                builder = null;
+    private List<UnitStateEntry> getIdleWorkers(){
+        List<UnitStateEntry> idleWorkers = new ArrayList<>();
+        for(UnitStateEntry workerEntity : this.workers.getUnitList()){
+            if(workerEntity.getUnit().isIdle()){
+//                if(!(builder == null) && workerEntity.getUnit().equals(builder.getUnit()) && buildingsDemanded.isEmpty()) {
+//                    builder = null;
+//                    builder.setUnitState(UnitState.IDLE);
+//                }
+                if(workerEntity.getUnitState() == UnitState.IDLE){
+                    idleWorkers.add(workerEntity);
+                }
             }
-            if(worker.isIdle()){
-                idleWorkers.add(worker);
-            }
+//            workerEntity.setUnitState(UnitState.IDLE);
         }
         return idleWorkers;
     }
 
-    private void delegateWorkerToWork(Unit worker){
+    private void delegateWorkerToWork(UnitStateEntry worker){
         if(builder == null && !this.buildingsDemanded.isEmpty()) {
-            this.delegateWorkerToBuild(worker);
+            this.delegateWorkerToBuild();
+            builder.setUnitState(UnitState.BUILDING);
+            this.tryToBuild();
         }
-//        else if(this.workers.size() > (this.countRefineries() * 2 + 1) && this.countRefineries()>1){
-        else if(this.countRefineries() > 0 && this.gasMiners.size() < this.countRefineries() * 3){
+        else if(this.countRefineries() > 0 && this.workers.countUnitsWithState(UnitState.GAS_MINE) < this.countRefineries() * 3){
             delegateWorkersToGatherGas(this.getRefinery());
+//            worker.setUnitState(UnitState.GAS_MINE);
         }
         else{
             delegateWorkerToGatherMinerals(worker);
+//            worker.setUnitState(UnitState.MINERAL_MINE);
         }
     }
 
-    private void delegateWorkerToBuild(Unit worker){
-        UnitType toBuild = player.getRace().getSupplyProvider();
-        TilePosition buildLocation = game.getBuildLocation(toBuild, player.getStartLocation());
-        worker.build(toBuild, buildLocation);
+    private void delegateWorkerToBuild(){
+        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
+        UnitStateEntry worker;
+
+        if(idleWorkers.isEmpty()) {
+            Random random = new Random();
+            worker = this.workers.get(random.nextInt(this.workers.size()));
+        }
+        else{
+            worker = idleWorkers.get(0);
+        }
+        if (this.builder == null){
+            builder = worker;
+        }
+        System.out.println("New builder chosen and assigned to work: " + builder);
     }
 
-    private void delegateWorkerToGatherMinerals(Unit worker){
+    private void tryToBuild(){
+        this.builder.setUnitState(UnitState.BUILDING);
+        TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
+        this.builder.getUnit().build(this.buildingsDemanded.get(0), buildLocation);
+//        System.out.println("builder sent to build");
+    }
+
+    private void delegateWorkerToGatherMinerals(UnitStateEntry worker){
         Unit closestMineralPatch = null;
         int minDistance = Integer.MAX_VALUE;
         for(Unit mineralPatch: this.game.getMinerals()){
-            int tempDistance = worker.getDistance(mineralPatch);
+            int tempDistance = worker.getUnit().getDistance(mineralPatch);
             if(tempDistance < minDistance){
                 closestMineralPatch = mineralPatch;
                 minDistance = tempDistance;
             }
         }
-        worker.gather(closestMineralPatch);
+        worker.getUnit().gather(closestMineralPatch);
+        worker.setUnitState(UnitState.MINERAL_MINE);
+//        System.out.println("worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
-        List<Unit> idleWorkers = this.getIdleWorkers();
+        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
         Random random = new Random();
         int workersLeftToAssign = 3;
 
-        for(Unit worker : idleWorkers){
+        for(UnitStateEntry workerEntry : idleWorkers){
             if(workersLeftToAssign > 0) {
-                this.delegateWorkerToGatherGas(worker, refinery);
+                this.delegateWorkerToGatherGas(workerEntry, refinery);
                 workersLeftToAssign--;
             }
             else
                 break;
         }
 
-        if(this.mineralMiners.size() > workersLeftToAssign + 1){
+        List<UnitStateEntry> mineralMiners = this.workers.getUnitsWithState(UnitState.MINERAL_MINE);
+        if(this.workers.size() > workersLeftToAssign + 1){
             for(int i = 0; i < workersLeftToAssign; i++){
-                Unit worker = this.mineralMiners.get(random.nextInt(this.mineralMiners.size()));
-                this.mineralMiners.remove(worker);
-                this.gasMiners.add(worker);
+                UnitStateEntry worker = mineralMiners.get(random.nextInt(mineralMiners.size()));
+                mineralMiners.remove(worker);
                 this.delegateWorkerToGatherGas(worker, refinery);
             }
         }
-        System.out.println("Gas miners : " + this.gasMiners);
+        System.out.println("Gas miners : " + this.workers.getUnitsWithState(UnitState.GAS_MINE));
         //System.out.println("Workers allegedly sent to gas");
     }
 
-    private void delegateWorkerToGatherGas(Unit worker, Unit refinery){
-        this.mineralMiners.remove(worker);
-        if(this.builder.equals(worker))
-            this.builder = null;
-        this.gasMiners.add(worker);
-        worker.gather(refinery);
-        System.out.println("Worker delegated to gas");
+    private void delegateWorkerToGatherGas(UnitStateEntry worker, Unit refinery){
+//        if(this.builder.getUnit().equals(worker.getUnit())) {
+//            this.builder = null;
+//        }
+//        worker.setUnitState(UnitState.GAS_MINE);
+        worker.getUnit().gather(refinery);
+        worker.setUnitState(UnitState.GAS_MINE);
+//        System.out.println("Worker delegated to gas");
     }
 
     public void demandBuilding(UnitType buildingType){
@@ -132,38 +153,34 @@ public class WorkerService implements IBroodWarManager{
         System.out.println(buildingsDemanded);
     }
 
+    public void freeBuilder(){
+        if(builder != null) {
+            this.builder.setUnitState(UnitState.IDLE);
+            this.builder = null;
+        }
+    }
+
     @Override
     public void manage() {
-        List<Unit> idleWorkers = this.getIdleWorkers();
-        for(Unit idleWorker : idleWorkers){
+        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
+        for(UnitStateEntry idleWorker : idleWorkers){
             delegateWorkerToWork(idleWorker);
         }
+//        System.out.println(idleWorkers);
 
-        Random random = new Random();
-        Unit worker = this.workers.get(random.nextInt(this.workers.size()));
-
-        if (!this.buildingsDemanded.isEmpty() && this.builder == null){
-            builder = worker;
-            TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
-            builder.build(this.buildingsDemanded.get(0), buildLocation);
-        }
-        else if(!this.buildingsDemanded.isEmpty()){
-            TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
-            builder.build(this.buildingsDemanded.get(0), buildLocation);
+        if(this.builder != null && !this.buildingsDemanded.isEmpty() && this.buildingsDemanded.get(0).mineralPrice() <= this.player.minerals() && this.buildingsDemanded.get(0).gasPrice() <= this.player.gas()){
+            this.tryToBuild();
         }
 
-        for(Unit mineralMiner : this.mineralMiners){
-            if(!mineralMiner.isGatheringMinerals()){
+        for(UnitStateEntry mineralMiner : this.workers.getUnitsWithState(UnitState.MINERAL_MINE)){
+            if(!mineralMiner.getUnit().isGatheringMinerals()){
                 this.delegateWorkerToGatherMinerals(mineralMiner);
             }
         }
 
-        for(Unit gasMiner : this.gasMiners){
-            if(!gasMiner.isGatheringGas()){
-                gasMiner.gather(getRefinery());
-                if(this.mineralMiners.contains(gasMiner)){
-                    this.mineralMiners.remove(gasMiner);
-                }
+        for(UnitStateEntry gasMiner : this.workers.getUnitsWithState(UnitState.GAS_MINE)){
+            if(!gasMiner.getUnit().isGatheringGas()){
+                delegateWorkerToGatherGas(gasMiner, getRefinery());
             }
         }
     }
@@ -187,20 +204,16 @@ public class WorkerService implements IBroodWarManager{
         return null;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
     public void setGame(Game game) {
         this.game = game;
     }
 
-    public List<UnitType> getBuildingsDemanded() {
-        return buildingsDemanded;
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
-    public void setBuildingsDemanded(List<UnitType> buildingsDemanded) {
-        this.buildingsDemanded = buildingsDemanded;
+    public List<UnitType> getBuildingsDemanded() {
+        return buildingsDemanded;
     }
 
     public boolean isWorkerDelegatedToBuild(){
