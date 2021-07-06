@@ -27,4 +27,19 @@ public class TechDemandList implements DemandList{
     public boolean isEmpty() {
         return this.demandList.isEmpty();
     }
+
+    @Override
+    public Object get(int i) {
+        return this.demandList.get(i);
+    }
+
+    @Override
+    public List getList() {
+        return this.demandList;
+    }
+
+    @Override
+    public int size() {
+        return this.demandList.size();
+    }
 }

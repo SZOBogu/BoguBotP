@@ -2,6 +2,7 @@ package services;
 
 import bwapi.*;
 import enums.WorkerRole;
+import org.springframework.beans.factory.annotation.Autowired;
 import pojos.UnitList;
 import pojos.WorkerRoleEntry;
 
@@ -15,12 +16,12 @@ public class WorkerService implements IBroodWarManager{
     private Game game;
     private UnitList workers;
     private WorkerRoleEntry builder;
-    private List<UnitType> buildingsDemanded;
+    @Autowired
+    private DemandService demandService;
+
 
     public WorkerService(){
         this.workers = new UnitList();
-//        this.builders = new ArrayList<>();
-        this.buildingsDemanded = new ArrayList<>();
     }
 
     public void addWorker(Unit unit){
@@ -45,24 +46,21 @@ public class WorkerService implements IBroodWarManager{
                     idleWorkers.add(workerEntity);
                 }
             }
-//            workerEntity.setUnitState(UnitState.IDLE);
         }
         return idleWorkers;
     }
 
     private void delegateWorkerToWork(WorkerRoleEntry worker){
-        if(builder == null && !this.buildingsDemanded.isEmpty()) {
+        if(builder == null && !this.demandService.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
             builder.setUnitState(WorkerRole.BUILDING);
             this.tryToBuild();
         }
         else if(this.countRefineries() > 0 && this.workers.countUnitsWithState(WorkerRole.GAS_MINE) < this.countRefineries() * 3){
             delegateWorkersToGatherGas(this.getRefinery());
-//            worker.setUnitState(UnitState.GAS_MINE);
         }
         else{
             delegateWorkerToGatherMinerals(worker);
-//            worker.setUnitState(UnitState.MINERAL_MINE);
         }
     }
 
@@ -85,9 +83,8 @@ public class WorkerService implements IBroodWarManager{
 
     private void tryToBuild(){
         this.builder.setUnitState(WorkerRole.BUILDING);
-        TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
-        this.builder.getUnit().build(this.buildingsDemanded.get(0), buildLocation);
-//        System.out.println("builder sent to build");
+        TilePosition buildLocation = game.getBuildLocation(this.demandService.getFirstBuildingDemanded(), player.getStartLocation());
+        this.builder.getUnit().build(this.demandService.getFirstBuildingDemanded(), buildLocation);
     }
 
     private void delegateWorkerToGatherMinerals(WorkerRoleEntry worker){
@@ -102,7 +99,6 @@ public class WorkerService implements IBroodWarManager{
         }
         worker.getUnit().gather(closestMineralPatch);
         worker.setUnitState(WorkerRole.MINERAL_MINE);
-//        System.out.println("worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
@@ -128,7 +124,6 @@ public class WorkerService implements IBroodWarManager{
             }
         }
         System.out.println("Gas miners : " + this.workers.getUnitsWithState(WorkerRole.GAS_MINE));
-        //System.out.println("Workers allegedly sent to gas");
     }
 
     private void delegateWorkerToGatherGas(WorkerRoleEntry worker, Unit refinery){
@@ -138,19 +133,16 @@ public class WorkerService implements IBroodWarManager{
 //        worker.setUnitState(UnitState.GAS_MINE);
         worker.getUnit().gather(refinery);
         worker.setUnitState(WorkerRole.GAS_MINE);
-//        System.out.println("Worker delegated to gas");
     }
 
     public void demandBuilding(UnitType buildingType){
         System.out.println("Building demanded " + buildingType);
-        this.buildingsDemanded.add(buildingType);
-        System.out.println(buildingsDemanded);
+        this.demandService.demandCreatingUnit(buildingType);
     }
 
     public void fulfillDemandOnBuilding(UnitType buildingType){
         System.out.println("Building demand fulfilled " + buildingType);
-        this.buildingsDemanded.remove(buildingType);
-        System.out.println(buildingsDemanded);
+        this.demandService.fulfillDemandCreatingUnit(buildingType);
     }
 
     public void freeBuilder(){
@@ -166,10 +158,13 @@ public class WorkerService implements IBroodWarManager{
         for(WorkerRoleEntry idleWorker : idleWorkers){
             delegateWorkerToWork(idleWorker);
         }
-//        System.out.println(idleWorkers);
 
-        if(this.builder != null && !this.buildingsDemanded.isEmpty() && this.buildingsDemanded.get(0).mineralPrice() <= this.player.minerals() && this.buildingsDemanded.get(0).gasPrice() <= this.player.gas()){
-            this.tryToBuild();
+        UnitType demandedBuilding = this.demandService.getFirstBuildingDemanded();
+
+        if(demandedBuilding != null){
+            if(this.builder != null && !this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+                this.tryToBuild();
+            }
         }
 
         for(WorkerRoleEntry mineralMiner : this.workers.getUnitsWithState(WorkerRole.MINERAL_MINE)){
@@ -210,13 +205,5 @@ public class WorkerService implements IBroodWarManager{
 
     public void setPlayer(Player player) {
         this.player = player;
-    }
-
-    public List<UnitType> getBuildingsDemanded() {
-        return buildingsDemanded;
-    }
-
-    public boolean isWorkerDelegatedToBuild(){
-        return this.builder != null;
     }
 }

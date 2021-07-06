@@ -26,4 +26,18 @@ public class UpgradeDemandList implements DemandList{
     public boolean isEmpty() {
         return this.demandList.isEmpty();
     }
+
+    public Object get(int i) {
+        return this.demandList.get(i);
+    }
+
+    @Override
+    public List getList() {
+        return this.demandList;
+    }
+
+    @Override
+    public int size() {
+        return this.demandList.size();
+    }
 }
