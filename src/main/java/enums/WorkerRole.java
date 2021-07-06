@@ -1,5 +1,5 @@
 package enums;
 
-public enum UnitState {
+public enum WorkerRole {
     IDLE, MINERAL_MINE, GAS_MINE, BUILDING, SCOUT, FIGHT, OTHER
 }

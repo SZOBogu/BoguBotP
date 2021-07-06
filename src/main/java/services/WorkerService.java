@@ -1,9 +1,10 @@
 package services;
 
 import bwapi.*;
-import enums.UnitState;
+import enums.WorkerRole;
+import org.springframework.beans.factory.annotation.Autowired;
 import pojos.UnitList;
-import pojos.UnitStateEntry;
+import pojos.WorkerRoleEntry;
 
 import java.util.*;
 
@@ -14,13 +15,13 @@ public class WorkerService implements IBroodWarManager{
 //    @Autowired
     private Game game;
     private UnitList workers;
-    private UnitStateEntry builder;
-    private List<UnitType> buildingsDemanded;
+    private WorkerRoleEntry builder;
+    @Autowired
+    private DemandService demandService;
+
 
     public WorkerService(){
         this.workers = new UnitList();
-//        this.builders = new ArrayList<>();
-        this.buildingsDemanded = new ArrayList<>();
     }
 
     public void addWorker(Unit unit){
@@ -33,42 +34,39 @@ public class WorkerService implements IBroodWarManager{
         }
     }
 
-    private List<UnitStateEntry> getIdleWorkers(){
-        List<UnitStateEntry> idleWorkers = new ArrayList<>();
-        for(UnitStateEntry workerEntity : this.workers.getUnitList()){
+    private List<WorkerRoleEntry> getIdleWorkers(){
+        List<WorkerRoleEntry> idleWorkers = new ArrayList<>();
+        for(WorkerRoleEntry workerEntity : this.workers.getUnitList()){
             if(workerEntity.getUnit().isIdle()){
 //                if(!(builder == null) && workerEntity.getUnit().equals(builder.getUnit()) && buildingsDemanded.isEmpty()) {
 //                    builder = null;
 //                    builder.setUnitState(UnitState.IDLE);
 //                }
-                if(workerEntity.getUnitState() == UnitState.IDLE){
+                if(workerEntity.getUnitState() == WorkerRole.IDLE){
                     idleWorkers.add(workerEntity);
                 }
             }
-//            workerEntity.setUnitState(UnitState.IDLE);
         }
         return idleWorkers;
     }
 
-    private void delegateWorkerToWork(UnitStateEntry worker){
-        if(builder == null && !this.buildingsDemanded.isEmpty()) {
+    private void delegateWorkerToWork(WorkerRoleEntry worker){
+        if(builder == null && this.demandService.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
-            builder.setUnitState(UnitState.BUILDING);
+            builder.setUnitState(WorkerRole.BUILDING);
             this.tryToBuild();
         }
-        else if(this.countRefineries() > 0 && this.workers.countUnitsWithState(UnitState.GAS_MINE) < this.countRefineries() * 3){
+        else if(this.countRefineries() > 0 && this.workers.countUnitsWithState(WorkerRole.GAS_MINE) < this.countRefineries() * 3){
             delegateWorkersToGatherGas(this.getRefinery());
-//            worker.setUnitState(UnitState.GAS_MINE);
         }
         else{
             delegateWorkerToGatherMinerals(worker);
-//            worker.setUnitState(UnitState.MINERAL_MINE);
         }
     }
 
     private void delegateWorkerToBuild(){
-        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
-        UnitStateEntry worker;
+        List<WorkerRoleEntry> idleWorkers = this.getIdleWorkers();
+        WorkerRoleEntry worker;
 
         if(idleWorkers.isEmpty()) {
             Random random = new Random();
@@ -84,13 +82,12 @@ public class WorkerService implements IBroodWarManager{
     }
 
     private void tryToBuild(){
-        this.builder.setUnitState(UnitState.BUILDING);
-        TilePosition buildLocation = game.getBuildLocation(this.buildingsDemanded.get(0), player.getStartLocation());
-        this.builder.getUnit().build(this.buildingsDemanded.get(0), buildLocation);
-//        System.out.println("builder sent to build");
+        this.builder.setUnitState(WorkerRole.BUILDING);
+        TilePosition buildLocation = game.getBuildLocation(this.demandService.getFirstBuildingDemanded(), player.getStartLocation());
+        this.builder.getUnit().build(this.demandService.getFirstBuildingDemanded(), buildLocation);
     }
 
-    private void delegateWorkerToGatherMinerals(UnitStateEntry worker){
+    private void delegateWorkerToGatherMinerals(WorkerRoleEntry worker){
         Unit closestMineralPatch = null;
         int minDistance = Integer.MAX_VALUE;
         for(Unit mineralPatch: this.game.getMinerals()){
@@ -101,16 +98,15 @@ public class WorkerService implements IBroodWarManager{
             }
         }
         worker.getUnit().gather(closestMineralPatch);
-        worker.setUnitState(UnitState.MINERAL_MINE);
-//        System.out.println("worker delegated to minerals");
+        worker.setUnitState(WorkerRole.MINERAL_MINE);
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
-        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
+        List<WorkerRoleEntry> idleWorkers = this.getIdleWorkers();
         Random random = new Random();
         int workersLeftToAssign = 3;
 
-        for(UnitStateEntry workerEntry : idleWorkers){
+        for(WorkerRoleEntry workerEntry : idleWorkers){
             if(workersLeftToAssign > 0) {
                 this.delegateWorkerToGatherGas(workerEntry, refinery);
                 workersLeftToAssign--;
@@ -119,66 +115,65 @@ public class WorkerService implements IBroodWarManager{
                 break;
         }
 
-        List<UnitStateEntry> mineralMiners = this.workers.getUnitsWithState(UnitState.MINERAL_MINE);
+        List<WorkerRoleEntry> mineralMiners = this.workers.getUnitsWithState(WorkerRole.MINERAL_MINE);
         if(this.workers.size() > workersLeftToAssign + 1){
             for(int i = 0; i < workersLeftToAssign; i++){
-                UnitStateEntry worker = mineralMiners.get(random.nextInt(mineralMiners.size()));
+                WorkerRoleEntry worker = mineralMiners.get(random.nextInt(mineralMiners.size()));
                 mineralMiners.remove(worker);
                 this.delegateWorkerToGatherGas(worker, refinery);
             }
         }
-        System.out.println("Gas miners : " + this.workers.getUnitsWithState(UnitState.GAS_MINE));
-        //System.out.println("Workers allegedly sent to gas");
+        System.out.println("Gas miners : " + this.workers.getUnitsWithState(WorkerRole.GAS_MINE));
     }
 
-    private void delegateWorkerToGatherGas(UnitStateEntry worker, Unit refinery){
+    private void delegateWorkerToGatherGas(WorkerRoleEntry worker, Unit refinery){
 //        if(this.builder.getUnit().equals(worker.getUnit())) {
 //            this.builder = null;
 //        }
 //        worker.setUnitState(UnitState.GAS_MINE);
         worker.getUnit().gather(refinery);
-        worker.setUnitState(UnitState.GAS_MINE);
-//        System.out.println("Worker delegated to gas");
+        worker.setUnitState(WorkerRole.GAS_MINE);
     }
 
     public void demandBuilding(UnitType buildingType){
         System.out.println("Building demanded " + buildingType);
-        this.buildingsDemanded.add(buildingType);
-        System.out.println(buildingsDemanded);
+        this.demandService.demandCreatingUnit(buildingType);
     }
 
     public void fulfillDemandOnBuilding(UnitType buildingType){
         System.out.println("Building demand fulfilled " + buildingType);
-        this.buildingsDemanded.remove(buildingType);
-        System.out.println(buildingsDemanded);
+        this.demandService.fulfillDemandCreatingUnit(buildingType);
     }
 
     public void freeBuilder(){
         if(builder != null) {
-            this.builder.setUnitState(UnitState.IDLE);
+            this.builder.setUnitState(WorkerRole.IDLE);
             this.builder = null;
         }
     }
 
     @Override
     public void manage() {
-        List<UnitStateEntry> idleWorkers = this.getIdleWorkers();
-        for(UnitStateEntry idleWorker : idleWorkers){
+        List<WorkerRoleEntry> idleWorkers = this.getIdleWorkers();
+        for(WorkerRoleEntry idleWorker : idleWorkers){
             delegateWorkerToWork(idleWorker);
         }
-//        System.out.println(idleWorkers);
 
-        if(this.builder != null && !this.buildingsDemanded.isEmpty() && this.buildingsDemanded.get(0).mineralPrice() <= this.player.minerals() && this.buildingsDemanded.get(0).gasPrice() <= this.player.gas()){
-            this.tryToBuild();
+        UnitType demandedBuilding = this.demandService.getFirstBuildingDemanded();
+
+        if(demandedBuilding != null){
+            if(this.builder != null && this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+                this.tryToBuild();
+            }
         }
 
-        for(UnitStateEntry mineralMiner : this.workers.getUnitsWithState(UnitState.MINERAL_MINE)){
+        for(WorkerRoleEntry mineralMiner : this.workers.getUnitsWithState(WorkerRole.MINERAL_MINE)){
             if(!mineralMiner.getUnit().isGatheringMinerals()){
                 this.delegateWorkerToGatherMinerals(mineralMiner);
             }
         }
 
-        for(UnitStateEntry gasMiner : this.workers.getUnitsWithState(UnitState.GAS_MINE)){
+        for(WorkerRoleEntry gasMiner : this.workers.getUnitsWithState(WorkerRole.GAS_MINE)){
             if(!gasMiner.getUnit().isGatheringGas()){
                 delegateWorkerToGatherGas(gasMiner, getRefinery());
             }
@@ -210,13 +205,5 @@ public class WorkerService implements IBroodWarManager{
 
     public void setPlayer(Player player) {
         this.player = player;
-    }
-
-    public List<UnitType> getBuildingsDemanded() {
-        return buildingsDemanded;
-    }
-
-    public boolean isWorkerDelegatedToBuild(){
-        return this.builder != null;
     }
 }
