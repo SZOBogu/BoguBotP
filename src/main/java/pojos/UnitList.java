@@ -1,24 +1,24 @@
 package pojos;
 
 import bwapi.Unit;
-import enums.UnitState;
+import enums.WorkerRole;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UnitList {
-    private List<UnitStateEntry> unitList;
+    private List<WorkerRoleEntry> unitList;
 
     public UnitList() {
         this.unitList = new ArrayList<>();
     }
 
-    public UnitStateEntry get(int index){
+    public WorkerRoleEntry get(int index){
         return this.unitList.get(index);
     }
 
-    public UnitStateEntry get(Unit unit){
-        for(UnitStateEntry entry : this.unitList){
+    public WorkerRoleEntry get(Unit unit){
+        for(WorkerRoleEntry entry : this.unitList){
             if(entry.getUnit().equals(unit)){
                 return entry;
             }
@@ -27,29 +27,29 @@ public class UnitList {
     }
 
     public void add(Unit unit){
-        this.unitList.add(new UnitStateEntry(unit));
+        this.unitList.add(new WorkerRoleEntry(unit));
     }
 
     public void remove(Unit unit){
         this.unitList.removeIf(entry -> entry.getUnit().equals(unit));
     }
 
-    public List<UnitStateEntry> getUnitsWithState(UnitState unitState){
-        List<UnitStateEntry> entriesWithGivenState = new ArrayList<>();
+    public List<WorkerRoleEntry> getUnitsWithState(WorkerRole workerRole){
+        List<WorkerRoleEntry> entriesWithGivenState = new ArrayList<>();
 
-        for(UnitStateEntry entry : this.unitList){
-            if(entry.getUnitState() == unitState){
+        for(WorkerRoleEntry entry : this.unitList){
+            if(entry.getUnitState() == workerRole){
                 entriesWithGivenState.add(entry);
             }
         }
         return entriesWithGivenState;
     }
 
-    public int countUnitsWithState(UnitState state){
+    public int countUnitsWithState(WorkerRole state){
         return this.getUnitsWithState(state).size();
     }
 
-    public List<UnitStateEntry> getUnitList() {
+    public List<WorkerRoleEntry> getUnitList() {
         return unitList;
     }
 

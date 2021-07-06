@@ -1,9 +1,7 @@
 package pojos;
 
-import bwapi.UnitType;
-
-import java.util.List;
-
-public class DemandList {
-    private List<UnitType> demandList;
+public interface DemandList<T> {
+    void demand(T demandedEntity);
+    void fulfillDemand(T fulfilledDemandEntity);
+    boolean isEmpty();
 }

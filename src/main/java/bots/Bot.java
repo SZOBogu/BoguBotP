@@ -1,7 +1,10 @@
 package bots;
 
+import applicationContext.MyApplicationContext;
 import bwapi.*;
 import helpers.BuildOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import services.WorkerService;
 
 import java.util.Random;
@@ -10,7 +13,7 @@ public class Bot extends DefaultBWListener {
 //    @Autowired
     private BWClient bwClient;
 
-//    @Autowired
+    @Autowired
     private WorkerService workerService;
     private BuildOrder buildOrder;
 
@@ -22,11 +25,12 @@ public class Bot extends DefaultBWListener {
         this.game = bwClient.getGame();
         this.player = game.self();
 
-        WorkerService workerService = new WorkerService();
-        workerService.setGame(game);
-        workerService.setPlayer(player);
+        ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
+        WorkerService workerService = (WorkerService)staticContext.getBean("workerService");
 
         this.setWorkerService(workerService);
+        this.workerService.setGame(game);
+        this.workerService.setPlayer(player);
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
@@ -45,6 +49,7 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onFrame(){
         this.game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
+
         UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
 
         if (!buildOrder.isComplete()) {
