@@ -51,7 +51,7 @@ public class WorkerService implements IBroodWarManager{
     }
 
     private void delegateWorkerToWork(WorkerRoleEntry worker){
-        if(builder == null && !this.demandService.areBuildingsDemanded()) {
+        if(builder == null && this.demandService.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
             builder.setUnitState(WorkerRole.BUILDING);
             this.tryToBuild();
@@ -162,7 +162,7 @@ public class WorkerService implements IBroodWarManager{
         UnitType demandedBuilding = this.demandService.getFirstBuildingDemanded();
 
         if(demandedBuilding != null){
-            if(this.builder != null && !this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+            if(this.builder != null && this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
                 this.tryToBuild();
             }
         }

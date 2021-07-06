@@ -4,7 +4,6 @@ import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
@@ -79,5 +78,17 @@ public class DemandService {
             }
         }
         return false;
+    }
+
+    public boolean isOnDemandList(UnitType unitType){
+        return this.unitsToCreateDemandList.isOnDemandList(unitType);
+    }
+
+    public boolean isOnDemandList(TechType techType){
+        return this.unitsToCreateDemandList.isOnDemandList(techType);
+    }
+
+    public boolean isOnDemandList(UpgradeType upgradeType){
+        return this.unitsToCreateDemandList.isOnDemandList(upgradeType);
     }
 }

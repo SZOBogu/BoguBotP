@@ -1,5 +1,6 @@
 package pojos;
 
+import bwapi.TechType;
 import bwapi.UpgradeType;
 
 import java.util.ArrayList;
@@ -39,5 +40,11 @@ public class UpgradeDemandList implements DemandList{
     @Override
     public int size() {
         return this.demandList.size();
+    }
+
+    @Override
+    public boolean isOnDemandList(Object isDemanded) {
+        UpgradeType upgrade = (UpgradeType) isDemanded;
+        return this.demandList.contains(upgrade);
     }
 }

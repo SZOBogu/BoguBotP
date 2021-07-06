@@ -1,6 +1,8 @@
 package pojos;
 
 import bwapi.TechType;
+import bwapi.UnitType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,5 +43,11 @@ public class TechDemandList implements DemandList{
     @Override
     public int size() {
         return this.demandList.size();
+    }
+
+    @Override
+    public boolean isOnDemandList(Object isDemanded) {
+        TechType tech = (TechType) isDemanded;
+        return this.demandList.contains(tech);
     }
 }

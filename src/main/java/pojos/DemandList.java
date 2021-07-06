@@ -9,4 +9,5 @@ public interface DemandList<T> {
     T get(int i);
     List getList();
     int size();
+    boolean isOnDemandList(T isDemanded);
 }

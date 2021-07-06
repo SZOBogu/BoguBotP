@@ -5,6 +5,7 @@ import bwapi.*;
 import helpers.BuildOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import services.DemandService;
 import services.WorkerService;
 
 import java.util.Random;
@@ -15,6 +16,10 @@ public class Bot extends DefaultBWListener {
 
     @Autowired
     private WorkerService workerService;
+
+    @Autowired
+    private DemandService demandService;
+
     private BuildOrder buildOrder;
 
     private Game game;
@@ -84,7 +89,7 @@ public class Bot extends DefaultBWListener {
         this.workerService.manage();
     }
     public void onUnitCreate(Unit unit){
-        if(this.workerService.getBuildingsDemanded().contains(unit.getType())){
+        if(this.demandService.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
             this.workerService.fulfillDemandOnBuilding(unit.getType());
             //this.buildOrder.markAsBuilt();
