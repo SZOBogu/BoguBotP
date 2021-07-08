@@ -3,6 +3,7 @@ package bots;
 import applicationContext.MyApplicationContext;
 import bwapi.*;
 import helpers.BuildOrder;
+import helpers.BuildOrderEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import services.DemandService;
@@ -48,6 +49,10 @@ public class Bot extends DefaultBWListener {
         this.workerService.manage();
 
         this.buildOrder = new BuildOrder();
+
+        for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
+            this.demandService.demandCreatingUnit(entry.getUnitType());
+        }
     }
 
 
@@ -57,42 +62,41 @@ public class Bot extends DefaultBWListener {
 
         UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
 
-        if (!buildOrder.isComplete()) {
+//        if (!buildOrder.isComplete()) {
             if(nextInBuildOrder.isBuilding()) {
-                this.workerService.demandBuilding(nextInBuildOrder);
+                this.demandService.demandCreatingUnit(nextInBuildOrder);
                 buildOrder.markAsBuilt();
             }
             else if(nextInBuildOrder.mineralPrice() < player.minerals()){
                 this.trainUnit(nextInBuildOrder);
                 this.buildOrder.markAsBuilt();
             }
-        }
-//        else{
-            //queues too many pylons
-//            if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400  && !this.workerService.isWorkerDelegatedToBuild()) {
-//                this.workerService.demandBuilding(UnitType.Protoss_Pylon);
-//            }
-//            else{
-//                Random random = new Random();
-//                int randResult = random.nextInt(3);
-//                if(randResult == 0 && player.minerals() > 125 && player.gas() > 25){
-//                    this.trainUnit(UnitType.Protoss_Dragoon);
-//                }
-//                if(randResult == 1 && player.minerals() > 100){
-//                    this.trainUnit(UnitType.Protoss_Zealot);
-//                }
-//                if(randResult == 2 && player.minerals() > 50){
-//                    this.trainUnit(UnitType.Protoss_Probe);
-//                }
-//            }
 //        }
+
+        if(this.player.getUnits().size() > 15) {
+                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.workerService.isThereABuilder()) {
+                    this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
+                } else {
+                    Random random = new Random();
+                    int randResult = random.nextInt(2);
+                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
+                        this.demandService.demandCreatingUnit(UnitType.Protoss_Dragoon);
+                    }
+//                    if (randResult == 1 && player.minerals() > 100) {
+//                        this.demandService.demandCreatingUnit(UnitType.Protoss_Zealot);
+//                    }
+                    if (randResult == 1 && player.minerals() > 50) {
+                        this.demandService.demandCreatingUnit(UnitType.Protoss_Probe);
+                    }
+                }
+            }
         this.workerService.manage();
     }
+
     public void onUnitCreate(Unit unit){
         if(this.demandService.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
-            this.workerService.fulfillDemandOnBuilding(unit.getType());
-            //this.buildOrder.markAsBuilt();
+            this.demandService.fulfillDemandCreatingUnit(unit.getType());
         }
     }
 
@@ -106,19 +110,19 @@ public class Bot extends DefaultBWListener {
             this.workerService.freeBuilder();
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
-            this.workerService.fulfillDemandOnBuilding(unit.getType());
-            //this.workerService.delegateWorkersToGatherGas(unit);
+            this.demandService.fulfillDemandCreatingUnit(unit.getType());
         }
     }
 
     public void trainUnit(UnitType unitType){
         for (Unit unit : player.getUnits()) {
-            if (unit.getType().isBuilding() && !unit.getType().buildsWhat().isEmpty()) {
+            if (unit.getType().isBuilding() && !unit.getType().buildsWhat().isEmpty() && this.demandService.isOnDemandList(unit.getType())) {
                 if (game.canMake(unitType, unit)) {
                     try {
                         unit.train(unitType);
+                        //this.demandService.fulfillDemandCreatingUnit(unitType);
                     } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
-                        game.drawTextScreen(120, 120, "6th position in queue exception");
+                        assert true;    //do nothing
                     }
                 }
             }

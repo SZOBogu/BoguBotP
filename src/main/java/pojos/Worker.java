@@ -3,11 +3,11 @@ package pojos;
 import bwapi.Unit;
 import enums.WorkerRole;
 
-public class WorkerRoleEntry {
+public class Worker {
     private Unit unit;
     private WorkerRole workerRole;
 
-    public WorkerRoleEntry(Unit unit) {
+    public Worker(Unit unit) {
         this.unit = unit;
         this.workerRole = WorkerRole.IDLE;
     }

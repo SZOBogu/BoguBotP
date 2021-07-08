@@ -7,18 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UnitList {
-    private List<WorkerRoleEntry> unitList;
+    private List<Worker> unitList;
 
     public UnitList() {
         this.unitList = new ArrayList<>();
     }
 
-    public WorkerRoleEntry get(int index){
+    public Worker get(int index){
         return this.unitList.get(index);
     }
 
-    public WorkerRoleEntry get(Unit unit){
-        for(WorkerRoleEntry entry : this.unitList){
+    public Worker get(Unit unit){
+        for(Worker entry : this.unitList){
             if(entry.getUnit().equals(unit)){
                 return entry;
             }
@@ -27,17 +27,17 @@ public class UnitList {
     }
 
     public void add(Unit unit){
-        this.unitList.add(new WorkerRoleEntry(unit));
+        this.unitList.add(new Worker(unit));
     }
 
     public void remove(Unit unit){
         this.unitList.removeIf(entry -> entry.getUnit().equals(unit));
     }
 
-    public List<WorkerRoleEntry> getUnitsWithState(WorkerRole workerRole){
-        List<WorkerRoleEntry> entriesWithGivenState = new ArrayList<>();
+    public List<Worker> getUnitsWithState(WorkerRole workerRole){
+        List<Worker> entriesWithGivenState = new ArrayList<>();
 
-        for(WorkerRoleEntry entry : this.unitList){
+        for(Worker entry : this.unitList){
             if(entry.getUnitState() == workerRole){
                 entriesWithGivenState.add(entry);
             }
@@ -49,7 +49,7 @@ public class UnitList {
         return this.getUnitsWithState(state).size();
     }
 
-    public List<WorkerRoleEntry> getUnitList() {
+    public List<Worker> getUnitList() {
         return unitList;
     }
 
