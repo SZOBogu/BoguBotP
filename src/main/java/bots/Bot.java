@@ -72,20 +72,23 @@ public class Bot extends DefaultBWListener {
 //        }
 
         if(this.player.getUnits().size() > 15) {
-                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.workerService.isThereABuilder()) {
+                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 & !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
-                } else {
-                    Random random = new Random();
-                    int randResult = random.nextInt(2);
-                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
-                        this.demandService.demandCreatingUnit(UnitType.Protoss_Dragoon);
-                    }
+                }
+                else {
+//                    Random random = new Random();
+//                    int randResult = random.nextInt(2);
+//                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
+
+                    this.demandService.demandCreatingUnit(UnitType.Protoss_Dragoon);
+                    System.out.println("Dragoon demanded");
+//                    }
 //                    if (randResult == 1 && player.minerals() > 100) {
 //                        this.demandService.demandCreatingUnit(UnitType.Protoss_Zealot);
 //                    }
-                    if (randResult == 1 && player.minerals() > 50) {
-                        this.demandService.demandCreatingUnit(UnitType.Protoss_Probe);
-                    }
+//                    if (randResult == 1 && player.minerals() > 50) {
+//                        this.demandService.demandCreatingUnit(UnitType.Protoss_Probe);
+//                    }
                 }
             }
         this.workerService.manage();
@@ -118,7 +121,7 @@ public class Bot extends DefaultBWListener {
                 if (game.canMake(unitType, unit)) {
                     try {
                         unit.train(unitType);
-                        //this.demandService.fulfillDemandCreatingUnit(unitType);
+                        this.demandService.fulfillDemandCreatingUnit(unitType);
                     } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
                         assert true;    //do nothing
                     }
