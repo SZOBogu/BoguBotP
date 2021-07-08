@@ -65,11 +65,9 @@ public class Bot extends DefaultBWListener {
 //        if (!buildOrder.isComplete()) {
             if(nextInBuildOrder.isBuilding()) {
                 this.demandService.demandCreatingUnit(nextInBuildOrder);
-                buildOrder.markAsBuilt();
             }
             else if(nextInBuildOrder.mineralPrice() < player.minerals()){
                 this.trainUnit(nextInBuildOrder);
-                this.buildOrder.markAsBuilt();
             }
 //        }
 
@@ -116,7 +114,7 @@ public class Bot extends DefaultBWListener {
 
     public void trainUnit(UnitType unitType){
         for (Unit unit : player.getUnits()) {
-            if (unit.getType().isBuilding() && !unit.getType().buildsWhat().isEmpty() && this.demandService.isOnDemandList(unit.getType())) {
+            if (unit.getType().isBuilding() && !unit.getType().buildsWhat().isEmpty()  && unit.getTrainingQueue().isEmpty()) {
                 if (game.canMake(unitType, unit)) {
                     try {
                         unit.train(unitType);

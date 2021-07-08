@@ -33,10 +33,12 @@ public class BuildOrder {
         return buildOrder;
     }
 
-    public void markAsBuilt(){
+    public void markAsBuilt() {
         System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
         int index = this.getBuildOrderPosition();
-        this.buildOrder.get(index).setChecked(true);
+        if (index < this.buildOrder.size()){
+            this.buildOrder.get(index).setChecked(true);
+        }
     }
 
     public UnitType getNextThingInBuildOrder(){
