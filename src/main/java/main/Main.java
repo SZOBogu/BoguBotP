@@ -9,6 +9,7 @@ import configs.SpringConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import pojos.MyBWClient;
 import services.WorkerService;
 
 @SpringBootApplication(scanBasePackages = {"services",  "helpers", "configs", "bots", "applicationContext"})
@@ -20,7 +21,7 @@ public class Main {
         ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
         Bot bot = (Bot)staticContext.getBean("bot");
 
-        BWClient bwClient = new BWClient(bot);
+        MyBWClient bwClient = (MyBWClient) MyApplicationContext.getBean("myBWClient");
         bot.setBwClient(bwClient);
 
         bwClient.startGame();

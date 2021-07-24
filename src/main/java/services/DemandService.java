@@ -7,13 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
+import pojos.Worker;
+
+import java.util.List;
 
 //@Service
 public class DemandService {
-    private UnitDemandList unitsToCreateDemandList;
-    private UnitDemandList workerAttentionDemandList;
-    private TechDemandList techDemandList;
-    private UpgradeDemandList upgradeDemandList;
+    private final UnitDemandList unitsToCreateDemandList;
+    private final UnitDemandList workerAttentionDemandList;
+    private final TechDemandList techDemandList;
+    private final UpgradeDemandList upgradeDemandList;
 
     @Autowired
     private WorkerService workerService;
@@ -89,5 +92,17 @@ public class DemandService {
 
     public boolean isOnDemandList(UpgradeType upgradeType){
         return this.unitsToCreateDemandList.isOnDemandList(upgradeType);
+    }
+
+    public void demandWorkersToBeAvailable(int howManyWorkersToGet){
+        List<Worker> workers = this.workerService.freeWorkers(howManyWorkersToGet);
+
+        for(Worker worker : workers){
+            this.workerAttentionDemandList.fulfillDemand(worker);
+        }
+    }
+
+    public void makeWorkerAvailable(){
+
     }
 }
