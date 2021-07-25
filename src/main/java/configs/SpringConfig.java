@@ -1,8 +1,8 @@
 package configs;
 
 import bots.Bot;
+import bwapi.BWClient;
 import org.springframework.context.annotation.Bean;
-import pojos.MyBWClient;
 import services.DemandService;
 import services.WorkerService;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,7 @@ public class SpringConfig {
     }
 
     @Bean
-    public MyBWClient bwClient() {
-        return new MyBWClient(this.bot());
+    public BWClient bwClient() {
+        return new BWClient(this.bot());
     }
 }
