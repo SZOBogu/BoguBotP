@@ -12,7 +12,7 @@ import services.WorkerService;
 import java.util.Random;
 
 public class Bot extends DefaultBWListener {
-//    @Autowired
+    @Autowired
     private BWClient bwClient;
 
     @Autowired
@@ -128,10 +128,6 @@ public class Bot extends DefaultBWListener {
                 }
             }
         }
-    }
-
-    public void setBwClient(BWClient bwClient) {
-        this.bwClient = bwClient;
     }
 
     public void setWorkerService(WorkerService workerService) {
