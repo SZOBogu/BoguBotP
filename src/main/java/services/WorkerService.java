@@ -157,14 +157,20 @@ public class WorkerService implements IBroodWarManager{
 
     @Override
     public void manage() {
-        this.freeWorkerWithRole(WorkerRole.IDLE);
+//        Worker worker = this.freeWorkerWithRole(WorkerRole.IDLE);
 
         UnitType demandedBuilding = this.demandService.getFirstBuildingDemanded();
 
         if(demandedBuilding != null){
             if(this.builder != null && this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+//                worker.setWorkerRole(WorkerRole.BUILDING);
+//                this.builder = worker;
                 this.tryToBuild();
             }
+        }
+
+        for(Worker worker : this.workers.getWorkerList()){
+            this.delegateWorkerToWork(worker);
         }
 
         for(Worker mineralMiner : this.workers.getWorkersWithState(WorkerRole.MINERAL_MINE)){
