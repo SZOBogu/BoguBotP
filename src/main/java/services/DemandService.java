@@ -1,6 +1,7 @@
 package services;
 
 import bwapi.TechType;
+import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,10 @@ import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 import pojos.Worker;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 //@Service
 public class DemandService {
@@ -102,7 +106,7 @@ public class DemandService {
         }
     }
 
-    public void makeWorkerAvailable(){
-
+    public int howManyUnitsOnDemandList(UnitType unitType){
+        return this.unitsToCreateDemandList.howManyItemsOnDemandList(unitType);
     }
 }

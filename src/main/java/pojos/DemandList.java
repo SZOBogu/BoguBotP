@@ -1,5 +1,7 @@
 package pojos;
 
+import bwapi.UnitType;
+
 import java.util.List;
 
 public interface DemandList<T> {
@@ -10,4 +12,5 @@ public interface DemandList<T> {
     List getList();
     int size();
     boolean isOnDemandList(T isDemanded);
+    int howManyItemsOnDemandList(T demandedType);
 }

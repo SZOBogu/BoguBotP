@@ -6,6 +6,7 @@ import helpers.BuildOrder;
 import helpers.BuildOrderEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import services.BuildingService;
 import services.DemandService;
 import services.WorkerService;
 
@@ -20,6 +21,9 @@ public class Bot extends DefaultBWListener {
 
     @Autowired
     private DemandService demandService;
+
+    @Autowired
+    private BuildingService buildingService;
 
     private BuildOrder buildOrder;
 
@@ -44,6 +48,7 @@ public class Bot extends DefaultBWListener {
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
                 this.trainUnit(UnitType.Protoss_Probe);
+                this.buildingService.addBuilding(unit);
             }
         }
         this.workerService.manage();
@@ -75,7 +80,7 @@ public class Bot extends DefaultBWListener {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 & !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
                 }
-                else {
+                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) * 2 < demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
 //                    Random random = new Random();
 //                    int randResult = random.nextInt(2);
 //                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
@@ -109,9 +114,12 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType().isBuilding()){
             this.workerService.freeBuilder();
+            this.buildingService.addBuilding(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandService.fulfillDemandCreatingUnit(unit.getType());
+            this.workerService.freeWorkers(3);
+            this.workerService.delegateWorkersToGatherGas(unit);
         }
     }
 

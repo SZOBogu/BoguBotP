@@ -1,10 +1,12 @@
 package pojos;
 
 import bwapi.TechType;
+import bwapi.UnitType;
 import bwapi.UpgradeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UpgradeDemandList implements DemandList{
     private List<UpgradeType> demandList;
@@ -46,5 +48,11 @@ public class UpgradeDemandList implements DemandList{
     public boolean isOnDemandList(Object isDemanded) {
         UpgradeType upgrade = (UpgradeType) isDemanded;
         return this.demandList.contains(upgrade);
+    }
+
+    @Override
+    public int howManyItemsOnDemandList(Object demandedType) {
+        List<UpgradeType> upgradesDemanded = this.demandList;
+        return (int) upgradesDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
 }
