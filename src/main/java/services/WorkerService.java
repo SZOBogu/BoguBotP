@@ -139,6 +139,7 @@ public class WorkerService implements IBroodWarManager{
     public void freeBuilder(){
         if(builder != null) {
             this.builder.setWorkerRole(WorkerRole.IDLE);
+            this.builder.getWorker().stop();
             this.builder = null;
         }
     }
@@ -150,6 +151,7 @@ public class WorkerService implements IBroodWarManager{
         if(!workersWithState.isEmpty()){
             worker = workersWithState.get(random.nextInt(workersWithState.size()));
             worker.setWorkerRole(WorkerRole.IDLE);
+            worker.getWorker().stop();
             return worker;
         }
         return null;
