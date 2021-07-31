@@ -17,12 +17,7 @@ public class Main {
         MyApplicationContext context = new MyApplicationContext();
         context.setApplicationContext(new AnnotationConfigApplicationContext(SpringConfig.class));
 
-        ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
-        Bot bot = (Bot)staticContext.getBean("bot");
-
-        BWClient bwClient = new BWClient(bot);
-        bot.setBwClient(bwClient);
-
+        BWClient bwClient = (BWClient) MyApplicationContext.getBean("bwClient");
         bwClient.startGame();
     }
 }

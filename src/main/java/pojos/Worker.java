@@ -4,32 +4,35 @@ import bwapi.Unit;
 import enums.WorkerRole;
 
 public class Worker {
-    private Unit unit;
+    private Unit worker;
     private WorkerRole workerRole;
 
-    public Worker(Unit unit) {
-        this.unit = unit;
+    public Worker(Unit worker) {
+        this.worker = worker;
         this.workerRole = WorkerRole.IDLE;
     }
 
-    public Unit getUnit() {
-        return unit;
+    public Unit getWorker() {
+        return worker;
     }
 
+    public void setWorker(Unit worker) {
+        this.worker = worker;
+    }
 
-    public WorkerRole getUnitState() {
+    public WorkerRole getWorkerRole() {
         return workerRole;
     }
 
-    public void setUnitState(WorkerRole workerRole) {
+    public void setWorkerRole(WorkerRole workerRole) {
         this.workerRole = workerRole;
     }
 
     @Override
     public String toString() {
-        return "UnitStateEntry{" +
-                "unit=" + unit +
-                ", unitState=" + workerRole +
+        return "Worker{" +
+                "worker=" + worker +
+                ", workerRole=" + workerRole +
                 '}';
     }
 }

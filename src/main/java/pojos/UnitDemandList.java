@@ -4,7 +4,7 @@ import bwapi.UnitType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class UnitDemandList implements DemandList{
     private List<UnitType> demandList;
@@ -50,5 +50,11 @@ public class UnitDemandList implements DemandList{
     public boolean isOnDemandList(Object isDemanded) {
         UnitType unit = (UnitType) isDemanded;
         return this.demandList.contains(unit);
+    }
+
+    @Override
+    public int howManyItemsOnDemandList(Object demandedType) {
+        List<UnitType> unitsDemanded = this.demandList;
+        return (int) unitsDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
 }

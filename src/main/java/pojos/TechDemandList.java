@@ -2,9 +2,11 @@ package pojos;
 
 import bwapi.TechType;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TechDemandList implements DemandList{
     private List<TechType> demandList;
@@ -49,5 +51,11 @@ public class TechDemandList implements DemandList{
     public boolean isOnDemandList(Object isDemanded) {
         TechType tech = (TechType) isDemanded;
         return this.demandList.contains(tech);
+    }
+
+    @Override
+    public int howManyItemsOnDemandList(Object demandedType) {
+        List<TechType> techsDemanded = this.demandList;
+        return (int) techsDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
 }
