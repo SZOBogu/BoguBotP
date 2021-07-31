@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 //@Service
-public class DemandService {
+public class DemandService implements IBroodWarManager{
     private final UnitDemandList unitsToCreateDemandList;
     private final UnitDemandList workerAttentionDemandList;
     private final TechDemandList techDemandList;
@@ -24,6 +24,9 @@ public class DemandService {
 
     @Autowired
     private WorkerService workerService;
+
+    @Autowired
+    private BuildingService buildingService;
 
     public DemandService() {
         this.unitsToCreateDemandList = new UnitDemandList();
@@ -108,5 +111,27 @@ public class DemandService {
 
     public int howManyUnitsOnDemandList(UnitType unitType){
         return this.unitsToCreateDemandList.howManyItemsOnDemandList(unitType);
+    }
+
+    public UnitType getFirstDemandedUnitType(){
+        return (UnitType) this.unitsToCreateDemandList.get(0);
+    }
+
+    public void manage(){
+        if(!this.unitsToCreateDemandList.isEmpty()){
+            UnitType type = (UnitType)this.unitsToCreateDemandList.get(0);
+            if(!type.isBuilding()){
+                buildingService.trainUnit(type);
+            }
+        }
+        if(!this.techDemandList.isEmpty()){
+            TechType type = (TechType)this.techDemandList.get(0);
+            buildingService.researchTech(type);
+        }
+
+        if(!this.upgradeDemandList.isEmpty()){
+            UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
+            buildingService.makeUpgrade(type);
+        }
     }
 }

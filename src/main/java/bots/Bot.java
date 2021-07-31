@@ -47,8 +47,8 @@ public class Bot extends DefaultBWListener {
                 this.workerService.addWorker(unit);
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
-                this.trainUnit(UnitType.Protoss_Probe);
                 this.buildingService.addBuilding(unit);
+                this.buildingService.trainUnit(UnitType.Protoss_Probe);
             }
         }
         this.workerService.manage();
@@ -59,7 +59,6 @@ public class Bot extends DefaultBWListener {
             this.demandService.demandCreatingUnit(entry.getUnitType());
         }
     }
-
 
     @Override
     public void onFrame(){
@@ -72,7 +71,7 @@ public class Bot extends DefaultBWListener {
                 this.demandService.demandCreatingUnit(nextInBuildOrder);
             }
             else if(nextInBuildOrder.mineralPrice() < player.minerals()){
-                this.trainUnit(nextInBuildOrder);
+                this.buildingService.trainUnit(nextInBuildOrder);
             }
 //        }
 
@@ -95,8 +94,10 @@ public class Bot extends DefaultBWListener {
 //                        this.demandService.demandCreatingUnit(UnitType.Protoss_Probe);
 //                    }
                 }
+//                else if(this.demandService)
             }
         this.workerService.manage();
+        this.demandService.manage();
     }
 
     public void onUnitCreate(Unit unit){
@@ -123,20 +124,9 @@ public class Bot extends DefaultBWListener {
         }
     }
 
-    public void trainUnit(UnitType unitType){
-        for (Unit unit : player.getUnits()) {
-            if (unit.getType().isBuilding() && !unit.getType().buildsWhat().isEmpty()  && unit.getTrainingQueue().isEmpty()) {
-                if (game.canMake(unitType, unit)) {
-                    try {
-                        unit.train(unitType);
-                        this.demandService.fulfillDemandCreatingUnit(unitType);
-                    } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
-                        assert true;    //do nothing
-                    }
-                }
-            }
-        }
-    }
+//    public void trainUnit(UnitType unitType){
+//
+//    }
 
     public void setWorkerService(WorkerService workerService) {
         this.workerService = workerService;
