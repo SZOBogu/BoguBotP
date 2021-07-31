@@ -24,7 +24,7 @@ public class BuildOrder {
                 new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
                 new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core),
                 new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway),
-                new BuildOrderEntry(UnitType.Protoss_Dragoon)
+                new BuildOrderEntry(UnitType.Protoss_Dragoon), new BuildOrderEntry(UnitType.Protoss_Forge), new BuildOrderEntry(UnitType.Protoss_Gateway)
         ));
         System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
     }

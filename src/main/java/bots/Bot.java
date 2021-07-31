@@ -76,16 +76,16 @@ public class Bot extends DefaultBWListener {
 //        }
 
         if(this.player.getUnits().size() > 15) {
-                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 & !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
+                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
                 }
-                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) * 2 < demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
+                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) * 2 > demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
 //                    Random random = new Random();
 //                    int randResult = random.nextInt(2);
 //                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
 
                     this.demandService.demandCreatingUnit(UnitType.Protoss_Dragoon);
-                    System.out.println("Dragoon demanded");
+                    System.out.println("Dragoons on demand list: " + demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
 //                    }
 //                    if (randResult == 1 && player.minerals() > 100) {
 //                        this.demandService.demandCreatingUnit(UnitType.Protoss_Zealot);
@@ -112,6 +112,10 @@ public class Bot extends DefaultBWListener {
         if(unit.getType().isWorker()){
             this.workerService.addWorker(unit);
             this.workerService.manage();
+
+            if(this.workerService.getWorkerCount() > 30 * this.buildingService.countBuildingsOfType(UnitType.Protoss_Nexus)){
+                this.demandService.demandCreatingUnit(UnitType.Protoss_Nexus);
+            }
         }
         if(unit.getType().isBuilding()){
             this.workerService.freeBuilder();
@@ -121,6 +125,14 @@ public class Bot extends DefaultBWListener {
             this.demandService.fulfillDemandCreatingUnit(unit.getType());
             this.workerService.freeWorkers(3);
             this.workerService.delegateWorkersToGatherGas(unit);
+        }
+
+        if(unit.getType() == UnitType.Protoss_Forge){
+            this.demandService.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
+        }
+
+        if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
+            this.demandService.demandUpgrade(UpgradeType.Singularity_Charge);
         }
     }
 

@@ -227,6 +227,10 @@ public class WorkerService implements IBroodWarManager{
         return null;
     }
 
+    public int getWorkerCount(){
+        return this.workers.size();
+    }
+
     public void setGame(Game game) {
         this.game = game;
     }
