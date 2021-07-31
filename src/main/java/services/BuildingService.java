@@ -67,6 +67,13 @@ public class BuildingService {
         }
     }
 
+    public void handleBuildingDestruction(Unit building){
+        this.buildings.remove(building);
+        this.demandService.demandCreatingUnit(building.getType());
+
+        //TODO: order worker service to reassign workers upon destroyed assimilator
+    }
+
     @Autowired
     public void setDemandService(DemandService demandService) {
         this.demandService = demandService;

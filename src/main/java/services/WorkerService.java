@@ -83,9 +83,15 @@ public class WorkerService implements IBroodWarManager{
     }
 
     private void tryToBuild(){
-        this.builder.setWorkerRole(WorkerRole.BUILDING);
-        TilePosition buildLocation = game.getBuildLocation(this.demandService.getFirstBuildingDemanded(), player.getStartLocation());
-        this.builder.getWorker().build(this.demandService.getFirstBuildingDemanded(), buildLocation);
+        if(!this.builder.getWorker().isStuck()) {
+            this.builder.setWorkerRole(WorkerRole.BUILDING);
+            TilePosition buildLocation = game.getBuildLocation(this.demandService.getFirstBuildingDemanded(), player.getStartLocation());
+            this.builder.getWorker().build(this.demandService.getFirstBuildingDemanded(), buildLocation);
+        }
+        else{
+            this.delegateWorkerToGatherMinerals(this.builder);
+            this.builder = null;
+        }
     }
 
     private void delegateWorkerToGatherMinerals(Worker worker){
@@ -138,8 +144,7 @@ public class WorkerService implements IBroodWarManager{
 
     public void freeBuilder(){
         if(builder != null) {
-            this.builder.setWorkerRole(WorkerRole.IDLE);
-            this.builder.getWorker().stop();
+            this.delegateWorkerToGatherMinerals(this.builder);
             this.builder = null;
         }
     }
@@ -229,6 +234,13 @@ public class WorkerService implements IBroodWarManager{
 
     public int getWorkerCount(){
         return this.workers.size();
+    }
+    //TODO: reassign gas workers if one of them was killed
+    public void handleWorkerDestruction(Unit unit){
+        if(unit.equals(this.builder.getWorker())){
+            this.builder = null;
+        }
+        this.removeWorker(unit);
     }
 
     public void setGame(Game game) {

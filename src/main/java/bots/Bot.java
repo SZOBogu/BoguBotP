@@ -79,7 +79,7 @@ public class Bot extends DefaultBWListener {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
                 }
-                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) * 2 > demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
+                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) > demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
 //                    Random random = new Random();
 //                    int randResult = random.nextInt(2);
 //                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
@@ -115,6 +115,7 @@ public class Bot extends DefaultBWListener {
 
             if(this.workerService.getWorkerCount() > 30 * this.buildingService.countBuildingsOfType(UnitType.Protoss_Nexus)){
                 this.demandService.demandCreatingUnit(UnitType.Protoss_Nexus);
+                System.out.println("Nexus demanded");
             }
         }
         if(unit.getType().isBuilding()){
@@ -136,9 +137,14 @@ public class Bot extends DefaultBWListener {
         }
     }
 
-//    public void trainUnit(UnitType unitType){
-//
-//    }
+    public void onUnitDestroy(Unit unit) {
+        if(unit.getType().isBuilding()){
+            this.buildingService.handleBuildingDestruction(unit);
+        }
+        if(unit.getType().isWorker()){
+            this.workerService.handleWorkerDestruction(unit);
+        }
+    }
 
     public void setWorkerService(WorkerService workerService) {
         this.workerService = workerService;
