@@ -11,13 +11,11 @@ import java.util.*;
 
 //@Service
 public class WorkerService implements IBroodWarManager{
-//    @Autowired
+
     private Player player;
-//    @Autowired
     private Game game;
     private WorkerList workers;
     private Worker builder;
-    @Autowired
     private DemandService demandService;
 
 
@@ -249,5 +247,10 @@ public class WorkerService implements IBroodWarManager{
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    @Autowired
+    public void setDemandService(DemandService demandService) {
+        this.demandService = demandService;
     }
 }

@@ -1,7 +1,6 @@
 package services;
 
 import bwapi.TechType;
-import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +8,7 @@ import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 import pojos.Worker;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 //@Service
 public class DemandService implements IBroodWarManager{
@@ -21,11 +16,7 @@ public class DemandService implements IBroodWarManager{
     private final UnitDemandList workerAttentionDemandList;
     private final TechDemandList techDemandList;
     private final UpgradeDemandList upgradeDemandList;
-
-    @Autowired
     private WorkerService workerService;
-
-    @Autowired
     private BuildingService buildingService;
 
     public DemandService() {
@@ -133,5 +124,15 @@ public class DemandService implements IBroodWarManager{
             UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
             buildingService.makeUpgrade(type);
         }
+    }
+
+    @Autowired
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
+    }
+
+    @Autowired
+    public void setBuildingService(BuildingService buildingService) {
+        this.buildingService = buildingService;
     }
 }

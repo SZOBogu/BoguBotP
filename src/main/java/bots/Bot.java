@@ -26,7 +26,6 @@ public class Bot extends DefaultBWListener {
     private BuildingService buildingService;
 
     private BuildOrder buildOrder;
-
     private Game game;
     private Player player;
 
@@ -34,11 +33,6 @@ public class Bot extends DefaultBWListener {
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
-
-        ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
-        WorkerService workerService = (WorkerService)staticContext.getBean("workerService");
-
-        this.setWorkerService(workerService);
         this.workerService.setGame(game);
         this.workerService.setPlayer(player);
 
