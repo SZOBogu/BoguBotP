@@ -34,6 +34,14 @@ public class WorkerList {
         this.workerList.removeIf(entry -> entry.getWorker().equals(unit));
     }
 
+    public List<Worker> getWorkerList() {
+        return workerList;
+    }
+
+    public int size(){
+        return this.workerList.size();
+    }
+
     public List<Worker> getWorkersWithState(WorkerRole workerRole){
         List<Worker> entriesWithGivenState = new ArrayList<>();
 
@@ -47,14 +55,6 @@ public class WorkerList {
 
     public int countWorkersWithState(WorkerRole state){
         return this.getWorkersWithState(state).size();
-    }
-
-    public List<Worker> getWorkerList() {
-        return workerList;
-    }
-
-    public int size(){
-        return this.workerList.size();
     }
 
     @Override

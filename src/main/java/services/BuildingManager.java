@@ -12,10 +12,6 @@ public class BuildingManager {
     List<Unit> buildings = new ArrayList<>();
     private DemandManager demandManager;
 
-    public int countBuildingsOfType(UnitType demandedBuildingType){
-        return (int)this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(demandedBuildingType)).count();
-    }
-
     public void addBuilding(Unit unit){
         this.buildings.add(unit);
     }
@@ -24,12 +20,36 @@ public class BuildingManager {
         this.buildings.remove(unit);
     }
 
+    public List<Unit> getGateways(){
+        return this.getBuildingsOfType(UnitType.Protoss_Gateway);
+    }
+
+    public List<Unit> getStargates(){
+        return this.getBuildingsOfType(UnitType.Protoss_Stargate);
+    }
+
+    public List<Unit> getRoboticsFacilities(){
+        return this.getBuildingsOfType(UnitType.Protoss_Robotics_Facility);
+    }
+
+    public List<Unit> getNexuses() {
+        return this.getBuildingsOfType(UnitType.Protoss_Nexus);
+    }
+
+    public List<Unit> getPylons() {
+        return this.getBuildingsOfType(UnitType.Protoss_Pylon);
+    }
+
+    public List<Unit> getAssimilators(){
+        return this.getBuildingsOfType(UnitType.Protoss_Assimilator);
+    }
+
     public List<Unit> getBuildingsOfType(UnitType buildingType){
         return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(buildingType)).collect(Collectors.toList());
     }
 
-    public List<Unit> getGateways(){
-        return this.getBuildingsOfType(UnitType.Protoss_Gateway);
+    public int countBuildingsOfType(UnitType demandedBuildingType){
+        return (int)this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(demandedBuildingType)).count();
     }
 
     public void trainUnit(UnitType unitType){

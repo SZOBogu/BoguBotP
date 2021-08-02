@@ -11,17 +11,13 @@ import pojos.Worker;
 
 import java.util.List;
 
-//@Service
 public class DemandManager implements IBroodWarManager{
     private final UnitDemandList unitsToCreateDemandList;
     private final UnitDemandList workerAttentionDemandList;
     private final TechDemandList techDemandList;
     private final UpgradeDemandList upgradeDemandList;
 
-    @Autowired
     private WorkerManager workerManager;
-
-    @Autowired
     private BuildingManager buildingManager;
 
     public DemandManager() {
@@ -63,8 +59,29 @@ public class DemandManager implements IBroodWarManager{
         this.workerAttentionDemandList.fulfillDemand(worker);
     }
 
+    public boolean isOnDemandList(UnitType unitType){
+        return this.unitsToCreateDemandList.isOnDemandList(unitType);
+    }
+
+    public boolean isOnDemandList(TechType techType){
+        return this.unitsToCreateDemandList.isOnDemandList(techType);
+    }
+
+    public boolean isOnDemandList(UpgradeType upgradeType){
+        return this.unitsToCreateDemandList.isOnDemandList(upgradeType);
+    }
+
+    public UnitType getFirstDemandedUnitType(){
+        return (UnitType) this.unitsToCreateDemandList.get(0);
+    }
+
+    public int howManyUnitsOnDemandList(UnitType unitType){
+        return this.unitsToCreateDemandList.howManyItemsOnDemandList(unitType);
+    }
+
     public UnitType getFirstBuildingDemanded(){
         UnitType building = null;
+
 
         for(Object object : this.unitsToCreateDemandList.getList()){
             building = (UnitType) object;
@@ -85,32 +102,12 @@ public class DemandManager implements IBroodWarManager{
         return false;
     }
 
-    public boolean isOnDemandList(UnitType unitType){
-        return this.unitsToCreateDemandList.isOnDemandList(unitType);
-    }
-
-    public boolean isOnDemandList(TechType techType){
-        return this.unitsToCreateDemandList.isOnDemandList(techType);
-    }
-
-    public boolean isOnDemandList(UpgradeType upgradeType){
-        return this.unitsToCreateDemandList.isOnDemandList(upgradeType);
-    }
-
     public void demandWorkersToBeAvailable(int howManyWorkersToGet){
         List<Worker> workers = this.workerManager.freeWorkers(howManyWorkersToGet);
 
         for(Worker worker : workers){
             this.workerAttentionDemandList.fulfillDemand(worker);
         }
-    }
-
-    public int howManyUnitsOnDemandList(UnitType unitType){
-        return this.unitsToCreateDemandList.howManyItemsOnDemandList(unitType);
-    }
-
-    public UnitType getFirstDemandedUnitType(){
-        return (UnitType) this.unitsToCreateDemandList.get(0);
     }
 
     public void manage(){
@@ -129,6 +126,16 @@ public class DemandManager implements IBroodWarManager{
             UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
             buildingManager.makeUpgrade(type);
         }
+    }
+
+    @Autowired
+    public void setWorkerManager(WorkerManager workerManager) {
+        this.workerManager = workerManager;
+    }
+
+    @Autowired
+    public void setBuildingManager(BuildingManager buildingManager) {
+        this.buildingManager = buildingManager;
     }
 
     @Override

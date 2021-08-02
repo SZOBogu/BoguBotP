@@ -8,19 +8,21 @@ import pojos.Worker;
 
 import java.util.*;
 
-//@Service
 public class WorkerManager implements IBroodWarManager{
-//    @Autowired
     private Player player;
-//    @Autowired
     private Game game;
-    private WorkerList workers;
+    private final WorkerList workers;
     private Worker builder;
     private DemandManager demandManager;
+    private BuildingManager buildingManager;
 
 
     public WorkerManager(){
         this.workers = new WorkerList();
+    }
+
+    public int getWorkerCount(){
+        return this.workers.size();
     }
 
     public void addWorker(Unit unit){
@@ -33,14 +35,22 @@ public class WorkerManager implements IBroodWarManager{
         }
     }
 
+    //TODO: reassign gas workers if one of them was killed
+    public void handleWorkerDestruction(Unit unit){
+        if(unit.equals(this.builder.getWorker())){
+            this.builder = null;
+        }
+        this.removeWorker(unit);
+    }
+
+    public boolean isThereABuilder(){
+        return !(this.builder == null);
+    }
+
     private List<Worker> getIdleWorkers(){
         List<Worker> idleWorkers = new ArrayList<>();
         for(Worker workerEntity : this.workers.getWorkerList()){
             if(workerEntity.getWorker().isIdle()){
-//                if(!(builder == null) && workerEntity.getUnit().equals(builder.getUnit()) && buildingsDemanded.isEmpty()) {
-//                    builder = null;
-//                    builder.setUnitState(UnitState.IDLE);
-//                }
                 if(workerEntity.getWorkerRole() == WorkerRole.IDLE){
                     idleWorkers.add(workerEntity);
                 }
@@ -49,18 +59,58 @@ public class WorkerManager implements IBroodWarManager{
         return idleWorkers;
     }
 
-    private void delegateWorkerToWork(Worker worker){
-        if(builder == null && this.demandManager.areBuildingsDemanded()) {
-            this.delegateWorkerToBuild();
-            builder.setWorkerRole(WorkerRole.BUILDING);
-            this.tryToBuild();
+    public void freeBuilder(){
+        if(builder != null) {
+            this.delegateWorkerToGatherMinerals(this.builder);
+            this.builder = null;
         }
-        else if(this.countRefineries() > 0 && this.workers.countWorkersWithState(WorkerRole.GAS_MINE) < this.countRefineries() * 3){
-            delegateWorkersToGatherGas(this.getRefinery());
+    }
+
+    public Worker freeWorkerWithRole(WorkerRole role) {
+        Worker worker;
+        Random random = new Random();
+        List<Worker> workersWithState = this.workers.getWorkersWithState(role);
+        if (!workersWithState.isEmpty()) {
+            worker = workersWithState.get(random.nextInt(workersWithState.size()));
+            worker.setWorkerRole(WorkerRole.IDLE);
+            worker.getWorker().stop();
+            return worker;
         }
-        else{
-            delegateWorkerToGatherMinerals(worker);
+        return null;
+    }
+
+    public List<Worker> freeWorkers(int howManyWorkersToFree){
+        List<Worker> workers = new ArrayList<>();
+        for(int i = 0; i < howManyWorkersToFree; i++){
+            workers.add(this.makeWorkerAvailable());
         }
+        return workers;
+    }
+
+    public Worker makeWorkerAvailable(){
+        if(this.freeWorkerWithRole(WorkerRole.IDLE) != null){
+            return this.freeWorkerWithRole(WorkerRole.IDLE);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.BUILDING) != null) {
+            this.freeBuilder();
+            return this.freeWorkerWithRole(WorkerRole.BUILDING);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.MINERAL_MINE) != null) {
+            return this.freeWorkerWithRole(WorkerRole.MINERAL_MINE);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.GAS_MINE) != null) {
+            return this.freeWorkerWithRole(WorkerRole.GAS_MINE);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.FIGHT) != null) {
+            return this.freeWorkerWithRole(WorkerRole.FIGHT);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.OTHER) != null) {
+            return this.freeWorkerWithRole(WorkerRole.OTHER);
+        }
+        else if(this.freeWorkerWithRole(WorkerRole.SCOUT) != null) {
+            return this.freeWorkerWithRole(WorkerRole.SCOUT);
+        }
+        return null;
     }
 
     private void delegateWorkerToBuild(){
@@ -136,28 +186,20 @@ public class WorkerManager implements IBroodWarManager{
         worker.setWorkerRole(WorkerRole.GAS_MINE);
     }
 
-    public boolean isThereABuilder(){
-        return !(this.builder == null);
-    }
-
-    public void freeBuilder(){
-        if(builder != null) {
-            this.delegateWorkerToGatherMinerals(this.builder);
-            this.builder = null;
+    private void delegateWorkerToWork(Worker worker){
+        //TODO: handling more than one assimilator
+        if(builder == null && this.demandManager.areBuildingsDemanded()) {
+            this.delegateWorkerToBuild();
+            builder.setWorkerRole(WorkerRole.BUILDING);
+            this.tryToBuild();
         }
-    }
-
-    public Worker freeWorkerWithRole(WorkerRole role){
-        Worker worker;
-        Random random = new Random();
-        List<Worker> workersWithState = this.workers.getWorkersWithState(role);
-        if(!workersWithState.isEmpty()){
-            worker = workersWithState.get(random.nextInt(workersWithState.size()));
-            worker.setWorkerRole(WorkerRole.IDLE);
-            worker.getWorker().stop();
-            return worker;
+        else if(this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
+                this.workers.countWorkersWithState(WorkerRole.GAS_MINE) < this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) * 3){
+            delegateWorkersToGatherGas(this.buildingManager.getAssimilators().get(0));
         }
-        return null;
+        else{
+            delegateWorkerToGatherMinerals(worker);
+        }
     }
 
     @Override
@@ -177,70 +219,6 @@ public class WorkerManager implements IBroodWarManager{
         }
     }
 
-    public int countRefineries(){
-        int count = 0;
-        for(Unit unit : this.player.getUnits()){
-            if(unit.getType().isRefinery() && unit.exists()){
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public Unit getRefinery(){
-        for(Unit unit : this.player.getUnits()){
-            if(unit.getType().isRefinery()){
-                return unit;
-            }
-        }
-        return null;
-    }
-
-    public List<Worker> freeWorkers(int howManyWorkersToFree){
-        List<Worker> workers = new ArrayList<>();
-        for(int i = 0; i < howManyWorkersToFree; i++){
-            workers.add(this.makeWorkerAvailable());
-        }
-        return workers;
-    }
-
-    public Worker makeWorkerAvailable(){
-        if(this.freeWorkerWithRole(WorkerRole.IDLE) != null){
-            return this.freeWorkerWithRole(WorkerRole.IDLE);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.BUILDING) != null) {
-            this.freeBuilder();
-            return this.freeWorkerWithRole(WorkerRole.BUILDING);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.MINERAL_MINE) != null) {
-            return this.freeWorkerWithRole(WorkerRole.MINERAL_MINE);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.GAS_MINE) != null) {
-            return this.freeWorkerWithRole(WorkerRole.GAS_MINE);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.FIGHT) != null) {
-            return this.freeWorkerWithRole(WorkerRole.FIGHT);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.OTHER) != null) {
-            return this.freeWorkerWithRole(WorkerRole.OTHER);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.SCOUT) != null) {
-            return this.freeWorkerWithRole(WorkerRole.SCOUT);
-        }
-        return null;
-    }
-
-    public int getWorkerCount(){
-        return this.workers.size();
-    }
-    //TODO: reassign gas workers if one of them was killed
-    public void handleWorkerDestruction(Unit unit){
-        if(unit.equals(this.builder.getWorker())){
-            this.builder = null;
-        }
-        this.removeWorker(unit);
-    }
-
     public void setGame(Game game) {
         this.game = game;
     }
@@ -252,6 +230,11 @@ public class WorkerManager implements IBroodWarManager{
     @Autowired
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
+    }
+
+    @Autowired
+    public void setBuildingManager(BuildingManager buildingManager) {
+        this.buildingManager = buildingManager;
     }
 
     @Override
