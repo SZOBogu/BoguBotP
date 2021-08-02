@@ -1,4 +1,4 @@
-package services;
+package managers;
 
 import bwapi.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,35 +53,37 @@ public class BuildingManager {
     }
 
     public void trainUnit(UnitType unitType){
-        for (Unit unit : buildings) {
-            if (!unit.getType().buildsWhat().isEmpty()  && unit.getTrainingQueue().isEmpty()) {
-                if (unit.canTrain(unitType)) {
-                    try {
-                        unit.train(unitType);
-                        this.demandManager.fulfillDemandCreatingUnit(unitType);
-                    } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
-                        assert true;    //do nothing
-                    }
-                }
+        Unit buildingThatCanTrain = this.buildings.stream()
+                .filter(building -> !building.getType().buildsWhat().isEmpty())
+                .filter(building -> building.getTrainingQueue().isEmpty())
+                .filter(building -> building.canTrain(unitType))
+                .findFirst().orElse(null);
+
+        try{
+            if(buildingThatCanTrain != null) {
+                buildingThatCanTrain.train(unitType);
+                this.demandManager.fulfillDemandCreatingUnit(unitType);
             }
+        }
+        catch(ArrayIndexOutOfBoundsException e){     //to catch exception when adding 6th unit to training queue
+            assert true;    //do nothing
         }
     }
 
     public void researchTech(TechType techType){
-        for (Unit unit : buildings) {
-            if (unit.canResearch(techType)) {
-                unit.research(techType);
-                this.demandManager.fulfillDemandTech(techType);
-            }
+        Unit buildingToResearchTech = this.buildings.stream().filter(i -> i.canResearch(techType)).findAny().orElse(null);
+        if(buildingToResearchTech != null) {
+            buildingToResearchTech.research(techType);
+            this.demandManager.fulfillDemandTech(techType);
         }
     }
 
     public void makeUpgrade(UpgradeType upgradeType){
-        for (Unit unit : buildings) {
-            if (unit.canUpgrade(upgradeType)) {
-                unit.upgrade(upgradeType);
-                this.demandManager.fulfillDemandUpgrade(upgradeType);
-            }
+        Unit buildingToMakeUpgrade = this.buildings.stream().filter(i -> i.canUpgrade(upgradeType)).findAny().orElse(null);
+
+        if(buildingToMakeUpgrade != null) {
+            buildingToMakeUpgrade.upgrade(upgradeType);
+            this.demandManager.fulfillDemandUpgrade(upgradeType);
         }
     }
 

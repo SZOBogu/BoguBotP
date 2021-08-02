@@ -1,4 +1,4 @@
-package services;
+package managers;
 
 import bwapi.TechType;
 import bwapi.UnitType;
@@ -81,7 +81,6 @@ public class DemandManager implements IBroodWarManager{
 
     public UnitType getFirstBuildingDemanded(){
         UnitType building = null;
-
 
         for(Object object : this.unitsToCreateDemandList.getList()){
             building = (UnitType) object;

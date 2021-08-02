@@ -7,9 +7,9 @@ import helpers.BuildOrderEntry;
 import helpers.CostCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import services.BuildingManager;
-import services.DemandManager;
-import services.WorkerManager;
+import managers.BuildingManager;
+import managers.DemandManager;
+import managers.WorkerManager;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;

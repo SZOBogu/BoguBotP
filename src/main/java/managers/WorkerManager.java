@@ -1,4 +1,4 @@
-package services;
+package managers;
 
 import bwapi.*;
 import enums.WorkerRole;

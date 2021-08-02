@@ -3,9 +3,9 @@ package configs;
 import bots.Bot;
 import bwapi.BWClient;
 import org.springframework.context.annotation.Bean;
-import services.BuildingManager;
-import services.DemandManager;
-import services.WorkerManager;
+import managers.BuildingManager;
+import managers.DemandManager;
+import managers.WorkerManager;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

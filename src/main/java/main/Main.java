@@ -6,7 +6,7 @@ import configs.SpringConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-@SpringBootApplication(scanBasePackages = {"services",  "helpers", "configs", "bots", "applicationContext"})
+@SpringBootApplication(scanBasePackages = {"managers",  "helpers", "configs", "bots", "applicationContext"})
 public class Main {
     public static void main(String[] args) {
         MyApplicationContext context = new MyApplicationContext();
