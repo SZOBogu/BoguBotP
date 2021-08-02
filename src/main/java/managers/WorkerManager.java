@@ -113,35 +113,6 @@ public class WorkerManager implements IBroodWarManager{
         return null;
     }
 
-    private void delegateWorkerToBuild(){
-        List<Worker> idleWorkers = this.getIdleWorkers();
-        Worker worker;
-
-        if(idleWorkers.isEmpty()) {
-            Random random = new Random();
-            worker = this.workers.get(random.nextInt(this.workers.size()));
-        }
-        else{
-            worker = idleWorkers.get(0);
-        }
-        if (this.builder == null){
-            builder = worker;
-        }
-        System.out.println("New builder chosen and assigned to work: " + builder);
-    }
-
-    private void tryToBuild(){
-        if(!this.builder.getWorker().isStuck()) {
-            this.builder.setWorkerRole(WorkerRole.BUILDING);
-            TilePosition buildLocation = game.getBuildLocation(this.demandManager.getFirstBuildingDemanded(), player.getStartLocation());
-            this.builder.getWorker().build(this.demandManager.getFirstBuildingDemanded(), buildLocation);
-        }
-        else{
-            this.delegateWorkerToGatherMinerals(this.builder);
-            this.builder = null;
-        }
-    }
-
     private void delegateWorkerToGatherMinerals(Worker worker){
         Unit closestMineralPatch = null;
         int minDistance = Integer.MAX_VALUE;
@@ -154,6 +125,7 @@ public class WorkerManager implements IBroodWarManager{
         }
         worker.getWorker().gather(closestMineralPatch);
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
+        System.out.println("Worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
@@ -184,6 +156,36 @@ public class WorkerManager implements IBroodWarManager{
     private void delegateWorkerToGatherGas(Worker worker, Unit refinery){
         worker.getWorker().gather(refinery);
         worker.setWorkerRole(WorkerRole.GAS_MINE);
+        System.out.println("Worker delegated to gas");
+    }
+
+    private void delegateWorkerToBuild(){
+        List<Worker> idleWorkers = this.getIdleWorkers();
+        Worker worker;
+
+        if(idleWorkers.isEmpty()) {
+            Random random = new Random();
+            worker = this.workers.get(random.nextInt(this.workers.size()));
+        }
+        else{
+            worker = idleWorkers.get(0);
+        }
+        if (this.builder == null){
+            builder = worker;
+            this.builder.setWorkerRole(WorkerRole.BUILDING);
+        }
+        System.out.println("New builder chosen and assigned to work: " + builder);
+    }
+
+    private void tryToBuild(){
+        if(!this.builder.getWorker().isStuck()) {
+            TilePosition buildLocation = game.getBuildLocation(this.demandManager.getFirstBuildingDemanded(), player.getStartLocation());
+            this.builder.getWorker().build(this.demandManager.getFirstBuildingDemanded(), buildLocation);
+        }
+        else{
+            this.delegateWorkerToGatherMinerals(this.builder);
+            this.builder = null;
+        }
     }
 
     private void delegateWorkerToWork(Worker worker){
@@ -195,7 +197,7 @@ public class WorkerManager implements IBroodWarManager{
         }
         else if(this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
                 this.workers.countWorkersWithState(WorkerRole.GAS_MINE) < this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) * 3){
-            delegateWorkersToGatherGas(this.buildingManager.getAssimilators().get(0));
+            delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
         }
         else{
             delegateWorkerToGatherMinerals(worker);
