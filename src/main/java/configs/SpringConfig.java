@@ -3,25 +3,25 @@ package configs;
 import bots.Bot;
 import bwapi.BWClient;
 import org.springframework.context.annotation.Bean;
-import services.BuildingService;
-import services.DemandService;
-import services.WorkerService;
+import services.BuildingManager;
+import services.DemandManager;
+import services.WorkerManager;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SpringConfig {
     @Bean
-    public WorkerService workerService(){
-        return new WorkerService();
+    public WorkerManager workerService(){
+        return new WorkerManager();
     }
 
     @Bean
-    public DemandService demandService() {
-        return new DemandService();
+    public DemandManager demandService() {
+        return new DemandManager();
     }
 
     @Bean
-    public BuildingService buildingService() { return new BuildingService();}
+    public BuildingManager buildingService() { return new BuildingManager();}
 
     @Bean
     public Bot bot(){

@@ -55,4 +55,9 @@ public class UpgradeDemandList implements DemandList{
         List<UpgradeType> upgradesDemanded = this.demandList;
         return (int) upgradesDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
+
+    @Override
+    public String toString() {
+        return "UpgradeDemandList";
+    }
 }

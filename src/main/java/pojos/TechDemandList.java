@@ -58,4 +58,9 @@ public class TechDemandList implements DemandList{
         List<TechType> techsDemanded = this.demandList;
         return (int) techsDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
+
+    @Override
+    public String toString() {
+        return "TechDemandList";
+    }
 }

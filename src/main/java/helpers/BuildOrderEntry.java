@@ -26,4 +26,12 @@ public class BuildOrderEntry {
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
+
+    @Override
+    public String toString() {
+        return "BuildOrderEntry{" +
+                "unitType=" + unitType +
+                ", checked=" + checked +
+                '}';
+    }
 }

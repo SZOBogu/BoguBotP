@@ -1,7 +1,6 @@
 package services;
 
 import bwapi.TechType;
-import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,25 +9,22 @@ import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 import pojos.Worker;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 //@Service
-public class DemandService implements IBroodWarManager{
+public class DemandManager implements IBroodWarManager{
     private final UnitDemandList unitsToCreateDemandList;
     private final UnitDemandList workerAttentionDemandList;
     private final TechDemandList techDemandList;
     private final UpgradeDemandList upgradeDemandList;
 
     @Autowired
-    private WorkerService workerService;
+    private WorkerManager workerManager;
 
     @Autowired
-    private BuildingService buildingService;
+    private BuildingManager buildingManager;
 
-    public DemandService() {
+    public DemandManager() {
         this.unitsToCreateDemandList = new UnitDemandList();
         this.workerAttentionDemandList = new UnitDemandList();
         this.techDemandList = new TechDemandList();
@@ -102,7 +98,7 @@ public class DemandService implements IBroodWarManager{
     }
 
     public void demandWorkersToBeAvailable(int howManyWorkersToGet){
-        List<Worker> workers = this.workerService.freeWorkers(howManyWorkersToGet);
+        List<Worker> workers = this.workerManager.freeWorkers(howManyWorkersToGet);
 
         for(Worker worker : workers){
             this.workerAttentionDemandList.fulfillDemand(worker);
@@ -121,17 +117,22 @@ public class DemandService implements IBroodWarManager{
         if(!this.unitsToCreateDemandList.isEmpty()){
             UnitType type = (UnitType)this.unitsToCreateDemandList.get(0);
             if(!type.isBuilding()){
-                buildingService.trainUnit(type);
+                buildingManager.trainUnit(type);
             }
         }
         if(!this.techDemandList.isEmpty()){
             TechType type = (TechType)this.techDemandList.get(0);
-            buildingService.researchTech(type);
+            buildingManager.researchTech(type);
         }
 
         if(!this.upgradeDemandList.isEmpty()){
             UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
-            buildingService.makeUpgrade(type);
+            buildingManager.makeUpgrade(type);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DemandManager";
     }
 }

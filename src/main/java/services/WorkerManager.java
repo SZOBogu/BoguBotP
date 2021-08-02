@@ -2,7 +2,6 @@ package services;
 
 import bwapi.*;
 import enums.WorkerRole;
-import helpers.CostCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
@@ -10,18 +9,17 @@ import pojos.Worker;
 import java.util.*;
 
 //@Service
-public class WorkerService implements IBroodWarManager{
+public class WorkerManager implements IBroodWarManager{
 //    @Autowired
     private Player player;
 //    @Autowired
     private Game game;
     private WorkerList workers;
     private Worker builder;
-    @Autowired
-    private DemandService demandService;
+    private DemandManager demandManager;
 
 
-    public WorkerService(){
+    public WorkerManager(){
         this.workers = new WorkerList();
     }
 
@@ -52,7 +50,7 @@ public class WorkerService implements IBroodWarManager{
     }
 
     private void delegateWorkerToWork(Worker worker){
-        if(builder == null && this.demandService.areBuildingsDemanded()) {
+        if(builder == null && this.demandManager.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
             builder.setWorkerRole(WorkerRole.BUILDING);
             this.tryToBuild();
@@ -85,8 +83,8 @@ public class WorkerService implements IBroodWarManager{
     private void tryToBuild(){
         if(!this.builder.getWorker().isStuck()) {
             this.builder.setWorkerRole(WorkerRole.BUILDING);
-            TilePosition buildLocation = game.getBuildLocation(this.demandService.getFirstBuildingDemanded(), player.getStartLocation());
-            this.builder.getWorker().build(this.demandService.getFirstBuildingDemanded(), buildLocation);
+            TilePosition buildLocation = game.getBuildLocation(this.demandManager.getFirstBuildingDemanded(), player.getStartLocation());
+            this.builder.getWorker().build(this.demandManager.getFirstBuildingDemanded(), buildLocation);
         }
         else{
             this.delegateWorkerToGatherMinerals(this.builder);
@@ -166,10 +164,10 @@ public class WorkerService implements IBroodWarManager{
     public void manage() {
         List<Worker> idleWorkers = this.getIdleWorkers();
 
-        UnitType demandedBuilding = this.demandService.getFirstBuildingDemanded();
+        UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
         if(demandedBuilding != null){
-            if(this.builder != null && this.demandService.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+            if(this.builder != null && this.demandManager.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
                 this.tryToBuild();
             }
         }
@@ -249,5 +247,15 @@ public class WorkerService implements IBroodWarManager{
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    @Autowired
+    public void setDemandManager(DemandManager demandManager) {
+        this.demandManager = demandManager;
+    }
+
+    @Override
+    public String toString() {
+        return "WorkerManager";
     }
 }

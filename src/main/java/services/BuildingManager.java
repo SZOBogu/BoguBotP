@@ -2,17 +2,15 @@ package services;
 
 import bwapi.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-//@Service
-public class BuildingService {
+public class BuildingManager {
     List<Unit> buildings = new ArrayList<>();
-    private DemandService demandService;
+    private DemandManager demandManager;
 
     public int countBuildingsOfType(UnitType demandedBuildingType){
         return (int)this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(demandedBuildingType)).count();
@@ -40,7 +38,7 @@ public class BuildingService {
                 if (unit.canTrain(unitType)) {
                     try {
                         unit.train(unitType);
-                        this.demandService.fulfillDemandCreatingUnit(unitType);
+                        this.demandManager.fulfillDemandCreatingUnit(unitType);
                     } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
                         assert true;    //do nothing
                     }
@@ -53,7 +51,7 @@ public class BuildingService {
         for (Unit unit : buildings) {
             if (unit.canResearch(techType)) {
                 unit.research(techType);
-                this.demandService.fulfillDemandTech(techType);
+                this.demandManager.fulfillDemandTech(techType);
             }
         }
     }
@@ -62,20 +60,25 @@ public class BuildingService {
         for (Unit unit : buildings) {
             if (unit.canUpgrade(upgradeType)) {
                 unit.upgrade(upgradeType);
-                this.demandService.fulfillDemandUpgrade(upgradeType);
+                this.demandManager.fulfillDemandUpgrade(upgradeType);
             }
         }
     }
 
     public void handleBuildingDestruction(Unit building){
-        this.buildings.remove(building);
-        this.demandService.demandCreatingUnit(building.getType());
+        this.removeBuilding(building);
+        this.demandManager.demandCreatingUnit(building.getType());
 
         //TODO: order worker service to reassign workers upon destroyed assimilator
     }
 
     @Autowired
-    public void setDemandService(DemandService demandService) {
-        this.demandService = demandService;
+    public void setDemandService(DemandManager demandManager) {
+        this.demandManager = demandManager;
+    }
+
+    @Override
+    public String toString() {
+        return "BuildingManager";
     }
 }
