@@ -2,6 +2,7 @@ package managers;
 
 import bwapi.*;
 import enums.WorkerRole;
+import helpers.CostCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
@@ -36,6 +37,7 @@ public class WorkerManager implements IBroodWarManager{
     }
 
     //TODO: reassign gas workers if one of them was killed
+    //TODO: throws NullPointerException
     public void handleWorkerDestruction(Unit unit){
         if(unit.equals(this.builder.getWorker())){
             this.builder = null;
@@ -51,9 +53,7 @@ public class WorkerManager implements IBroodWarManager{
         List<Worker> idleWorkers = new ArrayList<>();
         for(Worker workerEntity : this.workers.getWorkerList()){
             if(workerEntity.getWorker().isIdle()){
-                if(workerEntity.getWorkerRole() == WorkerRole.IDLE){
                     idleWorkers.add(workerEntity);
-                }
             }
         }
         return idleWorkers;
@@ -210,8 +210,11 @@ public class WorkerManager implements IBroodWarManager{
 
         UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
-        if(demandedBuilding != null){
-            if(this.builder != null && this.demandManager.areBuildingsDemanded() && demandedBuilding.mineralPrice() <= this.player.minerals() && demandedBuilding.gasPrice() <= this.player.gas()){
+        if(demandedBuilding != null && CostCalculator.canAfford(player, demandedBuilding)){
+            if(this.builder == null){
+                this.delegateWorkerToBuild();
+            }
+            if(this.builder != null && this.demandManager.areBuildingsDemanded()){
                 this.tryToBuild();
             }
         }

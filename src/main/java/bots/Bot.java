@@ -104,8 +104,8 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(unit.getType());
-            this.workerManager.freeWorkers(3);
-            this.workerManager.delegateWorkersToGatherGas(unit);
+//            this.workerManager.freeWorkers(3);
+//            this.workerManager.delegateWorkersToGatherGas(unit);
         }
 
         if(unit.getType() == UnitType.Protoss_Forge){
