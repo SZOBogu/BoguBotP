@@ -71,7 +71,7 @@ public class Bot extends DefaultBWListener {
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
                     System.out.println("Pylon demanded");
                 }
-                else if(this.buildingManager.countBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
+                else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Dragoon);
                     System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
                 }
@@ -93,19 +93,19 @@ public class Bot extends DefaultBWListener {
             this.workerManager.addWorker(unit);
             this.workerManager.manage();
 
-            if(this.workerManager.getWorkerCount() > 30 * this.buildingManager.countBuildingsOfType(UnitType.Protoss_Nexus)){
+            if(this.workerManager.getWorkerCount() > 30 * this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus)){
                 this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
                 System.out.println("Nexus demanded");
             }
         }
         if(unit.getType().isBuilding()){
-            this.workerManager.freeBuilder();
+//            this.workerManager.freeBuilder();
             this.buildingManager.addBuilding(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(unit.getType());
-//            this.workerManager.freeWorkers(3);
-//            this.workerManager.delegateWorkersToGatherGas(unit);
+            this.workerManager.freeWorkers(3);
+            this.workerManager.delegateWorkersToGatherGas(unit);
         }
 
         if(unit.getType() == UnitType.Protoss_Forge){

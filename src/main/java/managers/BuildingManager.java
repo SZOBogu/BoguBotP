@@ -4,52 +4,43 @@ import bwapi.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BuildingManager {
-    List<Unit> buildings = new ArrayList<>();
+    private LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private DemandManager demandManager;
 
+    //TODO: weed out the bunch of bullshit in set
     public void addBuilding(Unit unit){
-        this.buildings.add(unit);
+        if(unit.getType().isBuilding())
+            this.buildings.add(unit);
     }
 
     public void removeBuilding(Unit unit){
         this.buildings.remove(unit);
     }
 
-    public List<Unit> getGateways(){
-        return this.getBuildingsOfType(UnitType.Protoss_Gateway);
-    }
-
-    public List<Unit> getStargates(){
-        return this.getBuildingsOfType(UnitType.Protoss_Stargate);
-    }
-
-    public List<Unit> getRoboticsFacilities(){
-        return this.getBuildingsOfType(UnitType.Protoss_Robotics_Facility);
-    }
-
-    public List<Unit> getNexuses() {
-        return this.getBuildingsOfType(UnitType.Protoss_Nexus);
-    }
-
-    public List<Unit> getPylons() {
-        return this.getBuildingsOfType(UnitType.Protoss_Pylon);
-    }
-
     public List<Unit> getAssimilators(){
-        return this.getBuildingsOfType(UnitType.Protoss_Assimilator);
+        return this.getCompletedBuildingsOfType(UnitType.Protoss_Assimilator);
     }
 
-    public List<Unit> getBuildingsOfType(UnitType buildingType){
-        return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(buildingType)).collect(Collectors.toList());
+    public List<Unit> getAllBuildingsOfType(UnitType buildingType){
+        return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType() == buildingType).collect(Collectors.toList());
     }
 
-    public int countBuildingsOfType(UnitType demandedBuildingType){
-        return (int)this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType().equals(demandedBuildingType)).count();
+    public List<Unit> getCompletedBuildingsOfType(UnitType buildingType){
+        return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType() == buildingType).filter(i -> !i.isBeingConstructed()).collect(Collectors.toList());
+    }
+
+    public int countAllBuildingsOfType(UnitType demandedBuildingType){
+        return this.getAllBuildingsOfType(demandedBuildingType).size();
+    }
+
+    public int countCompletedBuildingsOfType(UnitType demandedBuildingType){
+        return this.getCompletedBuildingsOfType(demandedBuildingType).size();
     }
 
     public void trainUnit(UnitType unitType){
@@ -92,6 +83,10 @@ public class BuildingManager {
         this.demandManager.demandCreatingUnit(building.getType());
 
         //TODO: order worker service to reassign workers upon destroyed assimilator
+    }
+
+    public LinkedHashSet<Unit> getBuildings() {
+        return buildings;
     }
 
     @Autowired

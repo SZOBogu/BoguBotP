@@ -1,6 +1,7 @@
 package managers;
 
 import bwapi.*;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import enums.WorkerRole;
 import helpers.CostCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ public class WorkerManager implements IBroodWarManager{
     private Worker builder;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
-
 
     public WorkerManager(){
         this.workers = new WorkerList();
@@ -61,7 +61,13 @@ public class WorkerManager implements IBroodWarManager{
 
     public void freeBuilder(){
         if(builder != null) {
-            this.delegateWorkerToGatherMinerals(this.builder);
+            if(this.builder.getWorkerRole() == WorkerRole.GAS_MINE && !this.areThereEnoughGasMiners()){
+                this.delegateWorkerToGatherGas(builder, this.buildingManager.getAssimilators().get(0));
+            }
+            else{
+                this.delegateWorkerToGatherMinerals(builder);
+            }
+
             this.builder = null;
         }
     }
@@ -90,10 +96,6 @@ public class WorkerManager implements IBroodWarManager{
     public Worker makeWorkerAvailable(){
         if(this.freeWorkerWithRole(WorkerRole.IDLE) != null){
             return this.freeWorkerWithRole(WorkerRole.IDLE);
-        }
-        else if(this.freeWorkerWithRole(WorkerRole.BUILDING) != null) {
-            this.freeBuilder();
-            return this.freeWorkerWithRole(WorkerRole.BUILDING);
         }
         else if(this.freeWorkerWithRole(WorkerRole.MINERAL_MINE) != null) {
             return this.freeWorkerWithRole(WorkerRole.MINERAL_MINE);
@@ -163,16 +165,24 @@ public class WorkerManager implements IBroodWarManager{
         List<Worker> idleWorkers = this.getIdleWorkers();
         Worker worker;
 
+        List<Worker> mineralMiners = this.workers.getWorkersWithState(WorkerRole.MINERAL_MINE);
+        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.MINERAL_MINE);
+
         if(idleWorkers.isEmpty()) {
             Random random = new Random();
-            worker = this.workers.get(random.nextInt(this.workers.size()));
+            if(!mineralMiners.isEmpty())
+                worker = mineralMiners.get(random.nextInt(mineralMiners.size()));
+            else if(!gasMiners.isEmpty())
+                worker = gasMiners.get(random.nextInt(gasMiners.size()));
+            else
+                worker = workers.get(random.nextInt(this.workers.size()));
         }
         else{
             worker = idleWorkers.get(0);
         }
         if (this.builder == null){
             builder = worker;
-            this.builder.setWorkerRole(WorkerRole.BUILDING);
+//            this.builder.setWorkerRole(WorkerRole.BUILDING);
         }
         System.out.println("New builder chosen and assigned to work: " + builder);
     }
@@ -192,16 +202,20 @@ public class WorkerManager implements IBroodWarManager{
         //TODO: handling more than one assimilator
         if(builder == null && this.demandManager.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
-            builder.setWorkerRole(WorkerRole.BUILDING);
+//            builder.setWorkerRole(WorkerRole.BUILDING);
             this.tryToBuild();
         }
-        else if(this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
-                this.workers.countWorkersWithState(WorkerRole.GAS_MINE) < this.buildingManager.countBuildingsOfType(UnitType.Protoss_Assimilator) * 3){
+        else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
+                !this.areThereEnoughGasMiners()){
             delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
         }
         else{
             delegateWorkerToGatherMinerals(worker);
         }
+    }
+
+    private boolean areThereEnoughGasMiners(){
+        return this.workers.getWorkersWithState(WorkerRole.GAS_MINE).size() >= this.buildingManager.getAssimilators().size() * 3;
     }
 
     @Override
