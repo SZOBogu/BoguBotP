@@ -1,7 +1,8 @@
 package managers;
 
 import bwapi.*;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import bwem.BWMap;
+import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.CostCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +11,14 @@ import pojos.Worker;
 
 import java.util.*;
 
-public class WorkerManager implements IBroodWarManager{
+public class WorkerManager implements IUnitManager{
     private Player player;
     private Game game;
     private final WorkerList workers;
     private Worker builder;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
+    private BWMap map;
 
     public WorkerManager(){
         this.workers = new WorkerList();
@@ -26,11 +28,13 @@ public class WorkerManager implements IBroodWarManager{
         return this.workers.size();
     }
 
-    public void addWorker(Unit unit){
+    @Override
+    public void add(Unit unit){
         workers.add(unit);
     }
 
-    public void removeWorker(Unit unit){
+    @Override
+    public void remove(Unit unit){
         if(unit.getType().isWorker()){
             workers.remove(unit);
         }
@@ -42,7 +46,7 @@ public class WorkerManager implements IBroodWarManager{
         if(unit.equals(this.builder.getWorker())){
             this.builder = null;
         }
-        this.removeWorker(unit);
+        this.remove(unit);
     }
 
     public boolean isThereABuilder(){
@@ -116,6 +120,11 @@ public class WorkerManager implements IBroodWarManager{
     }
 
     private void delegateWorkerToGatherMinerals(Worker worker){
+//        List<Mineral> mineralPatchesInMainBase = this.buildingManager.getMainBase().getMinerals();
+//        System.out.println("Detected mineral patches: " + mineralPatchesInMainBase.size());
+//        Random r = new Random();
+//        worker.getWorker().gather(mineralPatchesInMainBase.get(r.nextInt(mineralPatchesInMainBase.size())).getUnit());
+
         Unit closestMineralPatch = null;
         int minDistance = Integer.MAX_VALUE;
         for(Unit mineralPatch: this.game.getMinerals()){
@@ -126,8 +135,9 @@ public class WorkerManager implements IBroodWarManager{
             }
         }
         worker.getWorker().gather(closestMineralPatch);
+
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
-        System.out.println("Worker delegated to minerals");
+//     MINERAL_MINE   System.out.println("Worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
@@ -236,6 +246,14 @@ public class WorkerManager implements IBroodWarManager{
         for(Worker worker : idleWorkers){
             this.delegateWorkerToWork(worker);
         }
+
+        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
+
+        for(Worker worker: gasMiners){
+            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
+                this.delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
+            }
+        }
     }
 
     public void setGame(Game game) {
@@ -254,6 +272,10 @@ public class WorkerManager implements IBroodWarManager{
     @Autowired
     public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
+    }
+
+    public void setMap(BWMap map) {
+        this.map = map;
     }
 
     @Override

@@ -1,25 +1,25 @@
 package managers;
 
 import bwapi.*;
+import bwem.BWMap;
+import bwem.Base;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BuildingManager {
-    private LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
+    private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private DemandManager demandManager;
+    private BWMap map;
 
-    //TODO: weed out the bunch of bullshit in set
-    public void addBuilding(Unit unit){
-        if(unit.getType().isBuilding())
+    public void add(Unit unit){
             this.buildings.add(unit);
     }
 
-    public void removeBuilding(Unit unit){
+    public void remove(Unit unit){
         this.buildings.remove(unit);
     }
 
@@ -32,7 +32,7 @@ public class BuildingManager {
     }
 
     public List<Unit> getCompletedBuildingsOfType(UnitType buildingType){
-        return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType() == buildingType).filter(i -> !i.isBeingConstructed()).collect(Collectors.toList());
+        return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType() == buildingType).filter(Unit::isCompleted).collect(Collectors.toList());
     }
 
     public int countAllBuildingsOfType(UnitType demandedBuildingType){
@@ -79,15 +79,43 @@ public class BuildingManager {
     }
 
     public void handleBuildingDestruction(Unit building){
-        this.removeBuilding(building);
+        this.remove(building);
         this.demandManager.demandCreatingUnit(building.getType());
 
         //TODO: order worker service to reassign workers upon destroyed assimilator
     }
 
+    public Base getMainBase(){
+        List<Base> bases = this.map.getBases();
+
+        //TODO: make sure it absolutely always is main nexus
+        //TODO: make method that returns list of basest in order of distance to main base;
+        Unit nexus = this.getCompletedBuildingsOfType(UnitType.Protoss_Nexus).get(0);
+
+        int distance = Integer.MAX_VALUE;
+        Base closestBase = null;
+
+        for (Base tempBase : bases) {
+            int tempDistance = nexus.getTilePosition().getApproxDistance(tempBase.getLocation());
+            if (tempDistance < distance) {
+                closestBase = tempBase;
+            }
+        }
+        return closestBase;
+    }
+
     public LinkedHashSet<Unit> getBuildings() {
         return buildings;
     }
+
+//    public void setPlayer(Player player) {
+//        this.player = player;
+//    }
+
+    public void setMap(BWMap map) {
+        this.map = map;
+    }
+
 
     @Autowired
     public void setDemandService(DemandManager demandManager) {

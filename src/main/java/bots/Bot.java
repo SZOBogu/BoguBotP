@@ -2,9 +2,8 @@ package bots;
 
 import applicationContext.MyApplicationContext;
 import bwapi.*;
-import helpers.BuildOrder;
-import helpers.BuildOrderEntry;
-import helpers.CostCalculator;
+import helpers.*;
+import managers.MilitaryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import managers.BuildingManager;
@@ -17,6 +16,7 @@ public class Bot extends DefaultBWListener {
     private WorkerManager workerManager;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
+    private MilitaryManager militaryManager;
 
     private BuildOrder buildOrder;
 
@@ -27,24 +27,26 @@ public class Bot extends DefaultBWListener {
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
-
-        ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
-        WorkerManager workerManager = (WorkerManager)staticContext.getBean("workerService");
-
-        this.setWorkerService(workerManager);
+        MapHelper mapHelper = new MapHelper(game);
+        this.buildingManager.setMap(mapHelper.getMap());
+        this.workerManager.setMap(mapHelper.getMap());
         this.workerManager.setGame(game);
         this.workerManager.setPlayer(player);
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
-                this.workerManager.addWorker(unit);
+                this.workerManager.add(unit);
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
-                this.buildingManager.addBuilding(unit);
+                this.buildingManager.add(unit);
                 this.buildingManager.trainUnit(UnitType.Protoss_Probe);
             }
         }
         this.workerManager.manage();
+//        this.buildingManager.setPlayer(player);
+
+
+
 
         this.buildOrder = new BuildOrder();
 
@@ -90,7 +92,7 @@ public class Bot extends DefaultBWListener {
 
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
-            this.workerManager.addWorker(unit);
+            this.workerManager.add(unit);
             this.workerManager.manage();
 
             if(this.workerManager.getWorkerCount() > 30 * this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus)){
@@ -98,9 +100,9 @@ public class Bot extends DefaultBWListener {
                 System.out.println("Nexus demanded");
             }
         }
-        if(unit.getType().isBuilding()){
+        if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
 //            this.workerManager.freeBuilder();
-            this.buildingManager.addBuilding(unit);
+            this.buildingManager.add(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(unit.getType());
@@ -115,6 +117,10 @@ public class Bot extends DefaultBWListener {
         if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
+
+        if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
+            this.militaryManager.add(unit);
+        }
     }
 
     public void onUnitDestroy(Unit unit) {
@@ -127,7 +133,7 @@ public class Bot extends DefaultBWListener {
     }
 
     @Autowired
-    public void setWorkerService(WorkerManager workerManager) {
+    public void setWorkerManager(WorkerManager workerManager) {
         this.workerManager = workerManager;
     }
 
@@ -136,12 +142,16 @@ public class Bot extends DefaultBWListener {
         this.bwClient = bwClient;
     }
     @Autowired
-    public void setDemandService(DemandManager demandManager) {
+    public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
     }
     @Autowired
-    public void setBuildingService(BuildingManager buildingManager) {
+    public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
+    }
+    @Autowired
+    public void setMilitaryManager(MilitaryManager militaryManager) {
+        this.militaryManager = militaryManager;
     }
 
     @Override
