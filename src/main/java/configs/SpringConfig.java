@@ -2,18 +2,15 @@ package configs;
 
 import bots.Bot;
 import bwapi.BWClient;
-import managers.MilitaryManager;
+import managers.*;
 import org.springframework.context.annotation.Bean;
-import managers.BuildingManager;
-import managers.DemandManager;
-import managers.WorkerManager;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SpringConfig {
     @Bean
-    public WorkerManager workerManager(){
-        return new WorkerManager();
+    public ExpansionManager expansionManager(){
+        return new ExpansionManager();
     }
 
     @Bean

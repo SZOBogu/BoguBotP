@@ -20,13 +20,14 @@ public class BuildOrder {
         this.buildOrder = new ArrayList<>(Arrays.asList(
 //                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, //initial 4 workers
                 new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
-                new BuildOrderEntry(UnitType.Protoss_Pylon), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
-                new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway),
+                new BuildOrderEntry(UnitType.Protoss_Pylon), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core), new BuildOrderEntry(UnitType.Protoss_Probe),
+                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Pylon),
                 new BuildOrderEntry(UnitType.Protoss_Dragoon), new BuildOrderEntry(UnitType.Protoss_Forge), new BuildOrderEntry(UnitType.Protoss_Gateway)
         ));
-        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
     }
 
     public List<BuildOrderEntry> getBuildOrder() {

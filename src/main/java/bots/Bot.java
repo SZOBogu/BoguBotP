@@ -4,20 +4,18 @@ import applicationContext.MyApplicationContext;
 import bwapi.*;
 import bwem.Base;
 import helpers.*;
-import managers.MilitaryManager;
+import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import managers.BuildingManager;
-import managers.DemandManager;
-import managers.WorkerManager;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
 
-    private WorkerManager workerManager;
+//    private WorkerManager workerManager;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
     private MilitaryManager militaryManager;
+    private ExpansionManager expansionManager;
 
     private BuildOrder buildOrder;
     private MapHelper mapHelper;
@@ -30,13 +28,16 @@ public class Bot extends DefaultBWListener {
         this.game = bwClient.getGame();
         this.player = game.self();
         this.mapHelper = new MapHelper(game);
-        this.workerManager.setMapHelper(mapHelper);
-        this.workerManager.setGame(game);
-        this.workerManager.setPlayer(player);
+
+        WorkerManager workerManager = new WorkerManager();
+        workerManager.setMapHelper(mapHelper);
+        workerManager.setGame(game);
+        workerManager.setPlayer(player);
+        workerManager.setBase(this.mapHelper.getBaseClosestToTilePosition(player.getUnits().get(0).getTilePosition()));
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
-                this.workerManager.add(unit);
+                workerManager.add(unit);
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
                 this.buildingManager.add(unit);
@@ -44,7 +45,15 @@ public class Bot extends DefaultBWListener {
                 this.mapHelper.setMainNexus(unit);
             }
         }
-        this.workerManager.manage();
+        this.expansionManager.setMapHelper(this.mapHelper);
+        this.expansionManager.setGame(game);
+        this.expansionManager.setPlayer(player);
+        this.expansionManager.init();
+        this.expansionManager.addWorkerManager(workerManager);
+
+        workerManager.setExpansionManager(this.expansionManager);
+        workerManager.setDemandManager(this.demandManager);
+
         this.buildOrder = new BuildOrder();
 
         for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
@@ -75,7 +84,7 @@ public class Bot extends DefaultBWListener {
                     System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
                 }
             }
-        this.workerManager.manage();
+        this.expansionManager.manage();
         this.demandManager.manage();
     }
 
@@ -89,13 +98,7 @@ public class Bot extends DefaultBWListener {
 
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
-            this.workerManager.add(unit);
-            this.workerManager.manage();
-
-            if(this.workerManager.getWorkerCount() > 30 * this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus)){
-                this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
-                System.out.println("Nexus demanded");
-            }
+            this.expansionManager.assignToAppropriateWorkerService(unit);
         }
         if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
 //            this.workerManager.freeBuilder();
@@ -103,8 +106,7 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(unit.getType());
-            this.workerManager.freeWorkers(3);
-            this.workerManager.delegateWorkersToGatherGas(unit);
+            this.expansionManager.assignToAppropriateWorkerService(unit);
         }
 
         if(unit.getType() == UnitType.Protoss_Forge){
@@ -113,6 +115,9 @@ public class Bot extends DefaultBWListener {
 
         if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
+        }
+        if(unit.getType() == UnitType.Protoss_Nexus){
+            this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
         }
 
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
@@ -125,13 +130,8 @@ public class Bot extends DefaultBWListener {
             this.buildingManager.handleBuildingDestruction(unit);
         }
         if(unit.getType().isWorker()){
-            this.workerManager.handleWorkerDestruction(unit);
+            this.expansionManager.handleWorkerDestruction(unit);
         }
-    }
-
-    @Autowired
-    public void setWorkerManager(WorkerManager workerManager) {
-        this.workerManager = workerManager;
     }
 
     @Autowired
@@ -149,6 +149,10 @@ public class Bot extends DefaultBWListener {
     @Autowired
     public void setMilitaryManager(MilitaryManager militaryManager) {
         this.militaryManager = militaryManager;
+    }
+    @Autowired
+    public void setExpansionManager(ExpansionManager expansionManager) {
+        this.expansionManager = expansionManager;
     }
 
     @Override

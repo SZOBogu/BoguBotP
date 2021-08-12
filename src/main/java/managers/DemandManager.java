@@ -17,7 +17,6 @@ public class DemandManager implements IBroodWarManager{
     private final TechDemandList techDemandList;
     private final UpgradeDemandList upgradeDemandList;
 
-    private WorkerManager workerManager;
     private BuildingManager buildingManager;
 
     public DemandManager() {
@@ -101,13 +100,6 @@ public class DemandManager implements IBroodWarManager{
         return false;
     }
 
-    public void demandWorkersToBeAvailable(int howManyWorkersToGet){
-        List<Worker> workers = this.workerManager.freeWorkers(howManyWorkersToGet);
-
-        for(Worker worker : workers){
-            this.workerAttentionDemandList.fulfillDemand(worker);
-        }
-    }
 
     public void manage(){
         if(!this.unitsToCreateDemandList.isEmpty()){
@@ -125,11 +117,6 @@ public class DemandManager implements IBroodWarManager{
             UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
             buildingManager.makeUpgrade(type);
         }
-    }
-
-    @Autowired
-    public void setWorkerManager(WorkerManager workerManager) {
-        this.workerManager = workerManager;
     }
 
     @Autowired

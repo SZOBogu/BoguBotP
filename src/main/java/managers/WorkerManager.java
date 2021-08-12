@@ -1,7 +1,7 @@
 package managers;
 
 import bwapi.*;
-import bwem.BWMap;
+import bwem.Base;
 import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.CostCalculator;
@@ -18,8 +18,14 @@ public class WorkerManager implements IUnitManager{
     private final WorkerList workers;
     private Worker builder;
     private DemandManager demandManager;
-    private BuildingManager buildingManager;
+    private ExpansionManager expansionManager;
     private MapHelper mapHelper;
+
+    private Unit nexus;
+    private Unit assimilator;
+    private Base base;
+
+    boolean isOverSaturationCalled = false;
 
     public WorkerManager(){
         this.workers = new WorkerList();
@@ -50,10 +56,6 @@ public class WorkerManager implements IUnitManager{
         this.remove(unit);
     }
 
-    public boolean isThereABuilder(){
-        return !(this.builder == null);
-    }
-
     private List<Worker> getIdleWorkers(){
         List<Worker> idleWorkers = new ArrayList<>();
         for(Worker workerEntity : this.workers.getWorkerList()){
@@ -66,8 +68,8 @@ public class WorkerManager implements IUnitManager{
 
     public void freeBuilder(){
         if(builder != null) {
-            if(this.builder.getWorkerRole() == WorkerRole.GAS_MINE && !this.areThereEnoughGasMiners()){
-                this.delegateWorkerToGatherGas(builder, this.buildingManager.getAssimilators().get(0));
+            if(this.builder.getWorkerRole() == WorkerRole.GAS_MINE && this.areGasMinersNeeded()){
+                this.delegateWorkerToGatherGas(builder, this.assimilator);
             }
             else{
                 this.delegateWorkerToGatherMinerals(builder);
@@ -186,9 +188,20 @@ public class WorkerManager implements IUnitManager{
         System.out.println("New builder chosen and assigned to work: " + builder);
     }
 
+    private TilePosition getTileToBuildOn(UnitType buildingType){
+        if(buildingType == UnitType.Protoss_Nexus){
+            return this.expansionManager.getNextNonTakenBase().getLocation();
+        }
+        else if(buildingType == UnitType.Protoss_Assimilator){
+            return this.expansionManager.getNextNonTakenBase().getGeysers().get(0).getTopLeft();
+        }
+        else
+            return game.getBuildLocation(buildingType, player.getStartLocation());
+    }
+
     private void tryToBuild(){
         if(!this.builder.getWorker().isStuck()) {
-            TilePosition buildLocation = game.getBuildLocation(this.demandManager.getFirstBuildingDemanded(), player.getStartLocation());
+            TilePosition buildLocation = this.getTileToBuildOn(this.demandManager.getFirstBuildingDemanded());
             this.builder.getWorker().build(this.demandManager.getFirstBuildingDemanded(), buildLocation);
         }
         else{
@@ -198,9 +211,9 @@ public class WorkerManager implements IUnitManager{
     }
 
     private void delegateWorkerToWork(Worker worker){
-        if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
-                !this.areThereEnoughGasMiners()){
-            delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
+        if(this.assimilator != null &&
+                this.areGasMinersNeeded()){
+            delegateWorkerToGatherGas(worker, this.assimilator);
         }
         //TODO: handling more than one assimilator
         else if(builder == null && this.demandManager.areBuildingsDemanded()) {
@@ -213,8 +226,17 @@ public class WorkerManager implements IUnitManager{
         }
     }
 
-    private boolean areThereEnoughGasMiners(){
-        return this.workers.getWorkersWithState(WorkerRole.GAS_MINE).size() >= this.buildingManager.getAssimilators().size() * 3;
+    private boolean areGasMinersNeeded(){
+        return (this.assimilator != null && this.workers.getWorkersWithState(WorkerRole.GAS_MINE).size() < 3);
+    }
+
+    public boolean isOversaturated(){
+        return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 3);
+    }
+
+    private void callOversaturation(){
+        this.isOverSaturationCalled = true;
+        this.expansionManager.handleOversaturation();
     }
 
     @Override
@@ -227,11 +249,11 @@ public class WorkerManager implements IUnitManager{
 
         for(Worker worker: gasMiners){
             if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
-                this.delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
+                this.delegateWorkerToGatherGas(worker, this.assimilator);
             }
         }
 
-        if(demandedBuilding != null && CostCalculator.canAfford(player, demandedBuilding)){
+        if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
             if(this.builder == null){
                 this.delegateWorkerToBuild();
             }
@@ -239,9 +261,15 @@ public class WorkerManager implements IUnitManager{
                 this.tryToBuild();
             }
         }
+        else
+            this.freeBuilder();
 
         for(Worker worker : idleWorkers){
             this.delegateWorkerToWork(worker);
+        }
+
+        if(isOversaturated() && !isOverSaturationCalled){
+            this.callOversaturation();
         }
     }
 
@@ -253,14 +281,36 @@ public class WorkerManager implements IUnitManager{
         this.player = player;
     }
 
-    @Autowired
+    public Unit getNexus() {
+        return nexus;
+    }
+
+    public Unit getAssimilator() {
+        return assimilator;
+    }
+
+    public void setNexus(Unit nexus) {
+        this.nexus = nexus;
+    }
+
+    public void setAssimilator(Unit assimilator) {
+        this.assimilator = assimilator;
+    }
+
+    public Base getBase() {
+        return base;
+    }
+
+    public void setBase(Base base) {
+        this.base = base;
+    }
+
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
     }
 
-    @Autowired
-    public void setBuildingManager(BuildingManager buildingManager) {
-        this.buildingManager = buildingManager;
+    public void setExpansionManager(ExpansionManager expansionManager) {
+        this.expansionManager = expansionManager;
     }
 
     public void setMapHelper(MapHelper mapHelper) {
