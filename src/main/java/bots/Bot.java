@@ -34,8 +34,6 @@ public class Bot extends DefaultBWListener {
         this.workerManager.setGame(game);
         this.workerManager.setPlayer(player);
 
-//        Unit nexus = null;
-
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
                 this.workerManager.add(unit);
@@ -52,11 +50,6 @@ public class Bot extends DefaultBWListener {
         for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
             this.demandManager.demandCreatingUnit(entry.getUnitType());
         }
-
-//        this.buildingManager.getListOfBases().forEach(i -> System.out.println("Base center location: " + i.getCenter() + " is a starting location: " + i.isStartingLocation()));
-//        if(nexus != null)
-//            System.out.println("Nexus loaction: [X: " + nexus.getX() + " Y: " + nexus.getY() + "]");
-//        System.out.println("Found Closest base: " + this.buildingManager.getMainBase().getCenter());
     }
 
     @Override

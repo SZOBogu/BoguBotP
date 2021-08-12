@@ -198,15 +198,15 @@ public class WorkerManager implements IUnitManager{
     }
 
     private void delegateWorkerToWork(Worker worker){
+        if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
+                !this.areThereEnoughGasMiners()){
+            delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
+        }
         //TODO: handling more than one assimilator
-        if(builder == null && this.demandManager.areBuildingsDemanded()) {
+        else if(builder == null && this.demandManager.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
 //            builder.setWorkerRole(WorkerRole.BUILDING);
             this.tryToBuild();
-        }
-        else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Assimilator) > 0 &&
-                !this.areThereEnoughGasMiners()){
-            delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
         }
         else{
             delegateWorkerToGatherMinerals(worker);
@@ -223,6 +223,14 @@ public class WorkerManager implements IUnitManager{
 
         UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
+        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
+
+        for(Worker worker: gasMiners){
+            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
+                this.delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
+            }
+        }
+
         if(demandedBuilding != null && CostCalculator.canAfford(player, demandedBuilding)){
             if(this.builder == null){
                 this.delegateWorkerToBuild();
@@ -234,14 +242,6 @@ public class WorkerManager implements IUnitManager{
 
         for(Worker worker : idleWorkers){
             this.delegateWorkerToWork(worker);
-        }
-
-        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
-
-        for(Worker worker: gasMiners){
-            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
-                this.delegateWorkerToGatherGas(worker, this.buildingManager.getAssimilators().get(0));
-            }
         }
     }
 
