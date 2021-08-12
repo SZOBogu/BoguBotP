@@ -2,6 +2,7 @@ package bots;
 
 import applicationContext.MyApplicationContext;
 import bwapi.*;
+import bwem.Base;
 import helpers.*;
 import managers.MilitaryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class Bot extends DefaultBWListener {
     private MilitaryManager militaryManager;
 
     private BuildOrder buildOrder;
+    private MapHelper mapHelper;
 
     private Game game;
     private Player player;
@@ -27,11 +29,12 @@ public class Bot extends DefaultBWListener {
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
-        MapHelper mapHelper = new MapHelper(game);
-        this.buildingManager.setMap(mapHelper.getMap());
-        this.workerManager.setMap(mapHelper.getMap());
+        this.mapHelper = new MapHelper(game);
+        this.workerManager.setMapHelper(mapHelper);
         this.workerManager.setGame(game);
         this.workerManager.setPlayer(player);
+
+//        Unit nexus = null;
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
@@ -40,19 +43,20 @@ public class Bot extends DefaultBWListener {
             if(unit.getType() == UnitType.Protoss_Nexus){
                 this.buildingManager.add(unit);
                 this.buildingManager.trainUnit(UnitType.Protoss_Probe);
+                this.mapHelper.setMainNexus(unit);
             }
         }
         this.workerManager.manage();
-//        this.buildingManager.setPlayer(player);
-
-
-
-
         this.buildOrder = new BuildOrder();
 
         for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
             this.demandManager.demandCreatingUnit(entry.getUnitType());
         }
+
+//        this.buildingManager.getListOfBases().forEach(i -> System.out.println("Base center location: " + i.getCenter() + " is a starting location: " + i.isStartingLocation()));
+//        if(nexus != null)
+//            System.out.println("Nexus loaction: [X: " + nexus.getX() + " Y: " + nexus.getY() + "]");
+//        System.out.println("Found Closest base: " + this.buildingManager.getMainBase().getCenter());
     }
 
     @Override

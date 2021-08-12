@@ -5,6 +5,7 @@ import bwem.BWMap;
 import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.CostCalculator;
+import helpers.MapHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
@@ -18,7 +19,7 @@ public class WorkerManager implements IUnitManager{
     private Worker builder;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
-    private BWMap map;
+    private MapHelper mapHelper;
 
     public WorkerManager(){
         this.workers = new WorkerList();
@@ -120,24 +121,12 @@ public class WorkerManager implements IUnitManager{
     }
 
     private void delegateWorkerToGatherMinerals(Worker worker){
-//        List<Mineral> mineralPatchesInMainBase = this.buildingManager.getMainBase().getMinerals();
-//        System.out.println("Detected mineral patches: " + mineralPatchesInMainBase.size());
-//        Random r = new Random();
-//        worker.getWorker().gather(mineralPatchesInMainBase.get(r.nextInt(mineralPatchesInMainBase.size())).getUnit());
-
-        Unit closestMineralPatch = null;
-        int minDistance = Integer.MAX_VALUE;
-        for(Unit mineralPatch: this.game.getMinerals()){
-            int tempDistance = worker.getWorker().getDistance(mineralPatch);
-            if(tempDistance < minDistance){
-                closestMineralPatch = mineralPatch;
-                minDistance = tempDistance;
-            }
-        }
-        worker.getWorker().gather(closestMineralPatch);
+        List<Mineral> mineralPatchesInMainBase = this.mapHelper.getMainBase().getMinerals();
+        Random r = new Random();
+        worker.getWorker().gather(mineralPatchesInMainBase.get(r.nextInt(mineralPatchesInMainBase.size())).getUnit());
 
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
-//     MINERAL_MINE   System.out.println("Worker delegated to minerals");
+        System.out.println("Worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
@@ -274,8 +263,8 @@ public class WorkerManager implements IUnitManager{
         this.buildingManager = buildingManager;
     }
 
-    public void setMap(BWMap map) {
-        this.map = map;
+    public void setMapHelper(MapHelper mapHelper) {
+        this.mapHelper = mapHelper;
     }
 
     @Override

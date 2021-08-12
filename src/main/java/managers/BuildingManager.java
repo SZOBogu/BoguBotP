@@ -5,15 +5,13 @@ import bwem.BWMap;
 import bwem.Base;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BuildingManager {
     private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private DemandManager demandManager;
-    private BWMap map;
+//    private BWMap map;
 
     public void add(Unit unit){
             this.buildings.add(unit);
@@ -85,25 +83,6 @@ public class BuildingManager {
         //TODO: order worker service to reassign workers upon destroyed assimilator
     }
 
-    public Base getMainBase(){
-        List<Base> bases = this.map.getBases();
-
-        //TODO: make sure it absolutely always is main nexus
-        //TODO: make method that returns list of basest in order of distance to main base;
-        Unit nexus = this.getCompletedBuildingsOfType(UnitType.Protoss_Nexus).get(0);
-
-        int distance = Integer.MAX_VALUE;
-        Base closestBase = null;
-
-        for (Base tempBase : bases) {
-            int tempDistance = nexus.getTilePosition().getApproxDistance(tempBase.getLocation());
-            if (tempDistance < distance) {
-                closestBase = tempBase;
-            }
-        }
-        return closestBase;
-    }
-
     public LinkedHashSet<Unit> getBuildings() {
         return buildings;
     }
@@ -112,9 +91,9 @@ public class BuildingManager {
 //        this.player = player;
 //    }
 
-    public void setMap(BWMap map) {
-        this.map = map;
-    }
+//    public void setMap(BWMap map) {
+//        this.map = map;
+//    }
 
 
     @Autowired
