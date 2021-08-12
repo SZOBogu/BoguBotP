@@ -10,9 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class testTechDemandList {
     private final TechDemandList techDemandList = new TechDemandList();
-    private final TechType techType = Mockito.mock(TechType.class);
-    private final TechType techType2 = Mockito.mock(TechType.class);
-    private final UnitType unitType = Mockito.mock(UnitType.class);
+    private final TechType techType = TechType.Disruption_Web;
+    private final TechType techType2 = TechType.Dark_Archon_Meld;
 
     @Test
     void isEmpty(){
@@ -25,14 +24,6 @@ public class testTechDemandList {
         techDemandList.demand(techType);
         assertFalse(techDemandList.isEmpty());
     }
-
-    @Test
-    void demandWrongType(){
-        assertTrue(techDemandList.isEmpty());
-        techDemandList.demand(unitType);
-        assertTrue(techDemandList.isEmpty());
-    }
-
 
     @Test
     void fulfillDemand(){
@@ -49,15 +40,6 @@ public class testTechDemandList {
         techDemandList.demand(techType);
         assertFalse(techDemandList.isEmpty());
         techDemandList.fulfillDemand(techType2);
-        assertFalse(techDemandList.isEmpty());
-    }
-
-    @Test
-    void fulfillDemandWrongType(){
-        assertTrue(techDemandList.isEmpty());
-        techDemandList.demand(techType);
-        assertFalse(techDemandList.isEmpty());
-        techDemandList.fulfillDemand(unitType);
         assertFalse(techDemandList.isEmpty());
     }
 }

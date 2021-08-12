@@ -2,26 +2,30 @@ package configs;
 
 import bots.Bot;
 import bwapi.BWClient;
+import managers.MilitaryManager;
 import org.springframework.context.annotation.Bean;
-import services.BuildingService;
-import services.DemandService;
-import services.WorkerService;
+import managers.BuildingManager;
+import managers.DemandManager;
+import managers.WorkerManager;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SpringConfig {
     @Bean
-    public WorkerService workerService(){
-        return new WorkerService();
+    public WorkerManager workerManager(){
+        return new WorkerManager();
     }
 
     @Bean
-    public DemandService demandService() {
-        return new DemandService();
+    public DemandManager demandManager() {
+        return new DemandManager();
     }
 
     @Bean
-    public BuildingService buildingService() { return new BuildingService();}
+    public BuildingManager buildingManager() { return new BuildingManager();}
+
+    @Bean
+    public MilitaryManager militaryManager() { return new MilitaryManager();}
 
     @Bean
     public Bot bot(){

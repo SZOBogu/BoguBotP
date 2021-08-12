@@ -1,4 +1,5 @@
 package pojos;
+
 import bwapi.TechType;
 import bwapi.UnitType;
 import org.junit.jupiter.api.Test;
@@ -8,9 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class testUnitDemandList {
     private final UnitDemandList unitDemandList = new UnitDemandList();
-    private final UnitType unitType = Mockito.mock(UnitType.class);
-    private final UnitType unitType2 = Mockito.mock(UnitType.class);
-    private final TechType techType = Mockito.mock(TechType.class);
+    private final UnitType unitType = UnitType.Powerup_Mineral_Cluster_Type_2;
+    private final UnitType unitType2 = UnitType.Protoss_Nexus;
 
     @Test
     void isEmpty(){
@@ -18,19 +18,11 @@ public class testUnitDemandList {
     }
 
     @Test
-    void demand(){
+    void demand() {
         assertTrue(unitDemandList.isEmpty());
         unitDemandList.demand(unitType);
         assertFalse(unitDemandList.isEmpty());
     }
-
-    @Test
-    void demandWrongType(){
-        assertTrue(unitDemandList.isEmpty());
-        unitDemandList.demand(techType);
-        assertTrue(unitDemandList.isEmpty());
-    }
-
 
     @Test
     void fulfillDemand(){
@@ -47,15 +39,6 @@ public class testUnitDemandList {
         unitDemandList.demand(unitType);
         assertFalse(unitDemandList.isEmpty());
         unitDemandList.fulfillDemand(unitType2);
-        assertFalse(unitDemandList.isEmpty());
-    }
-
-    @Test
-    void fulfillDemandWrongType(){
-        assertTrue(unitDemandList.isEmpty());
-        unitDemandList.demand(unitType);
-        assertFalse(unitDemandList.isEmpty());
-        unitDemandList.fulfillDemand(techType);
         assertFalse(unitDemandList.isEmpty());
     }
 }

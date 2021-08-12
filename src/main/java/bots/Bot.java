@@ -2,30 +2,25 @@ package bots;
 
 import applicationContext.MyApplicationContext;
 import bwapi.*;
-import helpers.BuildOrder;
-import helpers.BuildOrderEntry;
+import bwem.Base;
+import helpers.*;
+import managers.MilitaryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import services.BuildingService;
-import services.DemandService;
-import services.WorkerService;
-
-import java.util.Random;
+import managers.BuildingManager;
+import managers.DemandManager;
+import managers.WorkerManager;
 
 public class Bot extends DefaultBWListener {
-    @Autowired
     private BWClient bwClient;
 
-    @Autowired
-    private WorkerService workerService;
-
-    @Autowired
-    private DemandService demandService;
-
-    @Autowired
-    private BuildingService buildingService;
+    private WorkerManager workerManager;
+    private DemandManager demandManager;
+    private BuildingManager buildingManager;
+    private MilitaryManager militaryManager;
 
     private BuildOrder buildOrder;
+    private MapHelper mapHelper;
 
     private Game game;
     private Player player;
@@ -34,30 +29,34 @@ public class Bot extends DefaultBWListener {
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
+        this.mapHelper = new MapHelper(game);
+        this.workerManager.setMapHelper(mapHelper);
+        this.workerManager.setGame(game);
+        this.workerManager.setPlayer(player);
 
-        ApplicationContext staticContext = MyApplicationContext.getApplicationContext();
-        WorkerService workerService = (WorkerService)staticContext.getBean("workerService");
-
-        this.setWorkerService(workerService);
-        this.workerService.setGame(game);
-        this.workerService.setPlayer(player);
+//        Unit nexus = null;
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
-                this.workerService.addWorker(unit);
+                this.workerManager.add(unit);
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
-                this.buildingService.addBuilding(unit);
-                this.buildingService.trainUnit(UnitType.Protoss_Probe);
+                this.buildingManager.add(unit);
+                this.buildingManager.trainUnit(UnitType.Protoss_Probe);
+                this.mapHelper.setMainNexus(unit);
             }
         }
-        this.workerService.manage();
-
+        this.workerManager.manage();
         this.buildOrder = new BuildOrder();
 
         for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
-            this.demandService.demandCreatingUnit(entry.getUnitType());
+            this.demandManager.demandCreatingUnit(entry.getUnitType());
         }
+
+//        this.buildingManager.getListOfBases().forEach(i -> System.out.println("Base center location: " + i.getCenter() + " is a starting location: " + i.isStartingLocation()));
+//        if(nexus != null)
+//            System.out.println("Nexus loaction: [X: " + nexus.getX() + " Y: " + nexus.getY() + "]");
+//        System.out.println("Found Closest base: " + this.buildingManager.getMainBase().getCenter());
     }
 
     @Override
@@ -66,87 +65,101 @@ public class Bot extends DefaultBWListener {
 
         UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
 
-//        if (!buildOrder.isComplete()) {
-            if(nextInBuildOrder.isBuilding()) {
-                this.demandService.demandCreatingUnit(nextInBuildOrder);
-            }
-            else if(nextInBuildOrder.mineralPrice() < player.minerals()){
-                this.buildingService.trainUnit(nextInBuildOrder);
-            }
-//        }
+        if(nextInBuildOrder.isBuilding()) {
+            this.demandManager.demandCreatingUnit(nextInBuildOrder);
+        }
+        else if(CostCalculator.canAfford(player, nextInBuildOrder)){
+            this.buildingManager.trainUnit(nextInBuildOrder);
+        }
 
         if(this.player.getUnits().size() > 15) {
-                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandService.isOnDemandList(UnitType.Protoss_Pylon)) {
-                    this.demandService.demandCreatingUnit(UnitType.Protoss_Pylon);
+                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
+                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
+                    System.out.println("Pylon demanded");
                 }
-                else if(this.buildingService.countBuildingsOfType(UnitType.Protoss_Gateway) > demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
-//                    Random random = new Random();
-//                    int randResult = random.nextInt(2);
-//                    if (randResult == 0 && player.minerals() > 125 && player.gas() > 25) {
-
-                    this.demandService.demandCreatingUnit(UnitType.Protoss_Dragoon);
-                    System.out.println("Dragoons on demand list: " + demandService.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
-//                    }
-//                    if (randResult == 1 && player.minerals() > 100) {
-//                        this.demandService.demandCreatingUnit(UnitType.Protoss_Zealot);
-//                    }
-//                    if (randResult == 1 && player.minerals() > 50) {
-//                        this.demandService.demandCreatingUnit(UnitType.Protoss_Probe);
-//                    }
+                else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
+                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Dragoon);
+                    System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
                 }
-//                else if(this.demandService)
             }
-        this.workerService.manage();
-        this.demandService.manage();
+        this.workerManager.manage();
+        this.demandManager.manage();
     }
 
     public void onUnitCreate(Unit unit){
-        if(this.demandService.isOnDemandList(unit.getType())){
+        if(this.demandManager.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
-            this.demandService.fulfillDemandCreatingUnit(unit.getType());
+            this.demandManager.fulfillDemandCreatingUnit(unit.getType());
         }
     }
 
 
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
-            this.workerService.addWorker(unit);
-            this.workerService.manage();
+            this.workerManager.add(unit);
+            this.workerManager.manage();
 
-            if(this.workerService.getWorkerCount() > 30 * this.buildingService.countBuildingsOfType(UnitType.Protoss_Nexus)){
-                this.demandService.demandCreatingUnit(UnitType.Protoss_Nexus);
+            if(this.workerManager.getWorkerCount() > 30 * this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus)){
+                this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
                 System.out.println("Nexus demanded");
             }
         }
-        if(unit.getType().isBuilding()){
-            this.workerService.freeBuilder();
-            this.buildingService.addBuilding(unit);
+        if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
+//            this.workerManager.freeBuilder();
+            this.buildingManager.add(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
-            this.demandService.fulfillDemandCreatingUnit(unit.getType());
-            this.workerService.freeWorkers(3);
-            this.workerService.delegateWorkersToGatherGas(unit);
+            this.demandManager.fulfillDemandCreatingUnit(unit.getType());
+            this.workerManager.freeWorkers(3);
+            this.workerManager.delegateWorkersToGatherGas(unit);
         }
 
         if(unit.getType() == UnitType.Protoss_Forge){
-            this.demandService.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
+            this.demandManager.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
         }
 
         if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
-            this.demandService.demandUpgrade(UpgradeType.Singularity_Charge);
+            this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
+        }
+
+        if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
+            this.militaryManager.add(unit);
         }
     }
 
     public void onUnitDestroy(Unit unit) {
         if(unit.getType().isBuilding()){
-            this.buildingService.handleBuildingDestruction(unit);
+            this.buildingManager.handleBuildingDestruction(unit);
         }
         if(unit.getType().isWorker()){
-            this.workerService.handleWorkerDestruction(unit);
+            this.workerManager.handleWorkerDestruction(unit);
         }
     }
 
-    public void setWorkerService(WorkerService workerService) {
-        this.workerService = workerService;
+    @Autowired
+    public void setWorkerManager(WorkerManager workerManager) {
+        this.workerManager = workerManager;
+    }
+
+    @Autowired
+    public void setBwClient(BWClient bwClient) {
+        this.bwClient = bwClient;
+    }
+    @Autowired
+    public void setDemandManager(DemandManager demandManager) {
+        this.demandManager = demandManager;
+    }
+    @Autowired
+    public void setBuildingManager(BuildingManager buildingManager) {
+        this.buildingManager = buildingManager;
+    }
+    @Autowired
+    public void setMilitaryManager(MilitaryManager militaryManager) {
+        this.militaryManager = militaryManager;
+    }
+
+    @Override
+    public String toString() {
+        return "Bot";
     }
 }

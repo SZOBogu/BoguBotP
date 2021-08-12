@@ -1,4 +1,4 @@
-package services;
+package managers;
 
 public interface IBroodWarManager {
     void manage();

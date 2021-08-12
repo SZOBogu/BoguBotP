@@ -57,4 +57,9 @@ public class UnitDemandList implements DemandList{
         List<UnitType> unitsDemanded = this.demandList;
         return (int) unitsDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
     }
+
+    @Override
+    public String toString() {
+        return "UnitDemandList";
+    }
 }

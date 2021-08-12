@@ -33,23 +33,6 @@ public class BuildOrder {
         return buildOrder;
     }
 
-    public void markAsBuilt() {
-        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
-        int index = this.getBuildOrderPosition();
-        if (index < this.buildOrder.size()){
-            this.buildOrder.get(index).setChecked(true);
-        }
-    }
-
-    public UnitType getNextThingInBuildOrder(){
-        try{
-           return this.buildOrder.get(this.getBuildOrderPosition()).getUnitType();
-        }
-        catch(IndexOutOfBoundsException indexOutOfBoundsException){
-            return UnitType.Protoss_Dragoon;
-        }
-    }
-
     public boolean isComplete(){
         return this.getBuildOrderPosition() > (this.buildOrder.size() - 1);
     }
@@ -62,6 +45,23 @@ public class BuildOrder {
         }
         //TODO: test
         return buildOrder.size();
+    }
+
+    public UnitType getNextThingInBuildOrder(){
+        try{
+            return this.buildOrder.get(this.getBuildOrderPosition()).getUnitType();
+        }
+        catch(IndexOutOfBoundsException indexOutOfBoundsException){
+            return UnitType.Protoss_Dragoon;
+        }
+    }
+
+    public void markAsBuilt() {
+        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
+        int index = this.getBuildOrderPosition();
+        if (index < this.buildOrder.size()){
+            this.buildOrder.get(index).setChecked(true);
+        }
     }
 
     @Override
