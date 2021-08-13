@@ -27,6 +27,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void demandCreatingUnit(UnitType unit){
+        System.out.println(unit + " demanded. DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.demand(unit);
     }
 
@@ -43,6 +44,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void fulfillDemandCreatingUnit(UnitType unit){
+        System.out.println("Demand for " + unit + " fulfilled. DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.fulfillDemand(unit);
     }
 

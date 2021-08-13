@@ -26,6 +26,7 @@ public class WorkerManager implements IUnitManager{
     private Base base;
 
     boolean isOverSaturationCalled = false;
+    private int frame = 0;
 
     public WorkerManager(){
         this.workers = new WorkerList();
@@ -128,7 +129,6 @@ public class WorkerManager implements IUnitManager{
         worker.getWorker().gather(mineralPatchesInMainBase.get(r.nextInt(mineralPatchesInMainBase.size())).getUnit());
 
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
-        System.out.println("Worker delegated to minerals");
     }
 
     public void delegateWorkersToGatherGas(Unit refinery){
@@ -183,18 +183,16 @@ public class WorkerManager implements IUnitManager{
         }
         if (this.builder == null){
             builder = worker;
-//            this.builder.setWorkerRole(WorkerRole.BUILDING);
         }
-        System.out.println("New builder chosen and assigned to work: " + builder);
     }
 
     private TilePosition getTileToBuildOn(UnitType buildingType){
         if(buildingType == UnitType.Protoss_Nexus){
             return this.expansionManager.getNextNonTakenBase().getLocation();
         }
-        else if(buildingType == UnitType.Protoss_Assimilator){
-            return this.expansionManager.getNextNonTakenBase().getGeysers().get(0).getTopLeft();
-        }
+//        else if(buildingType == UnitType.Protoss_Assimilator){
+//            return this.base.getGeysers().get(0).getBottomRight();
+//        }
         else
             return game.getBuildLocation(buildingType, player.getStartLocation());
     }
@@ -230,6 +228,15 @@ public class WorkerManager implements IUnitManager{
         return (this.assimilator != null && this.workers.getWorkersWithState(WorkerRole.GAS_MINE).size() < 3);
     }
 
+    private void forceGatheringGas(){
+        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
+        for(Worker worker: gasMiners){
+            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
+                this.delegateWorkerToGatherGas(worker, this.assimilator);
+            }
+        }
+    }
+
     public boolean isOversaturated(){
         return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 3);
     }
@@ -245,13 +252,10 @@ public class WorkerManager implements IUnitManager{
 
         UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
-        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
-
-        for(Worker worker: gasMiners){
-            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
-                this.delegateWorkerToGatherGas(worker, this.assimilator);
-            }
+        if(this.frame % 10 == 0){
+            this.forceGatheringGas();
         }
+        this.frame++;
 
         if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
             if(this.builder == null){

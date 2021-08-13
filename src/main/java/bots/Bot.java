@@ -77,11 +77,11 @@ public class Bot extends DefaultBWListener {
         if(this.player.getUnits().size() > 15) {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
-                    System.out.println("Pylon demanded");
+//                    System.out.println("Pylon demanded");
                 }
                 else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Dragoon);
-                    System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
+//                    System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
                 }
             }
         this.expansionManager.manage();
