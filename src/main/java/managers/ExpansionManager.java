@@ -20,6 +20,7 @@ public class ExpansionManager implements IBroodWarManager{
     private LinkedHashMap<Base, Boolean> baseIsTakenMap;
     private List<WorkerManager> basesWorkerManagerList = new ArrayList<>();
     private DemandManager demandManager;
+    private MilitaryManager militaryManager;
 
     public void init(){
         this.baseIsTakenMap = new LinkedHashMap <>();
@@ -50,7 +51,6 @@ public class ExpansionManager implements IBroodWarManager{
     //meant for searching form manager handling given nexus/assimilator
     public void assignToAppropriateWorkerService(Unit unit){
         if(unit.getType() == UnitType.Protoss_Nexus){
-
             //TODO: builder
             WorkerManager workerManager = new WorkerManager();
             workerManager.setNexus(unit);
@@ -62,6 +62,7 @@ public class ExpansionManager implements IBroodWarManager{
             workerManager.setDemandManager(this.demandManager);
         }
         else if(unit.getType() == UnitType.Protoss_Assimilator) {
+            //TODO: investigate NullPointerException
             WorkerManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
             manager.setAssimilator(unit);
             manager.freeWorkers(3);
@@ -92,6 +93,7 @@ public class ExpansionManager implements IBroodWarManager{
     public void handleOversaturation(){
         this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
         this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
+        this.militaryManager.tellScoutToSideStep();
     }
 
     @Override
@@ -118,5 +120,10 @@ public class ExpansionManager implements IBroodWarManager{
     @Autowired
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
+    }
+
+    @Autowired
+    public void setMilitaryManager(MilitaryManager militaryManager) {
+        this.militaryManager = militaryManager;
     }
 }

@@ -52,6 +52,8 @@ public class Bot extends DefaultBWListener {
                 this.mapHelper.setMainNexus(unit);
             }
         }
+        this.militaryManager.setMapHelper(this.mapHelper);
+
         this.expansionManager.setMapHelper(this.mapHelper);
         this.expansionManager.setGame(game);
         this.expansionManager.setPlayer(player);
@@ -66,6 +68,8 @@ public class Bot extends DefaultBWListener {
         for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
             this.demandManager.demandCreatingUnit(entry.getUnitType());
         }
+
+        this.militaryManager.setGlobalRallyPoint();
     }
 
     @Override
@@ -93,10 +97,11 @@ public class Bot extends DefaultBWListener {
             }
         this.expansionManager.manage();
         this.demandManager.manage();
+        this.militaryManager.manage();
 
-        if(this.game.elapsedTime() == 360 || this.game.elapsedTime() == 500){
-            this.militaryManager.tellScoutToGetToNextBase();
-        }
+//        if(this.game.elapsedTime() == 330){
+//            this.militaryManager.tellScoutToGetToNextBase();
+//        }
     }
 
     public void onUnitCreate(Unit unit){
@@ -142,6 +147,9 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType().isWorker()){
             this.expansionManager.handleWorkerDestruction(unit);
+        }
+        if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit)){
+            this.militaryManager.remove(unit);
         }
     }
 

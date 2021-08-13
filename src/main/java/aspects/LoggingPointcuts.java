@@ -13,4 +13,7 @@ public class LoggingPointcuts {
 
     @Pointcut("execution(* managers.MilitaryManager.*(..))")
     public void militaryManagerDoesAnything() {}
+
+    @Pointcut("execution(* managers.MilitaryManager.manage(..))")
+    public void manageMilitary() {}
 }
