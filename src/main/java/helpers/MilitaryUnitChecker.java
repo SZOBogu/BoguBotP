@@ -22,6 +22,8 @@ public class MilitaryUnitChecker {
             UnitType.Zerg_Queen, UnitType.Zerg_Devourer, UnitType.Zerg_Guardian, UnitType.Zerg_Ultralisk, UnitType.Zerg_Defiler);
 
     public static boolean checkIfUnitIsMilitary(Unit unit){
-        return protossMilitaryUnitTypeList.contains(unit.getType()) || terranMilitaryUnitTypeList.contains(unit.getType()) || zergMilitaryUnitTypeList.contains(unit.getType());
+        boolean condition = protossMilitaryUnitTypeList.contains(unit.getType()) || terranMilitaryUnitTypeList.contains(unit.getType()) || zergMilitaryUnitTypeList.contains(unit.getType());
+        System.out.println("UNIT TYPE: " + unit.getType() + " MILITARY CHECK: " + condition);
+        return condition;
     }
 }

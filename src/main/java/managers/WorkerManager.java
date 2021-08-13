@@ -231,7 +231,7 @@ public class WorkerManager implements IUnitManager{
     private void forceGatheringGas(){
         List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
         for(Worker worker: gasMiners){
-            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder)){
+            if(!worker.getWorker().isGatheringGas() && !worker.equals(this.builder) && !worker.getWorker().isCarryingGas()){
                 this.delegateWorkerToGatherGas(worker, this.assimilator);
             }
         }
@@ -252,10 +252,10 @@ public class WorkerManager implements IUnitManager{
 
         UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
-        if(this.frame % 10 == 0){
+//        if(this.frame % 10 == 0){
             this.forceGatheringGas();
-        }
-        this.frame++;
+//        }
+//        this.frame++;
 
         if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
             if(this.builder == null){

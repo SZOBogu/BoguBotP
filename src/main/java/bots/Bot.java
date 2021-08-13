@@ -1,12 +1,15 @@
 package bots;
 
 import applicationContext.MyApplicationContext;
+import aspects.LoggingAspect;
 import bwapi.*;
 import bwem.Base;
 import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+
+import java.util.logging.Logger;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
@@ -28,6 +31,10 @@ public class Bot extends DefaultBWListener {
         this.game = bwClient.getGame();
         this.player = game.self();
         this.mapHelper = new MapHelper(game);
+
+        LoggingAspect loggingAspect = (LoggingAspect)MyApplicationContext.getBean("loggingAspect");
+        loggingAspect.setGame(this.game);
+        loggingAspect.setPlayer(this.player);
 
         WorkerManager workerManager = new WorkerManager();
         workerManager.setMapHelper(mapHelper);
@@ -86,6 +93,10 @@ public class Bot extends DefaultBWListener {
             }
         this.expansionManager.manage();
         this.demandManager.manage();
+
+        if(this.game.elapsedTime() == 360 || this.game.elapsedTime() == 500){
+            this.militaryManager.tellScoutToGetToNextBase();
+        }
     }
 
     public void onUnitCreate(Unit unit){
@@ -117,7 +128,7 @@ public class Bot extends DefaultBWListener {
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
         if(unit.getType() == UnitType.Protoss_Nexus){
-            this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
+//            this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
         }
 
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){

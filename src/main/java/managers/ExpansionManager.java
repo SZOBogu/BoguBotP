@@ -91,6 +91,7 @@ public class ExpansionManager implements IBroodWarManager{
 
     public void handleOversaturation(){
         this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
+        this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
     }
 
     @Override

@@ -4,6 +4,7 @@ import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
@@ -11,6 +12,7 @@ import pojos.Worker;
 
 import java.util.List;
 
+@Component
 public class DemandManager implements IBroodWarManager{
     private final UnitDemandList unitsToCreateDemandList;
     private final UnitDemandList workerAttentionDemandList;
@@ -27,7 +29,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void demandCreatingUnit(UnitType unit){
-        System.out.println(unit + " demanded. DemandList for units: " + this.unitsToCreateDemandList.getList());
+        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.demand(unit);
     }
 
@@ -44,7 +46,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void fulfillDemandCreatingUnit(UnitType unit){
-        System.out.println("Demand for " + unit + " fulfilled. DemandList for units: " + this.unitsToCreateDemandList.getList());
+        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.fulfillDemand(unit);
     }
 
