@@ -61,10 +61,14 @@ public class MapHelper {
                     return comparison;
             }
         };
-
         Map<Base, Integer> allegedlySortedMap = new TreeMap<>(valueComparator);
         allegedlySortedMap.putAll(baseDistanceMap);
 
-        return Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
+        List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
+
+        System.out.println(allegedlySortedMap);
+        System.out.println(sortedBases);
+
+        return sortedBases;
     }
 }

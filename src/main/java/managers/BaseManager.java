@@ -99,7 +99,7 @@ public class BaseManager implements IUnitManager{
     //TODO: reassign gas workers if one of them was killed
     //TODO: throws NullPointerException
     public void handleWorkerDestruction(Unit unit){
-        if(unit.equals(this.builder.getWorker())){
+        if(unit == this.builder.getWorker()){
             this.builder = null;
         }
         this.remove(unit);
@@ -107,9 +107,9 @@ public class BaseManager implements IUnitManager{
 
     private List<Worker> getIdleWorkers(){
         List<Worker> idleWorkers = new ArrayList<>();
-        for(Worker workerEntity : this.workers.getWorkerList()){
-            if(workerEntity.getWorker().isIdle()){
-                    idleWorkers.add(workerEntity);
+        for(Worker worker : this.workers.getWorkerList()){
+            if(worker.getWorker().isIdle() || worker.getWorkerRole() == WorkerRole.IDLE){
+                    idleWorkers.add(worker);
             }
         }
         return idleWorkers;
@@ -179,9 +179,9 @@ public class BaseManager implements IUnitManager{
     }
 
     private void delegateWorkerToGatherMinerals(Worker worker){
-        List<Mineral> mineralPatchesInMainBase = this.mapHelper.getMainBase().getMinerals();
+        List<Mineral> mineralPatchesInBase = this.base.getMinerals();
         Random r = new Random();
-        worker.getWorker().gather(mineralPatchesInMainBase.get(r.nextInt(mineralPatchesInMainBase.size())).getUnit());
+        worker.getWorker().gather(mineralPatchesInBase.get(r.nextInt(mineralPatchesInBase.size())).getUnit());
 
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
     }

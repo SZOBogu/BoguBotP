@@ -51,6 +51,8 @@ public class Bot extends DefaultBWListener {
             }
         }
         this.militaryManager.setMapHelper(this.mapHelper);
+        this.militaryManager.setGame(this.game);
+        this.militaryManager.setGlobalRallyPoint();
 
         this.globalBasesManager.setMapHelper(this.mapHelper);
         this.globalBasesManager.setGame(game);
@@ -103,9 +105,6 @@ public class Bot extends DefaultBWListener {
         }
     }
 
-
-
-
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
@@ -127,7 +126,7 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType() == UnitType.Protoss_Nexus){
             Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
-            this.globalBasesManager.transferProbes(this.globalBasesManager.getWorkerManagerByBase(base));
+            this.globalBasesManager.transferProbes();
         }
 
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
