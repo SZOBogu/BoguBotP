@@ -1,24 +1,22 @@
 package managers;
 
 import bwapi.*;
-import bwem.BWMap;
 import bwem.Base;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import exceptions.StarcraftException;
 import helpers.MapHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+@Component
 public class ExpansionManager implements IBroodWarManager{
     private MapHelper mapHelper;
     private Game game;
     private Player player;
     private LinkedHashMap<Base, Boolean> baseIsTakenMap;
-    private List<WorkerManager> basesWorkerManagerList = new ArrayList<>();
+    private final List<WorkerManager> basesWorkerManagerList = new ArrayList<>();
     private DemandManager demandManager;
     private MilitaryManager militaryManager;
 
@@ -51,15 +49,17 @@ public class ExpansionManager implements IBroodWarManager{
     //meant for searching form manager handling given nexus/assimilator
     public void assignToAppropriateWorkerService(Unit unit){
         if(unit.getType() == UnitType.Protoss_Nexus){
-            //TODO: builder
-            WorkerManager workerManager = new WorkerManager();
-            workerManager.setNexus(unit);
-            workerManager.setMapHelper(this.mapHelper);
-            workerManager.setGame(this.game);
-            workerManager.setPlayer(this.player);
-            workerManager.setBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
-            workerManager.setExpansionManager(this);
-            workerManager.setDemandManager(this.demandManager);
+
+            WorkerManager workerManager = new WorkerManager.WorkerManagerBuilder(
+                    this.player, this.game, this.mapHelper,
+                    this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition())
+            )
+                    .demandManager(this.demandManager)
+                    .expansionManager(this)
+                    .nexus(unit)
+                    .build();
+
+            basesWorkerManagerList.add(workerManager);
         }
         else if(unit.getType() == UnitType.Protoss_Assimilator) {
             //TODO: investigate NullPointerException

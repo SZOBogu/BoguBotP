@@ -13,27 +13,76 @@ import pojos.Worker;
 import java.util.*;
 
 public class WorkerManager implements IUnitManager{
-    private Player player;
-    private Game game;
-    private final WorkerList workers;
+    private final Player player;
+    private final Game game;
     private Worker builder;
     private DemandManager demandManager;
     private ExpansionManager expansionManager;
-    private MapHelper mapHelper;
+    private final MapHelper mapHelper;
 
     private Unit nexus;
     private Unit assimilator;
     private Base base;
 
-    boolean isOverSaturationCalled = false;
-    private int frame = 0;
+    boolean isOverSaturationCalled;
+    private final WorkerList workers;
 
-    public WorkerManager(){
-        this.workers = new WorkerList();
+    public static class WorkerManagerBuilder{
+        private final Player player;
+        private final Game game;
+        private final MapHelper mapHelper;
+        private Unit nexus;
+        private Unit assimilator;
+        private Base base;
+
+        private DemandManager demandManager;
+        private ExpansionManager expansionManager;
+
+        public WorkerManagerBuilder(Player player, Game game, MapHelper mapHelper, Base base){
+            this.player = player;
+            this.game = game;
+            this.mapHelper = mapHelper;
+            this.base = base;
+        }
+
+        public WorkerManagerBuilder demandManager(DemandManager demandManager){
+            this.demandManager = demandManager;
+            return this;
+        }
+
+        public WorkerManagerBuilder expansionManager(ExpansionManager expansionManager){
+            this.expansionManager = expansionManager;
+            return this;
+        }
+
+        public WorkerManagerBuilder nexus(Unit nexus){
+            this.nexus = nexus;
+            return this;
+        }
+
+        public WorkerManagerBuilder assimilator(Unit assimilator){
+            this.assimilator = assimilator;
+            return this;
+        }
+        public WorkerManager build(){
+            return new WorkerManager(this);
+        }
     }
 
-    public int getWorkerCount(){
-        return this.workers.size();
+    public WorkerManager(WorkerManagerBuilder builder){
+        this.player = builder.player;
+        this.game = builder.game;
+        this.mapHelper = builder.mapHelper;
+        this.base = builder.base;
+
+        this.nexus = builder.nexus;
+        this.assimilator = builder.assimilator;
+
+        this.isOverSaturationCalled = false;
+        this.workers = new WorkerList();
+
+        this.demandManager = builder.demandManager;
+        this.expansionManager = builder.expansionManager;
     }
 
     @Override
@@ -190,9 +239,6 @@ public class WorkerManager implements IUnitManager{
         if(buildingType == UnitType.Protoss_Nexus){
             return this.expansionManager.getNextNonTakenBase().getLocation();
         }
-//        else if(buildingType == UnitType.Protoss_Assimilator){
-//            return this.base.getGeysers().get(0).getBottomRight();
-//        }
         else
             return game.getBuildLocation(buildingType, player.getStartLocation());
     }
@@ -216,7 +262,6 @@ public class WorkerManager implements IUnitManager{
         //TODO: handling more than one assimilator
         else if(builder == null && this.demandManager.areBuildingsDemanded()) {
             this.delegateWorkerToBuild();
-//            builder.setWorkerRole(WorkerRole.BUILDING);
             this.tryToBuild();
         }
         else{
@@ -252,10 +297,7 @@ public class WorkerManager implements IUnitManager{
 
         UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
-//        if(this.frame % 10 == 0){
-            this.forceGatheringGas();
-//        }
-//        this.frame++;
+        this.forceGatheringGas();
 
         if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
             if(this.builder == null){
@@ -277,26 +319,6 @@ public class WorkerManager implements IUnitManager{
         }
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    public Unit getNexus() {
-        return nexus;
-    }
-
-    public Unit getAssimilator() {
-        return assimilator;
-    }
-
-    public void setNexus(Unit nexus) {
-        this.nexus = nexus;
-    }
-
     public void setAssimilator(Unit assimilator) {
         this.assimilator = assimilator;
     }
@@ -305,20 +327,12 @@ public class WorkerManager implements IUnitManager{
         return base;
     }
 
-    public void setBase(Base base) {
-        this.base = base;
-    }
-
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
     }
 
     public void setExpansionManager(ExpansionManager expansionManager) {
         this.expansionManager = expansionManager;
-    }
-
-    public void setMapHelper(MapHelper mapHelper) {
-        this.mapHelper = mapHelper;
     }
 
     @Override

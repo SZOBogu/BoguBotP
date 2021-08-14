@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
-import pojos.Worker;
-
-import java.util.List;
 
 @Component
 public class DemandManager implements IBroodWarManager{

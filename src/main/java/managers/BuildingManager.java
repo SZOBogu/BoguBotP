@@ -1,17 +1,16 @@
 package managers;
 
 import bwapi.*;
-import bwem.BWMap;
-import bwem.Base;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 public class BuildingManager {
     private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private DemandManager demandManager;
-//    private BWMap map;
 
     public void add(Unit unit){
             this.buildings.add(unit);
@@ -19,10 +18,6 @@ public class BuildingManager {
 
     public void remove(Unit unit){
         this.buildings.remove(unit);
-    }
-
-    public List<Unit> getAssimilators(){
-        return this.getCompletedBuildingsOfType(UnitType.Protoss_Assimilator);
     }
 
     public List<Unit> getAllBuildingsOfType(UnitType buildingType){
@@ -86,15 +81,6 @@ public class BuildingManager {
     public LinkedHashSet<Unit> getBuildings() {
         return buildings;
     }
-
-//    public void setPlayer(Player player) {
-//        this.player = player;
-//    }
-
-//    public void setMap(BWMap map) {
-//        this.map = map;
-//    }
-
 
     @Autowired
     public void setDemandService(DemandManager demandManager) {

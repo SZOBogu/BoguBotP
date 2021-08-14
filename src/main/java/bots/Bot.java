@@ -36,11 +36,13 @@ public class Bot extends DefaultBWListener {
         loggingAspect.setGame(this.game);
         loggingAspect.setPlayer(this.player);
 
-        WorkerManager workerManager = new WorkerManager();
-        workerManager.setMapHelper(mapHelper);
-        workerManager.setGame(game);
-        workerManager.setPlayer(player);
-        workerManager.setBase(this.mapHelper.getBaseClosestToTilePosition(player.getUnits().get(0).getTilePosition()));
+        WorkerManager workerManager = new WorkerManager.WorkerManagerBuilder(
+                this.player, this.game, this.mapHelper,
+                this.mapHelper.getBaseClosestToTilePosition(player.getUnits().get(0).getTilePosition())
+        )
+                .demandManager(this.demandManager)
+                .expansionManager(this.expansionManager)
+                .build();
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
