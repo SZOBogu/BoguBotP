@@ -6,17 +6,18 @@ import exceptions.StarcraftException;
 import helpers.MapHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.Worker;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class ExpansionManager implements IBroodWarManager{
+public class GlobalBasesManager implements IBroodWarManager{
     private MapHelper mapHelper;
     private Game game;
     private Player player;
     private LinkedHashMap<Base, Boolean> baseIsTakenMap;
-    private final List<WorkerManager> basesWorkerManagerList = new ArrayList<>();
+    private final List<BaseManager> baseManagers = new ArrayList<>();
     private DemandManager demandManager;
     private MilitaryManager militaryManager;
 
@@ -50,7 +51,7 @@ public class ExpansionManager implements IBroodWarManager{
     public void assignToAppropriateWorkerService(Unit unit){
         if(unit.getType() == UnitType.Protoss_Nexus){
 
-            WorkerManager workerManager = new WorkerManager.WorkerManagerBuilder(
+            BaseManager baseManager = new BaseManager.WorkerManagerBuilder(
                     this.player, this.game, this.mapHelper,
                     this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition())
             )
@@ -59,24 +60,24 @@ public class ExpansionManager implements IBroodWarManager{
                     .nexus(unit)
                     .build();
 
-            basesWorkerManagerList.add(workerManager);
+            baseManagers.add(baseManager);
         }
         else if(unit.getType() == UnitType.Protoss_Assimilator) {
             //TODO: investigate NullPointerException
-            WorkerManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
+            BaseManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
             manager.setAssimilator(unit);
             manager.freeWorkers(3);
             manager.delegateWorkersToGatherGas(unit);
         }
         else if(unit.getType() == UnitType.Protoss_Probe){
-            WorkerManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
+            BaseManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
             manager.add(unit);
         }
     }
 
-    private WorkerManager getWorkerManagerByBase(Base base){
-        WorkerManager targetManager = null;
-        for(WorkerManager manager : this.basesWorkerManagerList){
+    public BaseManager getWorkerManagerByBase(Base base){
+        BaseManager targetManager = null;
+        for(BaseManager manager : this.baseManagers){
             if(manager.getBase().equals(base)){
                 targetManager = manager;
             }
@@ -85,8 +86,8 @@ public class ExpansionManager implements IBroodWarManager{
     }
 
     public void handleWorkerDestruction(Unit unit){
-        for(WorkerManager workerManager: this.basesWorkerManagerList){
-            workerManager.handleWorkerDestruction(unit);
+        for(BaseManager baseManager : this.baseManagers){
+            baseManager.handleWorkerDestruction(unit);
         }
     }
 
@@ -96,13 +97,26 @@ public class ExpansionManager implements IBroodWarManager{
         this.militaryManager.tellScoutToSideStep();
     }
 
-    @Override
-    public void manage() {
-        this.basesWorkerManagerList.forEach(WorkerManager::manage);
+    public void transferProbes(BaseManager toBaseManager){
+        BaseManager oversaturatedBase = this.baseManagers.stream().filter(BaseManager::isOversaturationCalled)
+                .findFirst().orElse(null);
+
+        if(oversaturatedBase != null) {
+            List<Worker> workersToTransfer = oversaturatedBase.popWorkers(10);
+            workersToTransfer.forEach(worker -> toBaseManager.add(worker.getWorker()));
+            if(!oversaturatedBase.isOversaturated()){
+                oversaturatedBase.setOversaturationCalled(false);
+            }
+        }
     }
 
-    public void addWorkerManager(WorkerManager workerManager){
-        this.basesWorkerManagerList.add(workerManager);
+    @Override
+    public void manage() {
+        this.baseManagers.forEach(BaseManager::manage);
+    }
+
+    public void addWorkerManager(BaseManager baseManager){
+        this.baseManagers.add(baseManager);
     }
 
     public void setMapHelper(MapHelper mapHelper) {

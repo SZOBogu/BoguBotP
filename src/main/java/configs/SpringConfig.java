@@ -13,8 +13,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @ComponentScan({"main", "helpers", "aspects", "managers", "bots", "exceptions", "applicationContext"})
 public class SpringConfig {
     @Bean
-    public ExpansionManager expansionManager(){
-        return new ExpansionManager();
+    public GlobalBasesManager expansionManager(){
+        return new GlobalBasesManager();
     }
 
     @Bean

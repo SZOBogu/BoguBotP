@@ -7,18 +7,14 @@ import bwem.Base;
 import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-
-import java.util.logging.Logger;
 
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
 
-//    private WorkerManager workerManager;
     private DemandManager demandManager;
     private BuildingManager buildingManager;
     private MilitaryManager militaryManager;
-    private ExpansionManager expansionManager;
+    private GlobalBasesManager globalBasesManager;
 
     private BuildOrder buildOrder;
     private MapHelper mapHelper;
@@ -36,17 +32,17 @@ public class Bot extends DefaultBWListener {
         loggingAspect.setGame(this.game);
         loggingAspect.setPlayer(this.player);
 
-        WorkerManager workerManager = new WorkerManager.WorkerManagerBuilder(
+        BaseManager baseManager = new BaseManager.WorkerManagerBuilder(
                 this.player, this.game, this.mapHelper,
                 this.mapHelper.getBaseClosestToTilePosition(player.getUnits().get(0).getTilePosition())
         )
                 .demandManager(this.demandManager)
-                .expansionManager(this.expansionManager)
+                .expansionManager(this.globalBasesManager)
                 .build();
 
         for(Unit unit : player.getUnits()){
             if(unit.getType().isWorker()) {
-                workerManager.add(unit);
+                baseManager.add(unit);
             }
             if(unit.getType() == UnitType.Protoss_Nexus){
                 this.buildingManager.add(unit);
@@ -56,14 +52,14 @@ public class Bot extends DefaultBWListener {
         }
         this.militaryManager.setMapHelper(this.mapHelper);
 
-        this.expansionManager.setMapHelper(this.mapHelper);
-        this.expansionManager.setGame(game);
-        this.expansionManager.setPlayer(player);
-        this.expansionManager.init();
-        this.expansionManager.addWorkerManager(workerManager);
+        this.globalBasesManager.setMapHelper(this.mapHelper);
+        this.globalBasesManager.setGame(game);
+        this.globalBasesManager.setPlayer(player);
+        this.globalBasesManager.init();
+        this.globalBasesManager.addWorkerManager(baseManager);
 
-        workerManager.setExpansionManager(this.expansionManager);
-        workerManager.setDemandManager(this.demandManager);
+        baseManager.setExpansionManager(this.globalBasesManager);
+        baseManager.setDemandManager(this.demandManager);
 
         this.buildOrder = new BuildOrder();
 
@@ -90,20 +86,14 @@ public class Bot extends DefaultBWListener {
         if(this.player.getUnits().size() > 15) {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
-//                    System.out.println("Pylon demanded");
                 }
                 else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Dragoon);
-//                    System.out.println("Dragoons on demand list: " + demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon));
                 }
             }
-        this.expansionManager.manage();
+        this.globalBasesManager.manage();
         this.demandManager.manage();
         this.militaryManager.manage();
-
-//        if(this.game.elapsedTime() == 330){
-//            this.militaryManager.tellScoutToGetToNextBase();
-//        }
     }
 
     public void onUnitCreate(Unit unit){
@@ -114,17 +104,18 @@ public class Bot extends DefaultBWListener {
     }
 
 
+
+
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
-            this.expansionManager.assignToAppropriateWorkerService(unit);
+            this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
         if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
-//            this.workerManager.freeBuilder();
             this.buildingManager.add(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(unit.getType());
-            this.expansionManager.assignToAppropriateWorkerService(unit);
+            this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
 
         if(unit.getType() == UnitType.Protoss_Forge){
@@ -135,7 +126,8 @@ public class Bot extends DefaultBWListener {
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
         if(unit.getType() == UnitType.Protoss_Nexus){
-//            this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
+            Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
+            this.globalBasesManager.transferProbes(this.globalBasesManager.getWorkerManagerByBase(base));
         }
 
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
@@ -148,7 +140,7 @@ public class Bot extends DefaultBWListener {
             this.buildingManager.handleBuildingDestruction(unit);
         }
         if(unit.getType().isWorker()){
-            this.expansionManager.handleWorkerDestruction(unit);
+            this.globalBasesManager.handleWorkerDestruction(unit);
         }
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit)){
             this.militaryManager.remove(unit);
@@ -172,8 +164,8 @@ public class Bot extends DefaultBWListener {
         this.militaryManager = militaryManager;
     }
     @Autowired
-    public void setExpansionManager(ExpansionManager expansionManager) {
-        this.expansionManager = expansionManager;
+    public void setExpansionManager(GlobalBasesManager globalBasesManager) {
+        this.globalBasesManager = globalBasesManager;
     }
 
     @Override

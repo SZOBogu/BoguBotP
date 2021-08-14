@@ -6,25 +6,24 @@ import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.CostCalculator;
 import helpers.MapHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
 
 import java.util.*;
 
-public class WorkerManager implements IUnitManager{
+public class BaseManager implements IUnitManager{
     private final Player player;
     private final Game game;
     private Worker builder;
     private DemandManager demandManager;
-    private ExpansionManager expansionManager;
+    private GlobalBasesManager globalBasesManager;
     private final MapHelper mapHelper;
 
     private Unit nexus;
     private Unit assimilator;
     private Base base;
 
-    boolean isOverSaturationCalled;
+    private boolean isOversaturationCalled;
     private final WorkerList workers;
 
     public static class WorkerManagerBuilder{
@@ -36,7 +35,7 @@ public class WorkerManager implements IUnitManager{
         private Base base;
 
         private DemandManager demandManager;
-        private ExpansionManager expansionManager;
+        private GlobalBasesManager globalBasesManager;
 
         public WorkerManagerBuilder(Player player, Game game, MapHelper mapHelper, Base base){
             this.player = player;
@@ -50,8 +49,8 @@ public class WorkerManager implements IUnitManager{
             return this;
         }
 
-        public WorkerManagerBuilder expansionManager(ExpansionManager expansionManager){
-            this.expansionManager = expansionManager;
+        public WorkerManagerBuilder expansionManager(GlobalBasesManager globalBasesManager){
+            this.globalBasesManager = globalBasesManager;
             return this;
         }
 
@@ -64,12 +63,12 @@ public class WorkerManager implements IUnitManager{
             this.assimilator = assimilator;
             return this;
         }
-        public WorkerManager build(){
-            return new WorkerManager(this);
+        public BaseManager build(){
+            return new BaseManager(this);
         }
     }
 
-    public WorkerManager(WorkerManagerBuilder builder){
+    public BaseManager(WorkerManagerBuilder builder){
         this.player = builder.player;
         this.game = builder.game;
         this.mapHelper = builder.mapHelper;
@@ -78,11 +77,11 @@ public class WorkerManager implements IUnitManager{
         this.nexus = builder.nexus;
         this.assimilator = builder.assimilator;
 
-        this.isOverSaturationCalled = false;
+        this.isOversaturationCalled = false;
         this.workers = new WorkerList();
 
         this.demandManager = builder.demandManager;
-        this.expansionManager = builder.expansionManager;
+        this.globalBasesManager = builder.globalBasesManager;
     }
 
     @Override
@@ -114,6 +113,13 @@ public class WorkerManager implements IUnitManager{
             }
         }
         return idleWorkers;
+    }
+
+    //Get and remove form this manager i workers. Used in transferring probes to another base
+    public List<Worker> popWorkers(int i){
+        List<Worker> workersPopped = new ArrayList<>(this.freeWorkers(i));
+        workersPopped.forEach(worker -> this.remove(worker.getWorker()));
+        return workersPopped;
     }
 
     public void freeBuilder(){
@@ -237,7 +243,7 @@ public class WorkerManager implements IUnitManager{
 
     private TilePosition getTileToBuildOn(UnitType buildingType){
         if(buildingType == UnitType.Protoss_Nexus){
-            return this.expansionManager.getNextNonTakenBase().getLocation();
+            return this.globalBasesManager.getNextNonTakenBase().getLocation();
         }
         else
             return game.getBuildLocation(buildingType, player.getStartLocation());
@@ -287,8 +293,8 @@ public class WorkerManager implements IUnitManager{
     }
 
     private void callOversaturation(){
-        this.isOverSaturationCalled = true;
-        this.expansionManager.handleOversaturation();
+        this.isOversaturationCalled = true;
+        this.globalBasesManager.handleOversaturation();
     }
 
     @Override
@@ -314,7 +320,7 @@ public class WorkerManager implements IUnitManager{
             this.delegateWorkerToWork(worker);
         }
 
-        if(isOversaturated() && !isOverSaturationCalled){
+        if(isOversaturated() && !isOversaturationCalled){
             this.callOversaturation();
         }
     }
@@ -331,8 +337,16 @@ public class WorkerManager implements IUnitManager{
         this.demandManager = demandManager;
     }
 
-    public void setExpansionManager(ExpansionManager expansionManager) {
-        this.expansionManager = expansionManager;
+    public void setExpansionManager(GlobalBasesManager globalBasesManager) {
+        this.globalBasesManager = globalBasesManager;
+    }
+
+    public boolean isOversaturationCalled() {
+        return isOversaturationCalled;
+    }
+
+    public void setOversaturationCalled(boolean oversaturationCalled) {
+        isOversaturationCalled = oversaturationCalled;
     }
 
     @Override

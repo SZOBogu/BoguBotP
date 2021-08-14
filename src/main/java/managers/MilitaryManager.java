@@ -34,9 +34,6 @@ public class MilitaryManager implements IUnitManager{
 
     @Override
     public void manage() {
-//        Unit scout = this.militaryUnits.get(0);
-//        scout.move(mapHelper.getBasesClosestToTilePosition(scout.getTilePosition()).get(1).getCenter());
-//        this.indexOfLastScoutedBase++;
         if(this.scout == null && !this.militaryUnits.isEmpty()){
             this.scout = this.militaryUnits.get(0);
             this.tellScoutToGetToNextBase();
@@ -53,19 +50,18 @@ public class MilitaryManager implements IUnitManager{
                 this.indexOfLastScoutedBase = 0;
                 this.tellScoutToGetToNextBase();
             }
-            if(this.scout.getTilePosition().getApproxDistance(nextBase.getLocation()) < 5){
+            if(this.scout.getTilePosition().getApproxDistance(nextBase.getLocation()) < 8){
                 this.indexOfLastScoutedBase++;
                 //never seems to reach the base
                 System.out.println("Base reached");
                 this.scout.stop();
-                this.tellScoutToGetToNextBase();
             }
         }
     }
 
     public void tellScoutToSideStep(){
         TilePosition temp = this.scout.getTilePosition();
-        this.scout.move(new TilePosition(temp.x + 10, temp.y).toPosition());
+        this.scout.move(new TilePosition(temp.x + 10, temp.y).toPosition(), true);
     }
 
     public void setMapHelper(MapHelper mapHelper) {
