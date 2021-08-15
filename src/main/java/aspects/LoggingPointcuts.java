@@ -16,4 +16,10 @@ public class LoggingPointcuts {
 
     @Pointcut("execution(* managers.MilitaryManager.manage(..))")
     public void manageMilitary() {}
+
+    @Pointcut("execution(* helpers.BaseInfoTracker.mark*(..))")
+    public void markBase() {}
+
+    @Pointcut("execution(* helpers.BaseInfoTracker.markBaseAsUnknown(..))")
+    public void markBaseAsUnknown() {}
 }

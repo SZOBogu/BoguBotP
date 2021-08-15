@@ -20,7 +20,6 @@ public class MilitaryManager implements IUnitManager{
     private final List<Unit> militaryUnits = new ArrayList<>();
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
-//    private int indexOfLastScoutedBase = 0;
 
     private MapHelper mapHelper;
     private Unit scout;
@@ -28,17 +27,14 @@ public class MilitaryManager implements IUnitManager{
     private Game game;
     private BaseInfoTracker baseInfoTracker;
 
-//    private boolean isScoutSent = false;
-//    private int frame = 0;
-
     @Override
     public void add(Unit unit){
         this.militaryUnits.add(unit);
-        if(this.scout == null){
-            this.setScout(unit);
-            this.tellScoutToGetToNextBase();
-        }
-        else
+//        if(this.scout == null){
+//            this.setScout(unit);
+//            this.tellScoutToGetToNextBase();
+//        }
+//        else
             unit.move(rallyPoint.toPosition());
     }
 
@@ -49,8 +45,15 @@ public class MilitaryManager implements IUnitManager{
 
     @Override
     public void manage() {
+        if(this.scout == null && !this.militaryUnits.isEmpty()) {
+            this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
+        }
             if(this.scout != null) {
                 this.tellScoutToGetToNextBase();
+            }
+            Base enemyBase = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
+            if(enemyBase != null && this.militaryUnits.size() > 20){
+                this.militaryUnits.forEach(unit -> unit.attack(enemyBase.getLocation().toPosition()));
             }
     }
 
@@ -59,18 +62,16 @@ public class MilitaryManager implements IUnitManager{
 
         if(nextBase != null) {
             if (!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
-                System.out.println("Scout isn't moving nor stuck");
                 if (!game.isVisible(nextBase.getLocation())) {
                     this.scout.move(nextBase.getCenter());
                 } else {
                     if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
                         this.baseInfoTracker.markBaseAsNeutral(nextBase);
-                        System.out.println("Base Discovered");
                     }
                 }
             } else if (this.scout.isStuck()) {
-                Random random = new Random();
-                this.scout = this.militaryUnits.get(random.nextInt(this.militaryUnits.size()));
+//                Random random = new Random();
+                this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
             }
         }
         else
@@ -80,6 +81,13 @@ public class MilitaryManager implements IUnitManager{
     public void tellScoutToSideStep(){
         TilePosition temp = this.scout.getTilePosition();
         this.scout.move(new TilePosition(temp.x + 10, temp.y).toPosition());
+    }
+
+    public void handleMilitaryDestruction(Unit unit) {
+        if(unit == this.scout){
+            this.scout = null;
+        }
+        this.remove(unit);
     }
 
     public void setGlobalRallyPoint(){
@@ -105,4 +113,6 @@ public class MilitaryManager implements IUnitManager{
     private void setScout(Unit scout) {
         this.scout = scout;
     }
+
+
 }

@@ -51,8 +51,7 @@ public class Bot extends DefaultBWListener {
                 this.mapHelper.setMainNexus(unit);
             }
         }
-        this.baseInfoTracker = new BaseInfoTracker();
-        baseInfoTracker.init(this.mapHelper);
+        this.baseInfoTracker.init(this.mapHelper);
 
         this.militaryManager.setMapHelper(this.mapHelper);
         this.militaryManager.setGame(this.game);
@@ -104,6 +103,7 @@ public class Bot extends DefaultBWListener {
         this.militaryManager.manage();
     }
 
+    @Override
     public void onUnitCreate(Unit unit){
         if(this.demandManager.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
@@ -111,6 +111,7 @@ public class Bot extends DefaultBWListener {
         }
     }
 
+    @Override
     public void onUnitComplete(Unit unit){
         if(unit.getType().isWorker()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
@@ -141,6 +142,7 @@ public class Bot extends DefaultBWListener {
         }
     }
 
+    @Override
     public void onUnitDestroy(Unit unit) {
         if(unit.getType().isBuilding()){
             this.buildingManager.handleBuildingDestruction(unit);
@@ -149,7 +151,15 @@ public class Bot extends DefaultBWListener {
             this.globalBasesManager.handleWorkerDestruction(unit);
         }
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit)){
-            this.militaryManager.remove(unit);
+            this.militaryManager.handleMilitaryDestruction(unit);
+        }
+    }
+
+    @Override
+    public void onUnitDiscover(Unit unit) {
+        if(unit.getType().isBuilding() && this.game.enemy().getUnits().contains(unit)){
+            Base enemyBase = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
+            this.baseInfoTracker.markBaseAsEnemy(enemyBase);
         }
     }
 
@@ -172,6 +182,10 @@ public class Bot extends DefaultBWListener {
     @Autowired
     public void setExpansionManager(GlobalBasesManager globalBasesManager) {
         this.globalBasesManager = globalBasesManager;
+    }
+    @Autowired
+    public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
+        this.baseInfoTracker = baseInfoTracker;
     }
 
     @Override

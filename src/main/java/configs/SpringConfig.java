@@ -2,6 +2,7 @@ package configs;
 
 import bots.Bot;
 import bwapi.BWClient;
+import helpers.BaseInfoTracker;
 import managers.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,4 +38,7 @@ public class SpringConfig {
     public BWClient bwClient() {
         return new BWClient(this.bot());
     }
+
+    @Bean
+    public BaseInfoTracker baseInfoTracker() {return new BaseInfoTracker();}
 }

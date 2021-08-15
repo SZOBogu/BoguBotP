@@ -2,11 +2,13 @@ package helpers;
 
 import bwapi.TilePosition;
 import bwem.Base;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class BaseInfoTracker {
     private final List<MyPair<Base, BaseState>> bases = new ArrayList<>();
     private MapHelper mapHelper;

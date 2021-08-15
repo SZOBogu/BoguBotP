@@ -6,6 +6,7 @@ import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.CostCalculator;
 import helpers.MapHelper;
+import helpers.PositionPrinter;
 import pojos.WorkerList;
 import pojos.Worker;
 
@@ -42,6 +43,7 @@ public class BaseManager implements IUnitManager{
             this.game = game;
             this.mapHelper = mapHelper;
             this.base = base;
+            System.out.println("WORKER MANAGER BUILDER: " + PositionPrinter.toString(base));
         }
 
         public WorkerManagerBuilder demandManager(DemandManager demandManager){
@@ -130,7 +132,6 @@ public class BaseManager implements IUnitManager{
             else{
                 this.delegateWorkerToGatherMinerals(builder);
             }
-
             this.builder = null;
         }
     }
@@ -299,11 +300,9 @@ public class BaseManager implements IUnitManager{
 
     @Override
     public void manage() {
-        List<Worker> idleWorkers = this.getIdleWorkers();
-
-        UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
-
         this.forceGatheringGas();
+        List<Worker> idleWorkers = this.getIdleWorkers();
+        UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
 
         if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
             if(this.builder == null){

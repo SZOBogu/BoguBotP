@@ -38,6 +38,10 @@ public class LoggingAspect {
     public void notifyOnMilitaryAction(JoinPoint joinPoint){
         logger.info("MILITARY ACTION: " + joinPoint.getSignature());
     }
+    @Before("aspects.LoggingPointcuts.markBase() && !aspects.LoggingPointcuts.markBaseAsUnknown()")
+    public void logBaseMarking(JoinPoint joinPoint){
+        logger.info("Base scouted: " + joinPoint.getSignature());
+    }
 
     public void setPlayer(Player player) {
         this.player = player;
