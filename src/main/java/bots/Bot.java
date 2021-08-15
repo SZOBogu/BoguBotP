@@ -18,6 +18,7 @@ public class Bot extends DefaultBWListener {
 
     private BuildOrder buildOrder;
     private MapHelper mapHelper;
+    private BaseInfoTracker baseInfoTracker;
 
     private Game game;
     private Player player;
@@ -50,6 +51,9 @@ public class Bot extends DefaultBWListener {
                 this.mapHelper.setMainNexus(unit);
             }
         }
+        this.baseInfoTracker = new BaseInfoTracker();
+        baseInfoTracker.init(this.mapHelper);
+
         this.militaryManager.setMapHelper(this.mapHelper);
         this.militaryManager.setGame(this.game);
         this.militaryManager.setGlobalRallyPoint();
@@ -70,6 +74,8 @@ public class Bot extends DefaultBWListener {
         }
 
         this.militaryManager.setGlobalRallyPoint();
+        this.militaryManager.setBaseInfoTracker(baseInfoTracker);
+        this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
     }
 
     @Override
@@ -124,8 +130,9 @@ public class Bot extends DefaultBWListener {
         if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
-        if(unit.getType() == UnitType.Protoss_Nexus){
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit)){
             Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
+            baseInfoTracker.markBaseAsMine(base);
             this.globalBasesManager.transferProbes();
         }
 

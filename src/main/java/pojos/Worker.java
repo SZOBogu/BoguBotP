@@ -2,6 +2,7 @@ package pojos;
 
 import bwapi.Unit;
 import enums.WorkerRole;
+import helpers.PositionPrinter;
 
 public class Worker {
     private Unit worker;
@@ -33,6 +34,7 @@ public class Worker {
         return "Worker{" +
                 "worker=" + worker +
                 ", workerRole=" + workerRole +
+                ", worker position =" + PositionPrinter.toString(this.worker.getTilePosition()) +
                 '}';
     }
 }

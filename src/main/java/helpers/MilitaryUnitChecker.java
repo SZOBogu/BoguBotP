@@ -23,7 +23,6 @@ public class MilitaryUnitChecker {
 
     public static boolean checkIfUnitIsMilitary(Unit unit){
         boolean condition = protossMilitaryUnitTypeList.contains(unit.getType()) || terranMilitaryUnitTypeList.contains(unit.getType()) || zergMilitaryUnitTypeList.contains(unit.getType());
-        System.out.println("UNIT TYPE: " + unit.getType() + " MILITARY CHECK: " + condition);
         return condition;
     }
 }

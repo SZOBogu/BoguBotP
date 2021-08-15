@@ -4,6 +4,7 @@ import bwapi.*;
 import bwem.Base;
 import enums.WorkerRole;
 import exceptions.StarcraftException;
+import helpers.BaseInfoTracker;
 import helpers.MapHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class GlobalBasesManager implements IBroodWarManager{
     private final List<BaseManager> baseManagers = new ArrayList<>();
     private DemandManager demandManager;
     private MilitaryManager militaryManager;
+    private BaseInfoTracker baseInfoTracker;
 
     public void init(){
         this.baseIsTakenMap = new LinkedHashMap <>();
@@ -150,5 +152,9 @@ public class GlobalBasesManager implements IBroodWarManager{
     @Autowired
     public void setMilitaryManager(MilitaryManager militaryManager) {
         this.militaryManager = militaryManager;
+    }
+
+    public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
+        this.baseInfoTracker = baseInfoTracker;
     }
 }

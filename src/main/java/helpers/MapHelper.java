@@ -12,18 +12,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MapHelper {
-    private final BWMap map;
+    private final BWEM bwem;
+    private Game game;
     private Unit mainNexus;
 
     public MapHelper(Game game){
-        BWEM bwem = new BWEM(game);
+        this.bwem = new BWEM(game);
         bwem.initialize();
         bwem.setFailOnError(false);
-        map = bwem.getMap();
     }
 
     public BWMap getMap() {
-        return map;
+        return this.bwem.getMap();
     }
 
     public void setMainNexus(Unit mainNexus) {
@@ -43,7 +43,7 @@ public class MapHelper {
     }
 
     public List<Base> getBasesClosestToTilePosition(TilePosition tilePosition){
-        List<Base> bases = this.map.getBases();
+        List<Base> bases = this.getMap().getBases();
         Map<Base, Integer> baseDistanceMap = new HashMap<>();
 
         for (Base tempBase : bases) {
@@ -66,9 +66,11 @@ public class MapHelper {
 
         List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
 
-        System.out.println(allegedlySortedMap);
-        System.out.println(sortedBases);
-
+        System.out.println("Sorted bases: ");
+        for(Base base: sortedBases){
+            System.out.println(PositionPrinter.toString(base));
+        }
+        System.out.println("============================");
         return sortedBases;
     }
 }

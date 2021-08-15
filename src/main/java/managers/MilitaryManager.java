@@ -5,6 +5,8 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 import bwem.BWMap;
 import bwem.Base;
+import helpers.BaseInfoTracker;
+import helpers.BaseState;
 import helpers.MapHelper;
 import org.springframework.stereotype.Component;
 
@@ -17,19 +19,26 @@ public class MilitaryManager implements IUnitManager{
     private final List<Unit> militaryUnits = new ArrayList<>();
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
-    private int indexOfLastScoutedBase = 0;
+//    private int indexOfLastScoutedBase = 0;
 
     private MapHelper mapHelper;
     private Unit scout;
     private TilePosition rallyPoint;
     private Game game;
+    private BaseInfoTracker baseInfoTracker;
 
-    private int frame = 0;
+//    private boolean isScoutSent = false;
+//    private int frame = 0;
 
     @Override
     public void add(Unit unit){
         this.militaryUnits.add(unit);
-        unit.move(rallyPoint.toPosition());
+        if(this.scout == null){
+            this.setScout(unit);
+            this.tellScoutToGetToNextBase();
+        }
+        else
+            unit.move(rallyPoint.toPosition());
     }
 
     @Override
@@ -39,33 +48,25 @@ public class MilitaryManager implements IUnitManager{
 
     @Override
     public void manage() {
-        if(frame % 10 == 0) {
-            if (this.scout == null && !this.militaryUnits.isEmpty()) {
-                this.scout = this.militaryUnits.get(0);
+            if(this.scout != null) {
+//                this.scout = this.militaryUnits.get(0);
                 this.tellScoutToGetToNextBase();
             }
-        }
-
-        this.frame++;
     }
 
     public void tellScoutToGetToNextBase(){
-        Base nextBase = mapHelper.getBasesClosestToTilePosition(scout.getTilePosition()).get(this.indexOfLastScoutedBase + 1);
+        Base nextBase = this.baseInfoTracker.getClosestBaseWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
 
-        if(!this.scout.isMoving() && !this.scout.isStuck()) {
+        if(!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
             System.out.println("Scout isn't moving nor stuck");
-            try {
-                scout.move(nextBase.getCenter());
-                System.out.println("Scout got move command");
-            } catch (ArrayIndexOutOfBoundsException ex) {
-                this.indexOfLastScoutedBase = 0;
-                this.tellScoutToGetToNextBase();
+            if(!game.isVisible(nextBase.getLocation())){
+                this.scout.move(nextBase.getCenter());
+//                this.isScoutSent = true;
             }
-            if(this.scout.getTilePosition().getDistance(nextBase.getLocation()) < 10){
-                this.indexOfLastScoutedBase++;
-                //never seems to reach the base
-                System.out.println("Base reached");
-//                this.scout.stop();
+            else{
+                if(this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE){
+                    this.baseInfoTracker.markBaseAsNeutral(nextBase);
+                }
             }
         }
         else if(this.scout.isStuck()){
@@ -82,7 +83,7 @@ public class MilitaryManager implements IUnitManager{
     public void setGlobalRallyPoint(){
         TilePosition temp = mapHelper.getListOfBases().get(1).getLocation();
         this.rallyPoint = new TilePosition(temp.x + 15, temp.y);
-        if(!this.rallyPoint.isValid(this.game)){
+        if(!this.game.isWalkable(this.rallyPoint.toWalkPosition())){
             this.rallyPoint = new TilePosition(temp.x - 15, temp.y);
         }
     }
@@ -95,10 +96,11 @@ public class MilitaryManager implements IUnitManager{
         this.mapHelper = mapHelper;
     }
 
+    public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
+        this.baseInfoTracker = baseInfoTracker;
+    }
 
-
-
-
-
-
+    private void setScout(Unit scout) {
+        this.scout = scout;
+    }
 }
