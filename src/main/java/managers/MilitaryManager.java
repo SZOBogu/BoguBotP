@@ -8,6 +8,7 @@ import bwem.Base;
 import helpers.BaseInfoTracker;
 import helpers.BaseState;
 import helpers.MapHelper;
+import javafx.scene.control.ButtonBase;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -49,7 +50,6 @@ public class MilitaryManager implements IUnitManager{
     @Override
     public void manage() {
             if(this.scout != null) {
-//                this.scout = this.militaryUnits.get(0);
                 this.tellScoutToGetToNextBase();
             }
     }
@@ -57,22 +57,24 @@ public class MilitaryManager implements IUnitManager{
     public void tellScoutToGetToNextBase(){
         Base nextBase = this.baseInfoTracker.getClosestBaseWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
 
-        if(!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
-            System.out.println("Scout isn't moving nor stuck");
-            if(!game.isVisible(nextBase.getLocation())){
-                this.scout.move(nextBase.getCenter());
-//                this.isScoutSent = true;
-            }
-            else{
-                if(this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE){
-                    this.baseInfoTracker.markBaseAsNeutral(nextBase);
+        if(nextBase != null) {
+            if (!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
+                System.out.println("Scout isn't moving nor stuck");
+                if (!game.isVisible(nextBase.getLocation())) {
+                    this.scout.move(nextBase.getCenter());
+                } else {
+                    if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
+                        this.baseInfoTracker.markBaseAsNeutral(nextBase);
+                        System.out.println("Base Discovered");
+                    }
                 }
+            } else if (this.scout.isStuck()) {
+                Random random = new Random();
+                this.scout = this.militaryUnits.get(random.nextInt(this.militaryUnits.size()));
             }
         }
-        else if(this.scout.isStuck()){
-            Random random = new Random();
-            this.scout = this.militaryUnits.get(random.nextInt(this.militaryUnits.size()));
-        }
+        else
+            baseInfoTracker.markAllNeutralBasesAsUnknown();
     }
 
     public void tellScoutToSideStep(){

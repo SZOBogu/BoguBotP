@@ -5,9 +5,11 @@ import bwem.Base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BaseInfoTracker {
     private final List<MyPair<Base, BaseState>> bases = new ArrayList<>();
+    private MapHelper mapHelper;
 
     public void init(MapHelper mapHelper){
         List<Base> bases = mapHelper.getBasesClosestToTilePosition(mapHelper.getMainBase().getLocation());
@@ -16,6 +18,8 @@ public class BaseInfoTracker {
             MyPair<Base, BaseState> pair = new MyPair<>(base, BaseState.UNKNOWN);
             this.bases.add(pair);
         }
+
+        this.mapHelper = mapHelper;
     }
 
     public void markBaseAsMine(Base base){
@@ -45,9 +49,13 @@ public class BaseInfoTracker {
     }
 
     public Base getClosestBaseWithState(TilePosition tilePosition, BaseState state){
-        for(MyPair pair: this.bases){
-            if(pair.getValue() == state){
-                return (Base) pair.getKey();
+        List<Base> basesClosest = this.mapHelper.getBasesClosestToTilePosition(tilePosition);
+
+        for(Base base : basesClosest) {
+            for (MyPair pair : this.bases) {
+                if (pair.getValue() == state && pair.getKey().equals(base)) {
+                    return (Base) pair.getKey();
+                }
             }
         }
         return null;
@@ -60,5 +68,14 @@ public class BaseInfoTracker {
             }
         }
         return null;
+    }
+
+    public void markAllNeutralBasesAsUnknown(){
+        List<Base> bases = this.bases.stream().map(MyPair::getKey).collect(Collectors.toList());
+        bases.stream().filter(base -> this.checkBaseState(base) == BaseState.NEUTRAL).forEach(this::markBaseAsUnknown);
+    }
+
+    public void setMapHelper(MapHelper mapHelper) {
+        this.mapHelper = mapHelper;
     }
 }

@@ -65,12 +65,6 @@ public class MapHelper {
         allegedlySortedMap.putAll(baseDistanceMap);
 
         List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
-
-        System.out.println("Sorted bases: ");
-        for(Base base: sortedBases){
-            System.out.println(PositionPrinter.toString(base));
-        }
-        System.out.println("============================");
         return sortedBases;
     }
 }
