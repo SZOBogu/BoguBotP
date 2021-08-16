@@ -6,6 +6,7 @@ import enums.WorkerRole;
 import exceptions.StarcraftException;
 import helpers.BaseInfoTracker;
 import helpers.MapHelper;
+import helpers.PositionPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pojos.Worker;
@@ -77,7 +78,8 @@ public class GlobalBasesManager implements IBroodWarManager{
             manager.delegateWorkersToGatherGas(unit);
         }
         else if(unit.getType() == UnitType.Protoss_Probe){
-            BaseManager manager = this.baseManagers.get(this.baseManagers.size() - 1);
+            int index = Math.max(this.baseManagers.size() - 1, 0);
+            BaseManager manager = this.baseManagers.get(index);
 //            BaseManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
             manager.add(unit);
         }
@@ -106,16 +108,18 @@ public class GlobalBasesManager implements IBroodWarManager{
     }
 
     public void transferProbes(){
+        System.out.println("Probe transfer requested");
         BaseManager oversaturatedBase = this.baseManagers.stream().filter(BaseManager::isOversaturationCalled)
                 .findFirst().orElse(null);
         BaseManager toBaseManager = this.baseManagers.get(this.baseManagers.size() - 1);
+        System.out.println("How many base managers: " + this.baseManagers.size());
 
         if(oversaturatedBase != null) {
+            System.out.println("FROM: " + PositionPrinter.toString(oversaturatedBase.getBase()));
+            System.out.println("TO: " + PositionPrinter.toString(toBaseManager.getBase()));
+
             List<Worker> workersToTransfer = oversaturatedBase.popWorkers(8);
-            System.out.println("Transferred workers: " + workersToTransfer.size());
-            workersToTransfer.forEach(worker -> worker.getWorker().stop());
-            workersToTransfer.forEach(worker -> worker.setWorkerRole(WorkerRole.IDLE));
-            workersToTransfer.forEach(worker -> toBaseManager.add(worker.getWorker()));
+            toBaseManager.acceptWorkerTransfer(workersToTransfer);
 
             if(!oversaturatedBase.isOversaturated()){
                 oversaturatedBase.setOversaturationCalled(false);

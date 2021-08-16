@@ -7,6 +7,7 @@ import enums.WorkerRole;
 import helpers.CostCalculator;
 import helpers.MapHelper;
 import helpers.PositionPrinter;
+import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
 
@@ -95,6 +96,7 @@ public class BaseManager implements IUnitManager{
     public void remove(Unit unit){
         if(unit.getType().isWorker()){
             workers.remove(unit);
+            System.out.println("Worker removed");
         }
     }
 
@@ -295,7 +297,16 @@ public class BaseManager implements IUnitManager{
 
     private void callOversaturation(){
         this.isOversaturationCalled = true;
+        System.out.println("Oversaturaion called");
         this.globalBasesManager.handleOversaturation();
+    }
+
+    public void acceptWorkerTransfer(List<Worker> workerTrain){
+        System.out.println("Worker transfer allegedly received: " + workerTrain.size());
+        workerTrain.forEach(worker -> this.add(worker.getWorker()));
+        workerTrain.forEach(worker -> worker.setWorkerRole(WorkerRole.IDLE));
+        workerTrain.forEach(worker -> worker.getWorker().stop());
+        workerTrain.forEach(this::delegateWorkerToWork);
     }
 
     @Override

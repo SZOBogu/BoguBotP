@@ -53,14 +53,18 @@ public class Bot extends DefaultBWListener {
         }
         this.baseInfoTracker.init(this.mapHelper);
 
-        this.militaryManager.setMapHelper(this.mapHelper);
-        this.militaryManager.setGame(this.game);
-        this.militaryManager.setGlobalRallyPoint();
-
         this.globalBasesManager.setMapHelper(this.mapHelper);
         this.globalBasesManager.setGame(game);
         this.globalBasesManager.setPlayer(player);
         this.globalBasesManager.init();
+
+        this.militaryManager.setMapHelper(this.mapHelper);
+        this.militaryManager.setGame(this.game);
+        this.militaryManager.setGlobalRallyPoint();
+
+        baseManager.setExpansionManager(this.globalBasesManager);
+        baseManager.setDemandManager(this.demandManager);
+
         this.globalBasesManager.addWorkerManager(baseManager);
 
         baseManager.setExpansionManager(this.globalBasesManager);
@@ -113,6 +117,12 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitComplete(Unit unit){
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit)){
+            this.globalBasesManager.assignToAppropriateWorkerService(unit);
+            Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
+            baseInfoTracker.markBaseAsMine(base);
+            this.globalBasesManager.transferProbes();
+        }
         if(unit.getType().isWorker()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
@@ -128,15 +138,9 @@ public class Bot extends DefaultBWListener {
             this.demandManager.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
         }
 
-        if(unit.getType() == UnitType.Protoss_Cybernetics_Core){
+        if(unit.getType() == UnitType.Protoss_Cybernetics_Core) {
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
-        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit)){
-            Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
-            baseInfoTracker.markBaseAsMine(base);
-            this.globalBasesManager.transferProbes();
-        }
-
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
             this.militaryManager.add(unit);
         }
