@@ -3,17 +3,14 @@ package managers;
 import bwapi.Game;
 import bwapi.TilePosition;
 import bwapi.Unit;
-import bwem.BWMap;
 import bwem.Base;
 import helpers.BaseInfoTracker;
 import helpers.BaseState;
 import helpers.MapHelper;
-import javafx.scene.control.ButtonBase;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Component
 public class MilitaryManager implements IUnitManager{
@@ -30,12 +27,7 @@ public class MilitaryManager implements IUnitManager{
     @Override
     public void add(Unit unit){
         this.militaryUnits.add(unit);
-//        if(this.scout == null){
-//            this.setScout(unit);
-//            this.tellScoutToGetToNextBase();
-//        }
-//        else
-            unit.move(rallyPoint.toPosition());
+        unit.move(rallyPoint.toPosition());
     }
 
     @Override
@@ -64,13 +56,13 @@ public class MilitaryManager implements IUnitManager{
             if (!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
                 if (!game.isVisible(nextBase.getLocation())) {
                     this.scout.move(nextBase.getCenter());
-                } else {
+                }
+                else {
                     if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
                         this.baseInfoTracker.markBaseAsNeutral(nextBase);
                     }
                 }
             } else if (this.scout.isStuck()) {
-//                Random random = new Random();
                 this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
             }
         }

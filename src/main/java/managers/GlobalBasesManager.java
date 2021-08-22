@@ -51,7 +51,7 @@ public class GlobalBasesManager implements IBroodWarManager{
         throw new StarcraftException("No non taken bases");
     }
 
-    //meant for searching form manager handling given nexus/assimilator
+    //meant for searching for manager handling given nexus/assimilator
     public void assignToAppropriateWorkerService(Unit unit){
         if(unit.getType() == UnitType.Protoss_Nexus){
             BaseManager baseManager = new BaseManager.WorkerManagerBuilder(
@@ -78,9 +78,9 @@ public class GlobalBasesManager implements IBroodWarManager{
             manager.delegateWorkersToGatherGas(unit);
         }
         else if(unit.getType() == UnitType.Protoss_Probe){
-            int index = Math.max(this.baseManagers.size() - 1, 0);
-            BaseManager manager = this.baseManagers.get(index);
-//            BaseManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
+//            int index = Math.max(this.baseManagers.size() - 1, 0);
+//            BaseManager manager = this.baseManagers.get(index);
+            BaseManager manager = this.getWorkerManagerByBase(this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition()));
             manager.add(unit);
         }
     }
@@ -136,6 +136,10 @@ public class GlobalBasesManager implements IBroodWarManager{
         this.baseManagers.add(baseManager);
     }
 
+    public int amountOfWorkerManagers(){
+        return this.baseManagers.size();
+    }
+
     public void setMapHelper(MapHelper mapHelper) {
         this.mapHelper = mapHelper;
     }
@@ -161,4 +165,6 @@ public class GlobalBasesManager implements IBroodWarManager{
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
     }
+
+
 }

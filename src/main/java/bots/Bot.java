@@ -8,6 +8,9 @@ import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
 
@@ -42,11 +45,7 @@ public class Bot extends DefaultBWListener {
                 .build();
 
         for(Unit unit : player.getUnits()){
-            if(unit.getType().isWorker()) {
-                baseManager.add(unit);
-            }
             if(unit.getType() == UnitType.Protoss_Nexus){
-                this.buildingManager.add(unit);
                 this.buildingManager.trainUnit(UnitType.Protoss_Probe);
                 this.mapHelper.setMainNexus(unit);
             }
@@ -98,8 +97,8 @@ public class Bot extends DefaultBWListener {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
                     this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
                 }
-                else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Dragoon)){
-                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Dragoon);
+                else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Zealot)){
+                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Zealot);
                 }
             }
         this.globalBasesManager.manage();
@@ -117,7 +116,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitComplete(Unit unit){
-        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit)){
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
             Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
             baseInfoTracker.markBaseAsMine(base);
@@ -144,6 +143,12 @@ public class Bot extends DefaultBWListener {
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
             this.militaryManager.add(unit);
         }
+        if(this.game.enemy().getUnits().contains(unit) && unit.getType().isBuilding()){
+            this.game.enemy().getUnits().forEach(u -> System.out.println((u.getType())));
+            List<Base> allBases = this.mapHelper.getBasesClosestToTilePosition(unit.getTilePosition());
+            Base enemyBase = allBases.stream().filter(base -> this.baseInfoTracker.checkBaseState(base) == BaseState.UNKNOWN).collect(Collectors.toList()).get(0);
+            this.baseInfoTracker.markBaseAsEnemy(enemyBase);
+        }
     }
 
     @Override
@@ -156,14 +161,6 @@ public class Bot extends DefaultBWListener {
         }
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit)){
             this.militaryManager.handleMilitaryDestruction(unit);
-        }
-    }
-
-    @Override
-    public void onUnitDiscover(Unit unit) {
-        if(unit.getType().isBuilding() && this.game.enemy().getUnits().contains(unit)){
-            Base enemyBase = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
-            this.baseInfoTracker.markBaseAsEnemy(enemyBase);
         }
     }
 

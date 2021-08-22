@@ -26,12 +26,10 @@ public class BaseInfoTracker {
 
     public void markBaseAsMine(Base base){
         this.changeBaseState(base, BaseState.MINE);
-
     }
 
     public void markBaseAsNeutral(Base base){
         this.changeBaseState(base, BaseState.NEUTRAL);
-
     }
 
     public void markBaseAsEnemy(Base base){
@@ -75,6 +73,10 @@ public class BaseInfoTracker {
     public void markAllNeutralBasesAsUnknown(){
         List<Base> bases = this.bases.stream().map(MyPair::getKey).collect(Collectors.toList());
         bases.stream().filter(base -> this.checkBaseState(base) == BaseState.NEUTRAL).forEach(this::markBaseAsUnknown);
+    }
+
+    public boolean checkIfBaseIsTaken(Base base){
+        return this.checkBaseState(base) == BaseState.ENEMY || this.checkBaseState(base) == BaseState.MINE;
     }
 
     public void setMapHelper(MapHelper mapHelper) {
