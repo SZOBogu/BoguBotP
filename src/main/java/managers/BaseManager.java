@@ -103,7 +103,7 @@ public class BaseManager implements IUnitManager{
     //TODO: reassign gas workers if one of them was killed
     //TODO: throws NullPointerException
     public void handleWorkerDestruction(Unit unit){
-        if(unit == this.builder.getWorker()){
+        if(unit == this.builder.getWorker() && this.builder != null){
             this.builder = null;
         }
         this.remove(unit);
@@ -303,10 +303,17 @@ public class BaseManager implements IUnitManager{
 
     public void acceptWorkerTransfer(List<Worker> workerTrain){
         System.out.println("Worker transfer allegedly received: " + workerTrain.size());
-        workerTrain.forEach(worker -> this.add(worker.getWorker()));
-        workerTrain.forEach(worker -> worker.setWorkerRole(WorkerRole.IDLE));
-        workerTrain.forEach(worker -> worker.getWorker().stop());
-        workerTrain.forEach(this::delegateWorkerToWork);
+
+        for(Worker worker : workerTrain){
+            this.add(worker.getWorker());
+            worker.setWorkerRole(WorkerRole.IDLE);
+            worker.getWorker().move(this.base.getCenter());
+            this.delegateWorkerToGatherMinerals(worker);
+        }
+    }
+
+    public int getAmountOfSurplusWorkers(){
+        return this.base.getGeysers().size() * 3 + this.base.getMinerals().size() * 2;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package managers;
 
 import bwapi.Game;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwem.Base;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MilitaryManager implements IUnitManager{
@@ -18,11 +20,17 @@ public class MilitaryManager implements IUnitManager{
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
 
+    List<Unit> attackers = new ArrayList<>();
+
     private MapHelper mapHelper;
     private Unit scout;
     private TilePosition rallyPoint;
+    private Position attackRallyPoint;
     private Game game;
     private BaseInfoTracker baseInfoTracker;
+    private boolean isAttackSent;
+
+    int frames = 0;
 
     @Override
     public void add(Unit unit){
@@ -40,13 +48,18 @@ public class MilitaryManager implements IUnitManager{
         if(this.scout == null && !this.militaryUnits.isEmpty()) {
             this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
         }
-            if(this.scout != null) {
-                this.tellScoutToGetToNextBase();
-            }
-            Base enemyBase = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
-            if(enemyBase != null && this.militaryUnits.size() > 20){
-                this.militaryUnits.forEach(unit -> unit.attack(enemyBase.getLocation().toPosition()));
-            }
+        if(this.scout != null) {
+            this.tellScoutToGetToNextBase();
+        }
+        Base enemyBase = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
+
+        if(enemyBase != null && this.militaryUnits.size() > 20 && !this.isAttackSent){
+            this.isAttackSent = true;
+            this.attackers = this.militaryUnits.stream().filter(unit -> unit != this.scout).collect(Collectors.toList());
+        }
+        if(isAttackSent){
+            this.manageAttack();
+        }
     }
 
     public void tellScoutToGetToNextBase(){
@@ -60,6 +73,11 @@ public class MilitaryManager implements IUnitManager{
                 else {
                     if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
                         this.baseInfoTracker.markBaseAsNeutral(nextBase);
+                    }
+                    List<Base> unknownBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
+                    List<Base> enemyBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
+                    if(unknownBases.size() == 1 && enemyBases.size() < 1){
+                        this.baseInfoTracker.markBaseAsEnemy(unknownBases.get(0));
                     }
                 }
             } else if (this.scout.isStuck()) {
@@ -75,19 +93,55 @@ public class MilitaryManager implements IUnitManager{
         this.scout.move(new TilePosition(temp.x + 10, temp.y).toPosition());
     }
 
-    public void handleMilitaryDestruction(Unit unit) {
-        if(unit == this.scout){
-            this.scout = null;
-        }
-        this.remove(unit);
-    }
-
     public void setGlobalRallyPoint(){
         TilePosition temp = mapHelper.getListOfBases().get(1).getLocation();
         this.rallyPoint = new TilePosition(temp.x + 15, temp.y);
         if(!this.game.isWalkable(this.rallyPoint.toWalkPosition())){
             this.rallyPoint = new TilePosition(temp.x - 15, temp.y);
         }
+    }
+
+    public void setAttackRallyPoint(){
+        this.attackRallyPoint = mapHelper.getMap().getCenter();
+    }
+
+    private void manageAttack(){
+        if(isAttackSent && !this.areAllAttackersInPlace()) {
+            getAttackersInOnePlace();
+        }
+        if(this.areAllAttackersInPlace()){
+            this.attack();
+        }
+    }
+
+    private void getAttackersInOnePlace(){
+        Position centerTile = this.mapHelper.getMap().getCenter();
+        this.attackers.forEach(unit -> unit.attack(centerTile));
+    }
+
+    private boolean areAllAttackersInPlace(){
+        for(Unit attacker : this.attackers){
+            if(attacker.getDistance(this.attackRallyPoint) < 15){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void attack(){
+        Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
+        this.attackers.forEach(unit -> unit.attack(base.getCenter()));
+    }
+
+    public void handleMilitaryDestruction(Unit unit) {
+        if(unit == this.scout){
+            this.scout = null;
+        }
+        this.attackers.remove(unit);
+        if(this.attackers.isEmpty()){
+            this.isAttackSent = false;
+        }
+        this.remove(unit);
     }
 
     public void setGame(Game game) {

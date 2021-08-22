@@ -118,7 +118,7 @@ public class GlobalBasesManager implements IBroodWarManager{
             System.out.println("FROM: " + PositionPrinter.toString(oversaturatedBase.getBase()));
             System.out.println("TO: " + PositionPrinter.toString(toBaseManager.getBase()));
 
-            List<Worker> workersToTransfer = oversaturatedBase.popWorkers(8);
+            List<Worker> workersToTransfer = oversaturatedBase.popWorkers(oversaturatedBase.getAmountOfSurplusWorkers());
             toBaseManager.acceptWorkerTransfer(workersToTransfer);
 
             if(!oversaturatedBase.isOversaturated()){

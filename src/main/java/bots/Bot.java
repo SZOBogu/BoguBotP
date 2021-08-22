@@ -60,6 +60,7 @@ public class Bot extends DefaultBWListener {
         this.militaryManager.setMapHelper(this.mapHelper);
         this.militaryManager.setGame(this.game);
         this.militaryManager.setGlobalRallyPoint();
+        this.militaryManager.setAttackRallyPoint();
 
         baseManager.setExpansionManager(this.globalBasesManager);
         baseManager.setDemandManager(this.demandManager);
@@ -75,7 +76,6 @@ public class Bot extends DefaultBWListener {
             this.demandManager.demandCreatingUnit(entry.getUnitType());
         }
 
-        this.militaryManager.setGlobalRallyPoint();
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
     }
@@ -144,7 +144,6 @@ public class Bot extends DefaultBWListener {
             this.militaryManager.add(unit);
         }
         if(this.game.enemy().getUnits().contains(unit) && unit.getType().isBuilding()){
-            this.game.enemy().getUnits().forEach(u -> System.out.println((u.getType())));
             List<Base> allBases = this.mapHelper.getBasesClosestToTilePosition(unit.getTilePosition());
             Base enemyBase = allBases.stream().filter(base -> this.baseInfoTracker.checkBaseState(base) == BaseState.UNKNOWN).collect(Collectors.toList()).get(0);
             this.baseInfoTracker.markBaseAsEnemy(enemyBase);

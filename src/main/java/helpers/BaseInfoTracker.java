@@ -52,19 +52,33 @@ public class BaseInfoTracker {
         List<Base> basesClosest = this.mapHelper.getBasesClosestToTilePosition(tilePosition);
 
         for(Base base : basesClosest) {
-            for (MyPair pair : this.bases) {
+            for (MyPair<Base, BaseState> pair : this.bases) {
                 if (pair.getValue() == state && pair.getKey().equals(base)) {
-                    return (Base) pair.getKey();
+                    return pair.getKey();
                 }
             }
         }
         return null;
     }
 
+    public List<Base> getClosestBasesWithState(TilePosition tilePosition, BaseState state){
+        List<Base> basesClosest = this.mapHelper.getBasesClosestToTilePosition(tilePosition);
+        List<Base> basesWithState = new ArrayList<>();
+
+        for(Base base : basesClosest) {
+            for (MyPair<Base, BaseState> pair : this.bases) {
+                if (pair.getValue() == state && pair.getKey().equals(base)) {
+                    basesWithState.add(pair.getKey());
+                }
+            }
+        }
+        return basesWithState;
+    }
+
     public BaseState checkBaseState(Base base){
-        for(MyPair pair: this.bases){
+        for(MyPair<Base, BaseState> pair: this.bases){
             if(pair.getKey().equals(base)){
-                return (BaseState) pair.getValue();
+                return pair.getValue();
             }
         }
         return null;
