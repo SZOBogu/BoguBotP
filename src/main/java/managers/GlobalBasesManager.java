@@ -7,6 +7,7 @@ import exceptions.StarcraftException;
 import helpers.BaseInfoTracker;
 import helpers.MapHelper;
 import helpers.PositionPrinter;
+import helpers.ProductionOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pojos.Worker;
@@ -102,28 +103,40 @@ public class GlobalBasesManager implements IBroodWarManager{
     }
 
     public void handleOversaturation(){
-        this.demandManager.demandCreatingUnit(UnitType.Protoss_Nexus);
-        this.demandManager.demandCreatingUnit(UnitType.Protoss_Assimilator);
-        this.militaryManager.tellScoutToSideStep();
+        ProductionOrder nexusOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Nexus).build();
+        ProductionOrder assimilatorOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build();
+
+        this.demandManager.demandCreatingUnit(nexusOrder);
+        this.demandManager.demandCreatingUnit(assimilatorOrder);
     }
 
     public void transferProbes(){
         System.out.println("Probe transfer requested");
-        BaseManager oversaturatedBase = this.baseManagers.stream().filter(BaseManager::isOversaturationCalled)
+        BaseManager oversaturatedBaseManager = this.baseManagers.stream().filter(BaseManager::isOversaturationCalled)
                 .findFirst().orElse(null);
         BaseManager toBaseManager = this.baseManagers.get(this.baseManagers.size() - 1);
         System.out.println("How many base managers: " + this.baseManagers.size());
 
-        if(oversaturatedBase != null) {
-            System.out.println("FROM: " + PositionPrinter.toString(oversaturatedBase.getBase()));
+        if(oversaturatedBaseManager != null) {
+            System.out.println("FROM: " + PositionPrinter.toString(oversaturatedBaseManager.getBase()));
             System.out.println("TO: " + PositionPrinter.toString(toBaseManager.getBase()));
 
-            List<Worker> workersToTransfer = oversaturatedBase.popWorkers(oversaturatedBase.getAmountOfSurplusWorkers());
+            System.out.println("Oversaturated Base: \n" + oversaturatedBaseManager);
+            System.out.println("Base accepting probes: \n" + toBaseManager);
+
+            List<Worker> workersToTransfer = oversaturatedBaseManager.popWorkers(oversaturatedBaseManager.getAmountOfSurplusWorkers() + 2);
             toBaseManager.acceptWorkerTransfer(workersToTransfer);
 
-            if(!oversaturatedBase.isOversaturated()){
-                oversaturatedBase.setOversaturationCalled(false);
+            if(!oversaturatedBaseManager.isOversaturated()){
+                oversaturatedBaseManager.setOversaturationCalled(false);
             }
+            else{
+                List<Worker> moreWorkersToTransfer = oversaturatedBaseManager.popWorkers(1);
+                toBaseManager.acceptWorkerTransfer(moreWorkersToTransfer);
+
+            }
+            System.out.println("Oversaturated Base: \n" + oversaturatedBaseManager);
+            System.out.println("Base accepting probes: \n" + toBaseManager);
         }
     }
 
@@ -165,6 +178,4 @@ public class GlobalBasesManager implements IBroodWarManager{
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
     }
-
-
 }

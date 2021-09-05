@@ -1,13 +1,17 @@
 package managers;
 
+import bwapi.Game;
 import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import helpers.ProductionOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pojos.TechDemandList;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
+
+import java.util.List;
 
 @Component
 public class DemandManager implements IBroodWarManager{
@@ -16,6 +20,7 @@ public class DemandManager implements IBroodWarManager{
     private final TechDemandList techDemandList;
     private final UpgradeDemandList upgradeDemandList;
 
+    private Game game;
     private BuildingManager buildingManager;
 
     public DemandManager() {
@@ -25,9 +30,9 @@ public class DemandManager implements IBroodWarManager{
         this.upgradeDemandList = new UpgradeDemandList();
     }
 
-    public void demandCreatingUnit(UnitType unit){
+    public void demandCreatingUnit(ProductionOrder order){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
-        this.unitsToCreateDemandList.demand(unit);
+        this.unitsToCreateDemandList.demand(order);
     }
 
     public void demandUpgrade(UpgradeType upgradeType){
@@ -42,9 +47,9 @@ public class DemandManager implements IBroodWarManager{
         this.workerAttentionDemandList.demand(worker);
     }
 
-    public void fulfillDemandCreatingUnit(UnitType unit){
+    public void fulfillDemandCreatingUnit(ProductionOrder productionOrder){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
-        this.unitsToCreateDemandList.fulfillDemand(unit);
+        this.unitsToCreateDemandList.fulfillDemand(productionOrder);
     }
 
     public void fulfillDemandUpgrade(UpgradeType upgradeType){
@@ -80,21 +85,44 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public UnitType getFirstBuildingDemanded(){
-        UnitType building = null;
+        ProductionOrder buildingOrder = null;
 
-        for(Object object : this.unitsToCreateDemandList.getList()){
-            building = (UnitType) object;
-            if(building.isBuilding()){
-                return building;
+        for(ProductionOrder object : this.unitsToCreateDemandList.getList()){
+            buildingOrder = object;
+            if(buildingOrder.getUnitType().isBuilding()){
+                return buildingOrder.getUnitType();
             }
         }
-        return building;
+        return null;
+    }
+
+    public ProductionOrder getNextItemOnList(){
+        ProductionOrder order = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getFrameMark() <= this.game.getFrameCount()).findFirst().orElse(null);
+
+        //if there are no orders to be demanded on current frame, check for orders on current time mark
+        if(order == null){
+            order = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getTimeMark() <= this.game.elapsedTime()).findFirst().orElse(null);
+        }
+        //if there are no orders to be demanded on current time, check for orders on current population mark
+        if(order == null){
+            order = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getPopulationMark() <= this.game.self().supplyUsed()).findFirst().orElse(null);
+        }
+        //if there are still no orders just return a first one without any marks
+        if(order == null){
+            order = this.unitsToCreateDemandList.getList().stream()
+                    .filter(o -> o.getFrameMark() == 450000)
+                    .filter(o -> o.getTimeMark() == 18000)
+                    .filter(o -> o.getPopulationMark() == 1201)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        return order;
     }
 
     public boolean areBuildingsDemanded(){
-        for(Object object : this.unitsToCreateDemandList.getList()){
-            UnitType building = (UnitType) object;
-            if(building.isBuilding()){
+        for(ProductionOrder object : this.unitsToCreateDemandList.getList()){
+            if(object.getUnitType().isBuilding()){
                 return true;
             }
         }
@@ -104,9 +132,9 @@ public class DemandManager implements IBroodWarManager{
 
     public void manage(){
         if(!this.unitsToCreateDemandList.isEmpty()){
-            UnitType type = (UnitType)this.unitsToCreateDemandList.get(0);
-            if(!type.isBuilding()){
-                buildingManager.trainUnit(type);
+            ProductionOrder productionOrder = this.getNextItemOnList();
+            if(!productionOrder.getUnitType().isBuilding()){
+                buildingManager.trainUnit(productionOrder.getUnitType());
             }
         }
         if(!this.techDemandList.isEmpty()){
@@ -123,6 +151,10 @@ public class DemandManager implements IBroodWarManager{
     @Autowired
     public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 
     @Override

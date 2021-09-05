@@ -2,7 +2,7 @@ package aspects;
 
 import bwapi.Game;
 import bwapi.Player;
-import bwapi.UnitType;
+import helpers.ProductionOrder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -20,17 +20,17 @@ public class LoggingAspect {
 
     @Before("aspects.LoggingPointcuts.demandPlacedLog()")
     public void notifyAboutDemand(JoinPoint joinPoint){
-        UnitType unitType = (UnitType)joinPoint.getArgs()[0];
-        logger.info("DEMANDED: " + unitType +
-                " | TIME: " + TimeUnit.SECONDS.toMinutes(game.elapsedTime()) + ":" + String.format("%02d", game.elapsedTime()%60) +
+        ProductionOrder productionOrder = (ProductionOrder)joinPoint.getArgs()[0];
+        logger.info("DEMANDED: " + productionOrder.getUnitType() +
+                " | TIME: " + TimeUnit.SECONDS.toMinutes(game.elapsedTime()) + ":" + String.format("%02d", game.elapsedTime() % 60) +
                 " | SUPPLY: " + player.supplyUsed()/2 + "/" + player.supplyTotal()/2);
     }
 
     @Before("aspects.LoggingPointcuts.demandFulfilledLog()")
     public void notifyAboutFulfillingDemand(JoinPoint joinPoint){
-        UnitType unitType = (UnitType)joinPoint.getArgs()[0];
-        logger.info("FULFILLED DEMAND ON: " + unitType +
-                " | TIME: " + TimeUnit.SECONDS.toMinutes(game.elapsedTime()) + ":" + String.format("%02d", game.elapsedTime()%60) +
+        ProductionOrder productionOrder = (ProductionOrder)joinPoint.getArgs()[0];
+        logger.info("FULFILLED DEMAND ON: " + productionOrder.getUnitType() +
+                " | TIME: " + TimeUnit.SECONDS.toMinutes(game.elapsedTime()) + ":" + String.format("%02d", game.elapsedTime() % 60) +
                 " | SUPPLY: " + player.supplyUsed()/2 + "/" + player.supplyTotal()/2);
     }
 

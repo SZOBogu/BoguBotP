@@ -7,6 +7,8 @@ import enums.WorkerRole;
 import helpers.CostCalculator;
 import helpers.MapHelper;
 import helpers.PositionPrinter;
+import helpers.ProductionOrderFactory;
+import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
@@ -89,15 +91,13 @@ public class BaseManager implements IUnitManager{
 
     @Override
     public void add(Unit unit){
-        workers.add(unit);
+        Worker worker = new Worker(unit);
+        this.workers.add(worker);
     }
 
     @Override
     public void remove(Unit unit){
-        if(unit.getType().isWorker()){
-            workers.remove(unit);
-            System.out.println("Worker removed");
-        }
+        workers.remove(unit);
     }
 
     //TODO: reassign gas workers if one of them was killed
@@ -122,7 +122,11 @@ public class BaseManager implements IUnitManager{
     //Get and remove form this manager i workers. Used in transferring probes to another base
     public List<Worker> popWorkers(int i){
         List<Worker> workersPopped = new ArrayList<>(this.freeWorkers(i));
-        workersPopped.forEach(worker -> this.remove(worker.getWorker()));
+        for(Worker worker : workersPopped){
+            this.remove(worker.getWorker());
+        }
+
+//        workersPopped.forEach(worker -> );
         return workersPopped;
     }
 
@@ -145,7 +149,6 @@ public class BaseManager implements IUnitManager{
         if (!workersWithState.isEmpty()) {
             worker = workersWithState.get(random.nextInt(workersWithState.size()));
             worker.setWorkerRole(WorkerRole.IDLE);
-            worker.getWorker().stop();
             return worker;
         }
         return null;
@@ -153,9 +156,14 @@ public class BaseManager implements IUnitManager{
 
     public List<Worker> freeWorkers(int howManyWorkersToFree){
         List<Worker> workers = new ArrayList<>();
-        for(int i = 0; i < howManyWorkersToFree; i++){
-            workers.add(this.makeWorkerAvailable());
+        for(;;){
+            if(workers.size() < howManyWorkersToFree) {
+                workers.add(this.makeWorkerAvailable());
+            }
+            else
+                break;
         }
+        System.out.println("FREED WORKERS : " + workers.size());
         return workers;
     }
 
@@ -252,10 +260,10 @@ public class BaseManager implements IUnitManager{
             return game.getBuildLocation(buildingType, player.getStartLocation());
     }
 
-    private void tryToBuild(){
+    private void tryToBuild(UnitType unitType){
         if(!this.builder.getWorker().isStuck()) {
-            TilePosition buildLocation = this.getTileToBuildOn(this.demandManager.getFirstBuildingDemanded());
-            this.builder.getWorker().build(this.demandManager.getFirstBuildingDemanded(), buildLocation);
+            TilePosition buildLocation = this.getTileToBuildOn(unitType);
+            this.builder.getWorker().build(unitType, buildLocation);
         }
         else{
             this.delegateWorkerToGatherMinerals(this.builder);
@@ -269,9 +277,9 @@ public class BaseManager implements IUnitManager{
             delegateWorkerToGatherGas(worker, this.assimilator);
         }
         //TODO: handling more than one assimilator
-        else if(builder == null && this.demandManager.areBuildingsDemanded()) {
+        else if(builder == null && this.demandManager.getNextItemOnList().getUnitType().isBuilding()) {
             this.delegateWorkerToBuild();
-            this.tryToBuild();
+            this.tryToBuild(this.demandManager.getNextItemOnList().getUnitType());
         }
         else{
             delegateWorkerToGatherMinerals(worker);
@@ -303,11 +311,12 @@ public class BaseManager implements IUnitManager{
 
     public void acceptWorkerTransfer(List<Worker> workerTrain){
         System.out.println("Worker transfer allegedly received: " + workerTrain.size());
+        Position position = new Position(this.base.getCenter().x + 2, this.base.getCenter().y);
 
         for(Worker worker : workerTrain){
-            this.add(worker.getWorker());
+            this.workers.getWorkerList().add(worker);
             worker.setWorkerRole(WorkerRole.IDLE);
-            worker.getWorker().move(this.base.getCenter());
+            worker.getWorker().move(position);
             this.delegateWorkerToGatherMinerals(worker);
         }
     }
@@ -316,18 +325,29 @@ public class BaseManager implements IUnitManager{
         return this.base.getGeysers().size() * 3 + this.base.getMinerals().size() * 2;
     }
 
+    public void orderNewProbe(){
+        if(this.nexus != null &&
+                this.nexus.getTrainingQueue().isEmpty() &&
+                CostCalculator.canAfford(player, UnitType.Protoss_Probe) &&
+                !this.isOversaturated() &&
+                this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 2){
+
+            this.demandManager.demandCreatingUnit(ProductionOrderFactory.createProbeOrder(this));
+        }
+    }
+
     @Override
     public void manage() {
         this.forceGatheringGas();
         List<Worker> idleWorkers = this.getIdleWorkers();
-        UnitType demandedBuilding = this.demandManager.getFirstBuildingDemanded();
+        UnitType nextOrderUnitType = this.demandManager.getNextItemOnList().getUnitType();
 
-        if(demandedBuilding != null && CostCalculator.canAfford(player, this.demandManager.getFirstBuildingDemanded())){
+        if(nextOrderUnitType != null && nextOrderUnitType.isBuilding() && CostCalculator.canAfford(player, nextOrderUnitType)){
             if(this.builder == null){
                 this.delegateWorkerToBuild();
             }
             if(this.builder != null && this.demandManager.areBuildingsDemanded()){
-                this.tryToBuild();
+                this.tryToBuild(nextOrderUnitType);
             }
         }
         else
@@ -340,6 +360,8 @@ public class BaseManager implements IUnitManager{
         if(isOversaturated() && !isOversaturationCalled){
             this.callOversaturation();
         }
+
+        this.orderNewProbe();
     }
 
     public void setAssimilator(Unit assimilator) {
@@ -366,8 +388,12 @@ public class BaseManager implements IUnitManager{
         isOversaturationCalled = oversaturationCalled;
     }
 
+    public void setNexus(Unit nexus) {
+        this.nexus = nexus;
+    }
+
     @Override
     public String toString() {
-        return "WorkerManager";
+        return "WorkerManager\t Workers Managed: " + workers.size();
     }
 }

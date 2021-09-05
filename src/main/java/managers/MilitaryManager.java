@@ -1,13 +1,12 @@
 package managers;
 
-import bwapi.Game;
-import bwapi.Position;
-import bwapi.TilePosition;
-import bwapi.Unit;
+import bwapi.*;
 import bwem.Base;
 import helpers.BaseInfoTracker;
 import helpers.BaseState;
 import helpers.MapHelper;
+import helpers.ProductionOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -29,6 +28,8 @@ public class MilitaryManager implements IUnitManager{
     private Game game;
     private BaseInfoTracker baseInfoTracker;
     private boolean isAttackSent;
+    private UnitType unitToProduceConstantly;
+    private DemandManager demandManager;
 
     int frames = 0;
 
@@ -52,6 +53,10 @@ public class MilitaryManager implements IUnitManager{
             this.tellScoutToGetToNextBase();
         }
         Base enemyBase = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
+
+        if(this.unitToProduceConstantly != null && !this.demandManager.isOnDemandList(this.unitToProduceConstantly)){
+            this.demandManager.demandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(this.unitToProduceConstantly).build());
+        }
 
         if(enemyBase != null && this.militaryUnits.size() > 20 && !this.isAttackSent){
             this.isAttackSent = true;
@@ -120,6 +125,11 @@ public class MilitaryManager implements IUnitManager{
     }
 
     private boolean areAllAttackersInPlace(){
+        if(this.frames > 1000){
+            return true;
+        }
+        else
+            this.frames++;
         for(Unit attacker : this.attackers){
             if(attacker.getDistance(this.attackRallyPoint) < 15){
                 return false;
@@ -160,5 +170,8 @@ public class MilitaryManager implements IUnitManager{
         this.scout = scout;
     }
 
-
+    @Autowired
+    public void setDemandManager(DemandManager demandManager) {
+        this.demandManager = demandManager;
+    }
 }

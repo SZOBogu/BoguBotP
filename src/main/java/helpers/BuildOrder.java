@@ -14,63 +14,21 @@ public class BuildOrder {
         13/17 — Cybernetics Core
         15/17 — Gateway
      */
-    private List<BuildOrderEntry> buildOrder;
+    private final List<ProductionOrder> buildOrder;
 
     public BuildOrder(){
         this.buildOrder = new ArrayList<>(Arrays.asList(
-//                UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, UnitType.Protoss_Probe, //initial 4 workers
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
-                new BuildOrderEntry(UnitType.Protoss_Pylon), new BuildOrderEntry(UnitType.Protoss_Probe),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Assimilator),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Probe),
-//                new BuildOrderEntry(UnitType.Protoss_Cybernetics_Core),
-                new BuildOrderEntry(UnitType.Protoss_Probe),
-                new BuildOrderEntry(UnitType.Protoss_Probe), new BuildOrderEntry(UnitType.Protoss_Gateway), new BuildOrderEntry(UnitType.Protoss_Pylon),
-                new BuildOrderEntry(UnitType.Protoss_Zealot), new BuildOrderEntry(UnitType.Protoss_Forge), new BuildOrderEntry(UnitType.Protoss_Gateway)
-        ));
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(8).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(10).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).populationMark(11).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(15).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(16).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(19).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(21).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(23).build()
+                ));
     }
-
-    public List<BuildOrderEntry> getBuildOrder() {
+    public List<ProductionOrder> getBuildOrder() {
         return buildOrder;
-    }
-
-    public boolean isComplete(){
-        return this.getBuildOrderPosition() > (this.buildOrder.size() - 1);
-    }
-
-    public int getBuildOrderPosition(){
-        for(int i = 0; i < this.buildOrder.size(); i++){
-            if(!this.buildOrder.get(i).isChecked()){
-                return i;
-            }
-        }
-        //TODO: test
-        return buildOrder.size();
-    }
-
-    public UnitType getNextThingInBuildOrder(){
-        try{
-            return this.buildOrder.get(this.getBuildOrderPosition()).getUnitType();
-        }
-        catch(IndexOutOfBoundsException indexOutOfBoundsException){
-            return UnitType.Protoss_Dragoon;
-        }
-    }
-
-    public void markAsBuilt() {
-        System.out.println("Position in build order: " + this.getBuildOrderPosition() + " next thing in build order: " + this.getNextThingInBuildOrder());
-        int index = this.getBuildOrderPosition();
-        if (index < this.buildOrder.size()){
-            this.buildOrder.get(index).setChecked(true);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "BuildOrder{" +
-                "buildOrder=" + buildOrder +
-                ", currentBuildOrderPosition=" + getBuildOrderPosition() +
-                '}';
     }
 }

@@ -9,7 +9,7 @@ public interface DemandList<T> {
     void fulfillDemand(T fulfilledDemandEntity);
     boolean isEmpty();
     T get(int i);
-    List getList();
+    List<T> getList();
     int size();
     boolean isOnDemandList(T isDemanded);
     int howManyItemsOnDemandList(T demandedType);

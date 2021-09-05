@@ -1,6 +1,8 @@
 package managers;
 
 import bwapi.*;
+import helpers.ProductionOrder;
+import helpers.ProductionOrderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +48,7 @@ public class BuildingManager {
         try{
             if(buildingThatCanTrain != null) {
                 buildingThatCanTrain.train(unitType);
-                this.demandManager.fulfillDemandCreatingUnit(unitType);
+                this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unitType).build());
             }
         }
         catch(ArrayIndexOutOfBoundsException e){     //to catch exception when adding 6th unit to training queue
@@ -73,7 +75,8 @@ public class BuildingManager {
 
     public void handleBuildingDestruction(Unit building){
         this.remove(building);
-        this.demandManager.demandCreatingUnit(building.getType());
+        ProductionOrder order = new ProductionOrder.ProductionOrderBuilder(building.getType()).build();
+        this.demandManager.demandCreatingUnit(order);
 
         //TODO: order worker service to reassign workers upon destroyed assimilator
     }

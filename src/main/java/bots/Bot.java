@@ -19,7 +19,6 @@ public class Bot extends DefaultBWListener {
     private MilitaryManager militaryManager;
     private GlobalBasesManager globalBasesManager;
 
-    private BuildOrder buildOrder;
     private MapHelper mapHelper;
     private BaseInfoTracker baseInfoTracker;
 
@@ -31,6 +30,8 @@ public class Bot extends DefaultBWListener {
         this.game = bwClient.getGame();
         this.player = game.self();
         this.mapHelper = new MapHelper(game);
+
+        this.demandManager.setGame(this.game);
 
         LoggingAspect loggingAspect = (LoggingAspect)MyApplicationContext.getBean("loggingAspect");
         loggingAspect.setGame(this.game);
@@ -46,8 +47,8 @@ public class Bot extends DefaultBWListener {
 
         for(Unit unit : player.getUnits()){
             if(unit.getType() == UnitType.Protoss_Nexus){
-                this.buildingManager.trainUnit(UnitType.Protoss_Probe);
                 this.mapHelper.setMainNexus(unit);
+                baseManager.setNexus(unit);
             }
         }
         this.baseInfoTracker.init(this.mapHelper);
@@ -70,10 +71,9 @@ public class Bot extends DefaultBWListener {
         baseManager.setExpansionManager(this.globalBasesManager);
         baseManager.setDemandManager(this.demandManager);
 
-        this.buildOrder = new BuildOrder();
-
-        for(BuildOrderEntry entry: this.buildOrder.getBuildOrder()) {
-            this.demandManager.demandCreatingUnit(entry.getUnitType());
+        BuildOrder buildOrder = new BuildOrder();
+        for(ProductionOrder entry: buildOrder.getBuildOrder()) {
+            this.demandManager.demandCreatingUnit(entry);
         }
 
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
@@ -84,21 +84,12 @@ public class Bot extends DefaultBWListener {
     public void onFrame(){
         this.game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
 
-        UnitType nextInBuildOrder = this.buildOrder.getNextThingInBuildOrder();
-
-        if(nextInBuildOrder.isBuilding()) {
-            this.demandManager.demandCreatingUnit(nextInBuildOrder);
-        }
-        else if(CostCalculator.canAfford(player, nextInBuildOrder)){
-            this.buildingManager.trainUnit(nextInBuildOrder);
-        }
-
         if(this.player.getUnits().size() > 15) {
                 if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
-                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Pylon);
+                    this.demandManager.demandCreatingUnit(ProductionOrderFactory.createPylonOrder());
                 }
                 else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Zealot)){
-                    this.demandManager.demandCreatingUnit(UnitType.Protoss_Zealot);
+                    this.demandManager.demandCreatingUnit(ProductionOrderFactory.createZealotOrder());
                 }
             }
         this.globalBasesManager.manage();
@@ -110,7 +101,7 @@ public class Bot extends DefaultBWListener {
     public void onUnitCreate(Unit unit){
         if(this.demandManager.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
-            this.demandManager.fulfillDemandCreatingUnit(unit.getType());
+            this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unit.getType()).build());
         }
     }
 
@@ -129,7 +120,7 @@ public class Bot extends DefaultBWListener {
             this.buildingManager.add(unit);
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
-            this.demandManager.fulfillDemandCreatingUnit(unit.getType());
+            this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build());
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
 
