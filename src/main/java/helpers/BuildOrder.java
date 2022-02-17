@@ -18,14 +18,17 @@ public class BuildOrder {
 
     public BuildOrder(){
         this.buildOrder = new ArrayList<>(Arrays.asList(
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(8).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(10).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).populationMark(11).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(15).build(),
+                ProductionOrderFactory.createProbeOrder(), ProductionOrderFactory.createProbeOrder(),
+                ProductionOrderFactory.createProbeOrder(), ProductionOrderFactory.createProbeOrder(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(16).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(19).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(21).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(23).build()
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(20).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).populationMark(22).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Zealot).populationMark(24).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(30).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(32).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(38).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(42).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(46).build()
                 ));
     }
     public List<ProductionOrder> getBuildOrder() {

@@ -4,9 +4,11 @@ import applicationContext.MyApplicationContext;
 import aspects.LoggingAspect;
 import bwapi.*;
 import bwem.Base;
+import configs.SpringConfig;
 import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,11 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onStart(){
+        MyApplicationContext context = new MyApplicationContext();
+        context.setApplicationContext(new AnnotationConfigApplicationContext(SpringConfig.class));
+        SpringConfig springConfig = (SpringConfig) MyApplicationContext.getBean("springConfig");
+        springConfig.setGame(bwClient.getGame());
+
         this.game = bwClient.getGame();
         this.player = game.self();
         this.mapHelper = new MapHelper(game);
@@ -62,14 +69,7 @@ public class Bot extends DefaultBWListener {
         this.militaryManager.setGame(this.game);
         this.militaryManager.setGlobalRallyPoint();
         this.militaryManager.setAttackRallyPoint();
-
-        baseManager.setExpansionManager(this.globalBasesManager);
-        baseManager.setDemandManager(this.demandManager);
-
         this.globalBasesManager.addWorkerManager(baseManager);
-
-        baseManager.setExpansionManager(this.globalBasesManager);
-        baseManager.setDemandManager(this.demandManager);
 
         BuildOrder buildOrder = new BuildOrder();
         for(ProductionOrder entry: buildOrder.getBuildOrder()) {
@@ -177,6 +177,14 @@ public class Bot extends DefaultBWListener {
     @Autowired
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     @Override

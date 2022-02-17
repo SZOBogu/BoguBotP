@@ -12,6 +12,7 @@ import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class DemandManager implements IBroodWarManager{
@@ -22,6 +23,7 @@ public class DemandManager implements IBroodWarManager{
 
     private Game game;
     private BuildingManager buildingManager;
+    private GlobalBasesManager globalBasesManager;
 
     public DemandManager() {
         this.unitsToCreateDemandList = new UnitDemandList();
@@ -50,6 +52,11 @@ public class DemandManager implements IBroodWarManager{
     public void fulfillDemandCreatingUnit(ProductionOrder productionOrder){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.fulfillDemand(productionOrder);
+    }
+
+    public void fulfillDemandCreatingUnit(UnitType unitType){
+        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
+        this.unitsToCreateDemandList.fulfillDemand(unitType);
     }
 
     public void fulfillDemandUpgrade(UpgradeType upgradeType){
@@ -109,14 +116,17 @@ public class DemandManager implements IBroodWarManager{
         }
         //if there are still no orders just return a first one without any marks
         if(order == null){
-            order = this.unitsToCreateDemandList.getList().stream()
+
+            List<ProductionOrder> orders = this.unitsToCreateDemandList.getList().stream()
                     .filter(o -> o.getFrameMark() == 450000)
                     .filter(o -> o.getTimeMark() == 18000)
                     .filter(o -> o.getPopulationMark() == 1201)
-                    .findFirst()
-                    .orElse(null);
-        }
+                    .sorted()
+                    .collect(Collectors.toList());
 
+            if(!orders.isEmpty())
+                order = orders.get(0);
+        }
         return order;
     }
 
@@ -129,13 +139,19 @@ public class DemandManager implements IBroodWarManager{
         return false;
     }
 
+    public void tellBaseToBuild(ProductionOrder order){
+        this.globalBasesManager.handleBuildingOrder(order);
+    }
+
 
     public void manage(){
         if(!this.unitsToCreateDemandList.isEmpty()){
             ProductionOrder productionOrder = this.getNextItemOnList();
-            if(!productionOrder.getUnitType().isBuilding()){
-                buildingManager.trainUnit(productionOrder.getUnitType());
+            if(productionOrder != null && !productionOrder.getUnitType().isBuilding()){
+                buildingManager.trainUnit(productionOrder);
             }
+            else if(this.getNextItemOnList() != null)
+                this.tellBaseToBuild(this.getNextItemOnList());
         }
         if(!this.techDemandList.isEmpty()){
             TechType type = (TechType)this.techDemandList.get(0);
@@ -151,6 +167,11 @@ public class DemandManager implements IBroodWarManager{
     @Autowired
     public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
+    }
+
+    @Autowired
+    public void setGlobalBasesManager(GlobalBasesManager globalBasesManager) {
+        this.globalBasesManager = globalBasesManager;
     }
 
     public void setGame(Game game) {

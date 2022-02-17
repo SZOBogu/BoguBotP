@@ -1,6 +1,7 @@
 package managers;
 
 import bwapi.*;
+import helpers.CostCalculator;
 import helpers.ProductionOrder;
 import helpers.ProductionOrderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +39,17 @@ public class BuildingManager {
         return this.getCompletedBuildingsOfType(demandedBuildingType).size();
     }
 
-    public void trainUnit(UnitType unitType){
+    public void trainUnit(ProductionOrder productionOrder){
         Unit buildingThatCanTrain = this.buildings.stream()
                 .filter(building -> !building.getType().buildsWhat().isEmpty())
                 .filter(building -> building.getTrainingQueue().isEmpty())
-                .filter(building -> building.canTrain(unitType))
+                .filter(building -> building.canTrain(productionOrder.getUnitType()))
                 .findFirst().orElse(null);
 
         try{
             if(buildingThatCanTrain != null) {
-                buildingThatCanTrain.train(unitType);
-                this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unitType).build());
+                buildingThatCanTrain.train(productionOrder.getUnitType());
+                this.demandManager.fulfillDemandCreatingUnit(productionOrder);
             }
         }
         catch(ArrayIndexOutOfBoundsException e){     //to catch exception when adding 6th unit to training queue

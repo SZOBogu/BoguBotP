@@ -140,6 +140,15 @@ public class GlobalBasesManager implements IBroodWarManager{
         }
     }
 
+    public void handleBuildingOrder(ProductionOrder order){
+        BaseManager targetBase = order.getBaseManager();
+
+        if(targetBase != null)
+            targetBase.build(order);
+        else
+            this.baseManagers.get(0).build(order);
+    }
+
     @Override
     public void manage() {
         this.baseManagers.forEach(BaseManager::manage);
@@ -174,7 +183,7 @@ public class GlobalBasesManager implements IBroodWarManager{
     public void setMilitaryManager(MilitaryManager militaryManager) {
         this.militaryManager = militaryManager;
     }
-
+    @Autowired
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
     }

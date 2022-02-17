@@ -3,11 +3,9 @@ package managers;
 import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
+import enums.ProductionPriority;
 import enums.WorkerRole;
-import helpers.CostCalculator;
-import helpers.MapHelper;
-import helpers.PositionPrinter;
-import helpers.ProductionOrderFactory;
+import helpers.*;
 import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
@@ -29,6 +27,8 @@ public class BaseManager implements IUnitManager{
 
     private boolean isOversaturationCalled;
     private final WorkerList workers;
+
+    private ProductionOrder buildingOrder;
 
     public static class WorkerManagerBuilder{
         private final Player player;
@@ -103,10 +103,15 @@ public class BaseManager implements IUnitManager{
     //TODO: reassign gas workers if one of them was killed
     //TODO: throws NullPointerException
     public void handleWorkerDestruction(Unit unit){
-        if(unit == this.builder.getWorker() && this.builder != null){
-            this.builder = null;
+        try {
+            if (unit == this.builder.getWorker() && this.builder != null) {
+                this.builder = null;
+            }
+            this.remove(unit);
         }
-        this.remove(unit);
+        catch (NullPointerException ex){
+            System.out.println("NPE on handling probe destruction");
+        }
     }
 
     private List<Worker> getIdleWorkers(){
@@ -125,8 +130,8 @@ public class BaseManager implements IUnitManager{
         for(Worker worker : workersPopped){
             this.remove(worker.getWorker());
         }
+        workersPopped.forEach(worker -> this.remove(worker.getWorker()));
 
-//        workersPopped.forEach(worker -> );
         return workersPopped;
     }
 
@@ -219,13 +224,11 @@ public class BaseManager implements IUnitManager{
                 this.delegateWorkerToGatherGas(worker, refinery);
             }
         }
-        System.out.println("Gas miners : " + this.workers.getWorkersWithState(WorkerRole.GAS_MINE));
     }
 
     private void delegateWorkerToGatherGas(Worker worker, Unit refinery){
         worker.getWorker().gather(refinery);
         worker.setWorkerRole(WorkerRole.GAS_MINE);
-        System.out.println("Worker delegated to gas");
     }
 
     private void delegateWorkerToBuild(){
@@ -233,7 +236,7 @@ public class BaseManager implements IUnitManager{
         Worker worker;
 
         List<Worker> mineralMiners = this.workers.getWorkersWithState(WorkerRole.MINERAL_MINE);
-        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.MINERAL_MINE);
+        List<Worker> gasMiners = this.workers.getWorkersWithState(WorkerRole.GAS_MINE);
 
         if(idleWorkers.isEmpty()) {
             Random random = new Random();
@@ -260,10 +263,10 @@ public class BaseManager implements IUnitManager{
             return game.getBuildLocation(buildingType, player.getStartLocation());
     }
 
-    private void tryToBuild(UnitType unitType){
+    private void tryToBuild(ProductionOrder order){
         if(!this.builder.getWorker().isStuck()) {
-            TilePosition buildLocation = this.getTileToBuildOn(unitType);
-            this.builder.getWorker().build(unitType, buildLocation);
+            TilePosition buildLocation = this.getTileToBuildOn(order.getUnitType());
+            this.builder.getWorker().build(order.getUnitType(), buildLocation);
         }
         else{
             this.delegateWorkerToGatherMinerals(this.builder);
@@ -275,11 +278,6 @@ public class BaseManager implements IUnitManager{
         if(this.assimilator != null &&
                 this.areGasMinersNeeded()){
             delegateWorkerToGatherGas(worker, this.assimilator);
-        }
-        //TODO: handling more than one assimilator
-        else if(builder == null && this.demandManager.getNextItemOnList().getUnitType().isBuilding()) {
-            this.delegateWorkerToBuild();
-            this.tryToBuild(this.demandManager.getNextItemOnList().getUnitType());
         }
         else{
             delegateWorkerToGatherMinerals(worker);
@@ -305,7 +303,7 @@ public class BaseManager implements IUnitManager{
 
     private void callOversaturation(){
         this.isOversaturationCalled = true;
-        System.out.println("Oversaturaion called");
+        System.out.println("Oversaturation called");
         this.globalBasesManager.handleOversaturation();
     }
 
@@ -330,28 +328,29 @@ public class BaseManager implements IUnitManager{
                 this.nexus.getTrainingQueue().isEmpty() &&
                 CostCalculator.canAfford(player, UnitType.Protoss_Probe) &&
                 !this.isOversaturated() &&
-                this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 2){
+                this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 1){
 
             this.demandManager.demandCreatingUnit(ProductionOrderFactory.createProbeOrder(this));
         }
+    }
+
+    public void build(ProductionOrder order){
+        if(CostCalculator.canAfford(player, order.getUnitType())){
+            if(this.builder == null){
+                this.delegateWorkerToBuild();
+            }
+            if(this.builder != null && this.demandManager.areBuildingsDemanded()){
+                this.tryToBuild(order);
+            }
+        }
+        else
+            this.freeBuilder();
     }
 
     @Override
     public void manage() {
         this.forceGatheringGas();
         List<Worker> idleWorkers = this.getIdleWorkers();
-        UnitType nextOrderUnitType = this.demandManager.getNextItemOnList().getUnitType();
-
-        if(nextOrderUnitType != null && nextOrderUnitType.isBuilding() && CostCalculator.canAfford(player, nextOrderUnitType)){
-            if(this.builder == null){
-                this.delegateWorkerToBuild();
-            }
-            if(this.builder != null && this.demandManager.areBuildingsDemanded()){
-                this.tryToBuild(nextOrderUnitType);
-            }
-        }
-        else
-            this.freeBuilder();
 
         for(Worker worker : idleWorkers){
             this.delegateWorkerToWork(worker);
@@ -372,6 +371,7 @@ public class BaseManager implements IUnitManager{
         return base;
     }
 
+    @Autowired
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
     }

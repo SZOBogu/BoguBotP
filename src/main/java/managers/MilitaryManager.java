@@ -93,11 +93,6 @@ public class MilitaryManager implements IUnitManager{
             baseInfoTracker.markAllNeutralBasesAsUnknown();
     }
 
-    public void tellScoutToSideStep(){
-        TilePosition temp = this.scout.getTilePosition();
-        this.scout.move(new TilePosition(temp.x + 10, temp.y).toPosition());
-    }
-
     public void setGlobalRallyPoint(){
         TilePosition temp = mapHelper.getListOfBases().get(1).getLocation();
         this.rallyPoint = new TilePosition(temp.x + 15, temp.y);
@@ -126,6 +121,7 @@ public class MilitaryManager implements IUnitManager{
 
     private boolean areAllAttackersInPlace(){
         if(this.frames > 1000){
+            this.frames = 0;
             return true;
         }
         else
@@ -153,7 +149,6 @@ public class MilitaryManager implements IUnitManager{
         }
         this.remove(unit);
     }
-
     public void setGame(Game game) {
         this.game = game;
     }
@@ -161,7 +156,7 @@ public class MilitaryManager implements IUnitManager{
     public void setMapHelper(MapHelper mapHelper) {
         this.mapHelper = mapHelper;
     }
-
+    @Autowired
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
     }

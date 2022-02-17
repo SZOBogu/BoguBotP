@@ -7,6 +7,8 @@ import bwapi.UnitType;
 import bwem.BWEM;
 import bwem.BWMap;
 import bwem.Base;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,5 +68,9 @@ public class MapHelper {
 
         List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
         return sortedBases;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 }

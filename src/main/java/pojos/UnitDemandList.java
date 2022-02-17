@@ -30,6 +30,13 @@ public class UnitDemandList implements DemandList{
         this.demandList.remove(order);
     }
 
+    public void fulfillDemandOnUnitType(Object fulfilledDemandEntity) {
+        UnitType unitType = (UnitType) fulfilledDemandEntity;
+
+        ProductionOrder order = this.demandList.stream().filter(o -> o.getUnitType() == unitType).findFirst().orElse(null);
+        this.demandList.remove(order);
+    }
+
     @Override
     public boolean isEmpty() {
         return this.demandList.isEmpty();

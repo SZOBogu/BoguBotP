@@ -7,7 +7,7 @@ import managers.BaseManager;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-public class ProductionOrder {
+public class ProductionOrder implements Comparable<ProductionOrder>{
     private UnitType unitType;
     private int populationMark;
     private long timeMark;
@@ -79,6 +79,30 @@ public class ProductionOrder {
         this.unitType = unitType;
     }
 
+    public int getPopulationMark() {
+        return populationMark;
+    }
+
+    public void setPopulationMark(int populationMark) {
+        this.populationMark = populationMark;
+    }
+
+    public long getTimeMark() {
+        return timeMark;
+    }
+
+    public void setTimeMark(long timeMark) {
+        this.timeMark = timeMark;
+    }
+
+    public long getFrameMark() {
+        return frameMark;
+    }
+
+    public void setFrameMark(long frameMark) {
+        this.frameMark = frameMark;
+    }
+
     public BaseManager getBaseManager() {
         return baseManager;
     }
@@ -91,16 +115,13 @@ public class ProductionOrder {
         return priority;
     }
 
-    public int getPopulationMark() {
-        return populationMark;
+    public void setPriority(ProductionPriority priority) {
+        this.priority = priority;
     }
 
-    public long getTimeMark() {
-        return timeMark;
-    }
-
-    public long getFrameMark() {
-        return frameMark;
+    @Override
+    public int compareTo(ProductionOrder o) {
+        return this.priority.compareTo(o.priority);
     }
 
     @Override
