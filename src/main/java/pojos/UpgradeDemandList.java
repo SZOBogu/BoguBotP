@@ -35,7 +35,7 @@ public class UpgradeDemandList implements DemandList{
     }
 
     @Override
-    public List getList() {
+    public List<UpgradeType> getList() {
         return this.demandList;
     }
 

@@ -26,12 +26,31 @@ public class WorkerList {
         return null;
     }
 
-    public void add(Unit unit){
-        this.workerList.add(new Worker(unit));
+    public void add(Worker worker){
+        boolean isWorkerPresentAlready = false;
+
+        for(Worker tempWorker: this.workerList){
+            if (tempWorker.getWorker().equals(worker.getWorker())){
+                isWorkerPresentAlready = true;
+                break;
+            }
+        }
+        if(!isWorkerPresentAlready)
+            this.workerList.add(worker);
     }
 
-    public void remove(Unit unit){
-        this.workerList.removeIf(entry -> entry.getWorker().equals(unit));
+    public void remove(Unit worker){
+        List<Worker> workersToRemove = new ArrayList<>();
+
+        for(Worker tempWorker : this.workerList){
+            if(tempWorker.getWorker().equals(worker)){
+                workersToRemove.add(tempWorker);
+            }
+        }
+
+        this.workerList.removeAll(workersToRemove);
+        System.out.println(workersToRemove.size() + " Worker successfully removed");
+//        this.workerList.removeIf(entry -> entry.getWorker().equals(worker));
     }
 
     public List<Worker> getWorkerList() {

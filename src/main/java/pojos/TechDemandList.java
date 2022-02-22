@@ -38,7 +38,7 @@ public class TechDemandList implements DemandList{
     }
 
     @Override
-    public List getList() {
+    public List<TechType> getList() {
         return this.demandList;
     }
 

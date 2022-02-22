@@ -2,18 +2,25 @@ package configs;
 
 import bots.Bot;
 import bwapi.BWClient;
-import managers.MilitaryManager;
+import bwapi.Game;
+import bwapi.Player;
+import helpers.BaseInfoTracker;
+import helpers.MapHelper;
+import managers.*;
 import org.springframework.context.annotation.Bean;
-import managers.BuildingManager;
-import managers.DemandManager;
-import managers.WorkerManager;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @Configuration
+@EnableAspectJAutoProxy
+@ComponentScan({"main", "helpers", "aspects", "managers", "bots", "exceptions", "applicationContext"})
 public class SpringConfig {
+    private Game game;
+
     @Bean
-    public WorkerManager workerManager(){
-        return new WorkerManager();
+    public GlobalBasesManager expansionManager(){
+        return new GlobalBasesManager();
     }
 
     @Bean
@@ -35,5 +42,12 @@ public class SpringConfig {
     @Bean
     public BWClient bwClient() {
         return new BWClient(this.bot());
+    }
+
+    @Bean
+    public BaseInfoTracker baseInfoTracker() {return new BaseInfoTracker();}
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 }

@@ -1,17 +1,19 @@
 package managers;
 
 import bwapi.*;
-import bwem.BWMap;
-import bwem.Base;
+import helpers.CostCalculator;
+import helpers.ProductionOrder;
+import helpers.ProductionOrderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 public class BuildingManager {
     private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private DemandManager demandManager;
-//    private BWMap map;
 
     public void add(Unit unit){
             this.buildings.add(unit);
@@ -19,10 +21,6 @@ public class BuildingManager {
 
     public void remove(Unit unit){
         this.buildings.remove(unit);
-    }
-
-    public List<Unit> getAssimilators(){
-        return this.getCompletedBuildingsOfType(UnitType.Protoss_Assimilator);
     }
 
     public List<Unit> getAllBuildingsOfType(UnitType buildingType){
@@ -41,17 +39,17 @@ public class BuildingManager {
         return this.getCompletedBuildingsOfType(demandedBuildingType).size();
     }
 
-    public void trainUnit(UnitType unitType){
+    public void trainUnit(ProductionOrder productionOrder){
         Unit buildingThatCanTrain = this.buildings.stream()
                 .filter(building -> !building.getType().buildsWhat().isEmpty())
                 .filter(building -> building.getTrainingQueue().isEmpty())
-                .filter(building -> building.canTrain(unitType))
+                .filter(building -> building.canTrain(productionOrder.getUnitType()))
                 .findFirst().orElse(null);
 
         try{
             if(buildingThatCanTrain != null) {
-                buildingThatCanTrain.train(unitType);
-                this.demandManager.fulfillDemandCreatingUnit(unitType);
+                buildingThatCanTrain.train(productionOrder.getUnitType());
+                this.demandManager.fulfillDemandCreatingUnit(productionOrder);
             }
         }
         catch(ArrayIndexOutOfBoundsException e){     //to catch exception when adding 6th unit to training queue
@@ -78,7 +76,8 @@ public class BuildingManager {
 
     public void handleBuildingDestruction(Unit building){
         this.remove(building);
-        this.demandManager.demandCreatingUnit(building.getType());
+        ProductionOrder order = new ProductionOrder.ProductionOrderBuilder(building.getType()).build();
+        this.demandManager.demandCreatingUnit(order);
 
         //TODO: order worker service to reassign workers upon destroyed assimilator
     }
@@ -86,15 +85,6 @@ public class BuildingManager {
     public LinkedHashSet<Unit> getBuildings() {
         return buildings;
     }
-
-//    public void setPlayer(Player player) {
-//        this.player = player;
-//    }
-
-//    public void setMap(BWMap map) {
-//        this.map = map;
-//    }
-
 
     @Autowired
     public void setDemandService(DemandManager demandManager) {

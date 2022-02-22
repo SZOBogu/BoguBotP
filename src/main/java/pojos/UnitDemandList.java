@@ -1,13 +1,16 @@
 package pojos;
 
 import bwapi.UnitType;
+import helpers.BuildOrder;
+import helpers.ProductionOrder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class UnitDemandList implements DemandList{
-    private List<UnitType> demandList;
+    private final List<ProductionOrder> demandList;
 
     public UnitDemandList() {
         this.demandList = new ArrayList<>();
@@ -15,16 +18,23 @@ public class UnitDemandList implements DemandList{
 
     @Override
     public void demand(Object demandedEntity) {
-        UnitType unitType = (UnitType) demandedEntity;
+        ProductionOrder order = (ProductionOrder) demandedEntity;
 
-        this.demandList.add(unitType);
+        this.demandList.add(order);
     }
 
     @Override
     public void fulfillDemand(Object fulfilledDemandEntity) {
+        ProductionOrder order = (ProductionOrder) fulfilledDemandEntity;
+
+        this.demandList.remove(order);
+    }
+
+    public void fulfillDemandOnUnitType(Object fulfilledDemandEntity) {
         UnitType unitType = (UnitType) fulfilledDemandEntity;
 
-        this.demandList.remove(unitType);
+        ProductionOrder order = this.demandList.stream().filter(o -> o.getUnitType() == unitType).findFirst().orElse(null);
+        this.demandList.remove(order);
     }
 
     @Override
@@ -37,7 +47,7 @@ public class UnitDemandList implements DemandList{
     }
 
     @Override
-    public List getList() {
+    public List<ProductionOrder> getList() {
         return this.demandList;
     }
 
@@ -49,13 +59,18 @@ public class UnitDemandList implements DemandList{
     @Override
     public boolean isOnDemandList(Object isDemanded) {
         UnitType unit = (UnitType) isDemanded;
-        return this.demandList.contains(unit);
+        for(ProductionOrder order: this.demandList){
+            if(order.getUnitType() == unit){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public int howManyItemsOnDemandList(Object demandedType) {
-        List<UnitType> unitsDemanded = this.demandList;
-        return (int) unitsDemanded.stream().filter(Objects::nonNull).filter(i -> i.equals(demandedType)).count();
+        UnitType unitTypeDemanded = (UnitType)demandedType;
+        return (int) this.demandList.stream().filter(i -> i.getUnitType().equals(unitTypeDemanded)).count();
     }
 
     @Override

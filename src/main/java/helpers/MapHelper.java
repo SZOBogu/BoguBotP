@@ -1,28 +1,28 @@
 package helpers;
 
-import bwapi.Game;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.BWEM;
 import bwem.BWMap;
 import bwem.Base;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MapHelper {
-    private final BWMap map;
+    private final BWEM bwem;
+    private Game game;
     private Unit mainNexus;
 
     public MapHelper(Game game){
-        BWEM bwem = new BWEM(game);
+        this.bwem = new BWEM(game);
         bwem.initialize();
         bwem.setFailOnError(false);
-        map = bwem.getMap();
     }
 
     public BWMap getMap() {
-        return map;
+        return this.bwem.getMap();
     }
 
     public void setMainNexus(Unit mainNexus) {
@@ -34,11 +34,19 @@ public class MapHelper {
     }
 
     public List<Base> getListOfBases(){
-        List<Base> bases = this.map.getBases();
+        return this.getBasesClosestToTilePosition(this.mainNexus.getTilePosition());
+    }
+
+    public Base getBaseClosestToTilePosition(TilePosition tilePosition){
+        return this.getBasesClosestToTilePosition(tilePosition).get(0);
+    }
+
+    public List<Base> getBasesClosestToTilePosition(TilePosition tilePosition) {
+        List<Base> bases = this.getMap().getBases();
         Map<Base, Integer> baseDistanceMap = new HashMap<>();
 
         for (Base tempBase : bases) {
-            int tempDistance = this.mainNexus.getTilePosition().getApproxDistance(tempBase.getLocation());
+            int tempDistance = tilePosition.getApproxDistance(tempBase.getLocation());
             baseDistanceMap.put(tempBase, tempDistance);
         }
 
@@ -52,10 +60,14 @@ public class MapHelper {
                     return comparison;
             }
         };
-
         Map<Base, Integer> allegedlySortedMap = new TreeMap<>(valueComparator);
         allegedlySortedMap.putAll(baseDistanceMap);
 
-        return Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
+        List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base) i).collect(Collectors.toList());
+        return sortedBases;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 }
