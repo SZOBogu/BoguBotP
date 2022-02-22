@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class MilitaryManager implements IUnitManager{
     private final List<Unit> militaryUnits = new ArrayList<>();
+    private boolean isAttackCommandIssued = false;
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
 
@@ -103,17 +104,31 @@ public class MilitaryManager implements IUnitManager{
     }
 
     private void manageAttack(){
-        if(isAttackSent && !this.areAllAttackersInPlace()) {
-            getAttackersInOnePlace();
-        }
-        if(this.areAllAttackersInPlace()){
-            this.attack();
-        }
+       // if(!isAttackCommandIssued) {
+            if (isAttackSent && !this.areAllAttackersInPlace()) {
+                getAttackersInOnePlace();
+            }
+            if (this.areAllAttackersInPlace()) {
+                this.attack();
+            }
+        //}
     }
 
     private void getAttackersInOnePlace(){
         Position centerTile = this.mapHelper.getMap().getCenter();
-        this.attackers.forEach(unit -> unit.attack(centerTile));
+        if(!this.isAttackCommandIssued){
+            this.attackers.forEach(unit -> unit.attack(centerTile));
+            this.isAttackCommandIssued = true;
+        }
+    }
+
+    private void attack(){
+        Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
+
+        if(!this.isAttackCommandIssued) {
+            this.attackers.forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 6, 6)));
+            this.isAttackCommandIssued = true;
+        }
     }
 
     private boolean areAllAttackersInPlace(){
@@ -131,15 +146,10 @@ public class MilitaryManager implements IUnitManager{
         return true;
     }
 
-    private void attack(){
-        Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
-
-        this.attackers.forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 2, 2)));
-    }
-
     public void handleMilitaryDestruction(Unit unit) {
-        if(unit == this.scout){
-            this.scout = null;
+        if(unit == this.scout && this.scout != null){
+            if(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()).getCenter().getDistance(this.scout.getPosition()) < 5)
+                this.baseInfoTracker.markBaseAsEnemy(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()));
         }
         this.attackers.remove(unit);
         if(this.attackers.isEmpty()){
