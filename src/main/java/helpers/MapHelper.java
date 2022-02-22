@@ -1,9 +1,6 @@
 package helpers;
 
-import bwapi.Game;
-import bwapi.TilePosition;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
 import bwem.BWEM;
 import bwem.BWMap;
 import bwem.Base;
@@ -44,7 +41,7 @@ public class MapHelper {
         return this.getBasesClosestToTilePosition(tilePosition).get(0);
     }
 
-    public List<Base> getBasesClosestToTilePosition(TilePosition tilePosition){
+    public List<Base> getBasesClosestToTilePosition(TilePosition tilePosition) {
         List<Base> bases = this.getMap().getBases();
         Map<Base, Integer> baseDistanceMap = new HashMap<>();
 
@@ -66,7 +63,7 @@ public class MapHelper {
         Map<Base, Integer> allegedlySortedMap = new TreeMap<>(valueComparator);
         allegedlySortedMap.putAll(baseDistanceMap);
 
-        List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base)i).collect(Collectors.toList());
+        List<Base> sortedBases = Arrays.stream(allegedlySortedMap.keySet().toArray()).map(i -> (Base) i).collect(Collectors.toList());
         return sortedBases;
     }
 

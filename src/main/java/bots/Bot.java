@@ -30,7 +30,7 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onStart(){
         MyApplicationContext context = new MyApplicationContext();
-        context.setApplicationContext(new AnnotationConfigApplicationContext(SpringConfig.class));
+        //context.setApplicationContext(new AnnotationConfigApplicationContext(SpringConfig.class));
         SpringConfig springConfig = (SpringConfig) MyApplicationContext.getBean("springConfig");
         springConfig.setGame(bwClient.getGame());
 

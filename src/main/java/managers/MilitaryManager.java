@@ -2,10 +2,7 @@ package managers;
 
 import bwapi.*;
 import bwem.Base;
-import helpers.BaseInfoTracker;
-import helpers.BaseState;
-import helpers.MapHelper;
-import helpers.ProductionOrder;
+import helpers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -136,7 +133,8 @@ public class MilitaryManager implements IUnitManager{
 
     private void attack(){
         Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
-        this.attackers.forEach(unit -> unit.attack(base.getCenter()));
+
+        this.attackers.forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 2, 2)));
     }
 
     public void handleMilitaryDestruction(Unit unit) {
