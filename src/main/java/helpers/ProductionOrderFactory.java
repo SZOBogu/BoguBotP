@@ -6,11 +6,11 @@ import managers.BaseManager;
 
 public class ProductionOrderFactory {
     public static ProductionOrder createProbeOrder(){
-        return new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Probe).priority(ProductionPriority.LOW).build();
+        return new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Probe).build();
     }
 
     public static ProductionOrder createProbeOrder(BaseManager baseManager){
-        return new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Probe).priority(ProductionPriority.LOW).baseManager(baseManager).build();
+        return new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Probe).baseManager(baseManager).build();
     }
 
     public static ProductionOrder createZealotOrder(){

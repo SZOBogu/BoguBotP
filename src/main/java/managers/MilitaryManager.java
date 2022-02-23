@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class MilitaryManager implements IUnitManager{
     private final List<Unit> militaryUnits = new ArrayList<>();
     private boolean isAttackCommandIssued = false;
+    private List<List<Unit>> militaryGroups = new ArrayList<>();
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
 

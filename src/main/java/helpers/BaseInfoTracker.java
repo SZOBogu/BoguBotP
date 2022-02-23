@@ -1,9 +1,11 @@
 package helpers;
 
+import bwapi.Game;
 import bwapi.TilePosition;
 import bwem.Base;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.BaseInfoRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,51 +13,52 @@ import java.util.stream.Collectors;
 
 @Component
 public class BaseInfoTracker {
-    private final List<MyPair<Base, BaseState>> bases = new ArrayList<>();
+    private Game game;
+    private final List<BaseInfoRecord> bases = new ArrayList<>();
     private MapHelper mapHelper;
 
     public void init(MapHelper mapHelper){
         List<Base> bases = mapHelper.getBasesClosestToTilePosition(mapHelper.getMainBase().getLocation());
 
         for(Base base : bases){
-            MyPair<Base, BaseState> pair = new MyPair<>(base, BaseState.UNKNOWN);
-            this.bases.add(pair);
+            BaseInfoRecord record = new BaseInfoRecord(base, BaseState.UNKNOWN, 0);
+            this.bases.add(record);
         }
 
         this.mapHelper = mapHelper;
     }
 
     public void markBaseAsMine(Base base){
-        this.changeBaseState(base, BaseState.MINE);
+        this.changeBaseState(base, BaseState.MINE, game.elapsedTime());
     }
 
     public void markBaseAsNeutral(Base base){
-        this.changeBaseState(base, BaseState.NEUTRAL);
+        this.changeBaseState(base, BaseState.NEUTRAL, game.elapsedTime());
     }
 
     public void markBaseAsEnemy(Base base){
-        this.changeBaseState(base, BaseState.ENEMY);
+        this.changeBaseState(base, BaseState.ENEMY, game.elapsedTime());
     }
 
     public void markBaseAsUnknown(Base base){
-        this.changeBaseState(base, BaseState.UNKNOWN);
+        this.changeBaseState(base, BaseState.UNKNOWN, game.elapsedTime());
     }
 
-    private void changeBaseState(Base base, BaseState state){
-        this.bases.stream().filter(b -> b.getKey().equals(base)).forEach(b -> b.setValue(state));
+    private void changeBaseState(Base base, BaseState state, int timestamp){
+        this.bases.stream().filter(b -> b.getBase().equals(base)).forEach(b -> {b.setBaseState(state); b.setTimeStamp(this.game.elapsedTime());});
     }
 
     public Base getClosestBaseWithState(BaseState state){
-        return this.getClosestBaseWithState(this.bases.get(0).getKey().getLocation(), state);
+        return this.getClosestBaseWithState(this.bases.get(0).getBase().getLocation(), state);
     }
 
     public Base getClosestBaseWithState(TilePosition tilePosition, BaseState state){
         List<Base> basesClosest = this.mapHelper.getBasesClosestToTilePosition(tilePosition);
 
         for(Base base : basesClosest) {
-            for (MyPair<Base, BaseState> pair : this.bases) {
-                if (pair.getValue() == state && pair.getKey().equals(base)) {
-                    return pair.getKey();
+            for (BaseInfoRecord record : this.bases) {
+                if (record.getBaseState() == state && record.getBase().equals(base)) {
+                    return record.getBase();
                 }
             }
         }
@@ -67,9 +70,9 @@ public class BaseInfoTracker {
         List<Base> basesWithState = new ArrayList<>();
 
         for(Base base : basesClosest) {
-            for (MyPair<Base, BaseState> pair : this.bases) {
-                if (pair.getValue() == state && pair.getKey().equals(base)) {
-                    basesWithState.add(pair.getKey());
+            for (BaseInfoRecord record : this.bases) {
+                if (record.getBaseState() == state && record.getBase().equals(base)) {
+                    basesWithState.add(record.getBase());
                 }
             }
         }
@@ -77,16 +80,16 @@ public class BaseInfoTracker {
     }
 
     public BaseState checkBaseState(Base base){
-        for(MyPair<Base, BaseState> pair: this.bases){
-            if(pair.getKey().equals(base)){
-                return pair.getValue();
+        for(BaseInfoRecord record: this.bases){
+            if(record.getBase().equals(base)){
+                return record.getBaseState();
             }
         }
         return null;
     }
 
     public void markAllNeutralBasesAsUnknown(){
-        List<Base> bases = this.bases.stream().map(MyPair::getKey).collect(Collectors.toList());
+        List<Base> bases = this.bases.stream().map(BaseInfoRecord::getBase).collect(Collectors.toList());
         bases.stream().filter(base -> this.checkBaseState(base) == BaseState.NEUTRAL).forEach(this::markBaseAsUnknown);
     }
 
@@ -96,5 +99,9 @@ public class BaseInfoTracker {
 
     public void setMapHelper(MapHelper mapHelper) {
         this.mapHelper = mapHelper;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 }

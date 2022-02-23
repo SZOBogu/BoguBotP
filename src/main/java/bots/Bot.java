@@ -29,11 +29,6 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onStart(){
-        MyApplicationContext context = new MyApplicationContext();
-        //context.setApplicationContext(new AnnotationConfigApplicationContext(SpringConfig.class));
-        SpringConfig springConfig = (SpringConfig) MyApplicationContext.getBean("springConfig");
-        springConfig.setGame(bwClient.getGame());
-
         this.game = bwClient.getGame();
         this.player = game.self();
         this.mapHelper = new MapHelper(game);
@@ -59,6 +54,7 @@ public class Bot extends DefaultBWListener {
             }
         }
         this.baseInfoTracker.init(this.mapHelper);
+        this.baseInfoTracker.setGame(this.game);
 
         this.globalBasesManager.setMapHelper(this.mapHelper);
         this.globalBasesManager.setGame(game);
@@ -185,6 +181,10 @@ public class Bot extends DefaultBWListener {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    private void springBeanConfig(){
+
     }
 
     @Override
