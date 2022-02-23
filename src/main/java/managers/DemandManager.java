@@ -1,10 +1,10 @@
 package managers;
 
-import bwapi.Game;
-import bwapi.TechType;
-import bwapi.UnitType;
-import bwapi.UpgradeType;
+import bwapi.*;
+import enums.ProductionPriority;
 import helpers.ProductionOrder;
+import helpers.ProductionOrderFactory;
+import helpers.SupplyBlockDetector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pojos.TechDemandList;
@@ -25,24 +25,32 @@ public class DemandManager implements IBroodWarManager{
     private BuildingManager buildingManager;
     private GlobalBasesManager globalBasesManager;
 
+    private int lastUnitProducedTimestamp;
+    private int lastBlockCheck;
+
     public DemandManager() {
         this.unitsToCreateDemandList = new UnitDemandList();
         this.workerAttentionDemandList = new UnitDemandList();
         this.techDemandList = new TechDemandList();
         this.upgradeDemandList = new UpgradeDemandList();
+        this.lastUnitProducedTimestamp = 0;
+        this.lastBlockCheck = 0;
     }
 
     public void demandCreatingUnit(ProductionOrder order){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
-        this.unitsToCreateDemandList.demand(order);
+        if(order.getUnitType().getRace() == Race.Protoss)
+            this.unitsToCreateDemandList.demand(order);
     }
 
     public void demandUpgrade(UpgradeType upgradeType){
-        this.upgradeDemandList.demand(upgradeType);
+        if(upgradeType.getRace() == Race.Protoss)
+            this.upgradeDemandList.demand(upgradeType);
     }
 
     public void demandTech(TechType techType){
-        this.techDemandList.demand(techType);
+        if(techType.getRace() == Race.Protoss)
+            this.techDemandList.demand(techType);
     }
 
     public void demandWorkerAttention(UnitType worker){
@@ -52,11 +60,20 @@ public class DemandManager implements IBroodWarManager{
     public void fulfillDemandCreatingUnit(ProductionOrder productionOrder){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.fulfillDemand(productionOrder);
+        this.lastUnitProducedTimestamp = this.game.elapsedTime();
     }
 
-    public void fulfillDemandCreatingUnit(UnitType unitType){
+    public boolean fulfillDemandCreatingUnitWithType(UnitType unitType){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
-        this.unitsToCreateDemandList.fulfillDemand(unitType);
+        List<ProductionOrder> orderedUnits = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getUnitType() == unitType).sorted().collect(Collectors.toList());
+        if(orderedUnits.isEmpty()){
+            return false;
+        }
+        else{
+            this.unitsToCreateDemandList.fulfillDemand(orderedUnits.get(0));
+        }
+        this.lastUnitProducedTimestamp = this.game.elapsedTime();
+        return true;
     }
 
     public void fulfillDemandUpgrade(UpgradeType upgradeType){
@@ -143,6 +160,16 @@ public class DemandManager implements IBroodWarManager{
         this.globalBasesManager.handleBuildingOrder(order);
     }
 
+    public void manageSupply(){
+        if(this.game.self().getUnits().size() > 15) {
+            if (game.self().supplyTotal() - game.self().supplyUsed() <= 2 * Math.min(1, buildingManager.countMilitaryProductionBuildings()) && game.self().supplyTotal() <= 400 && !this.isOnDemandList(UnitType.Protoss_Pylon)) {
+                ProductionOrder order = ProductionOrderFactory.createPylonOrder();
+                order.setPriority(ProductionPriority.IMPORTANT);
+                this.demandCreatingUnit(order);
+            }
+        }
+    }
+
 
     public void manage(){
         if(!this.unitsToCreateDemandList.isEmpty()){
@@ -162,6 +189,28 @@ public class DemandManager implements IBroodWarManager{
             UpgradeType type = (UpgradeType)this.upgradeDemandList.get(0);
             buildingManager.makeUpgrade(type);
         }
+        if(this.game.elapsedTime() % 10 == 0){
+            manageSupply();
+        }
+        /*
+        if(this.game.elapsedTime() - this.lastUnitProducedTimestamp > 50){
+            if(SupplyBlockDetector.isSupplyBlocked(this.game, this.buildingManager)  && this.game.elapsedTime() - this.lastBlockCheck > 100){
+                if(this.unitsToCreateDemandList.howManyItemsOnDemandList(UnitType.Protoss_Pylon) < this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Gateway)){
+                    for(int i = 0; i < this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Gateway) - this.unitsToCreateDemandList.howManyItemsOnDemandList(UnitType.Protoss_Pylon); i++){
+                        ProductionOrder order = ProductionOrderFactory.createPylonOrder();
+                        order.setPriority(ProductionPriority.IMPORTANT);
+                        this.unitsToCreateDemandList.getList().add(0, order);
+                        System.out.println("SUPPLY BLOCK DETECTED. New Pylon orders added");
+                    }
+                }
+                else if(this.unitsToCreateDemandList.howManyItemsOnDemandList(UnitType.Protoss_Pylon) >= this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Gateway)){
+                    this.unitsToCreateDemandList.getList().stream().filter(o -> o.getUnitType() == UnitType.Protoss_Pylon).forEach(o -> o.setPriority(ProductionPriority.LOW));
+                    System.out.println("SUPPLY BLOCK DETECTED. Pylon orders priority increased");
+                }
+                this.lastBlockCheck = this.game.elapsedTime();
+            }
+        }
+         */
     }
 
     @Autowired

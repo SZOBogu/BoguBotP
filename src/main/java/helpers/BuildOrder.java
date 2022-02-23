@@ -28,7 +28,9 @@ public class BuildOrder {
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(32).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(38).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(42).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(46).build()
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(42).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(42).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(46).build()
                 ));
     }
     public List<ProductionOrder> getBuildOrder() {

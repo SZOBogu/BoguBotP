@@ -5,6 +5,7 @@ import aspects.LoggingAspect;
 import bwapi.*;
 import bwem.Base;
 import configs.SpringConfig;
+import enums.ProductionPriority;
 import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,15 +80,6 @@ public class Bot extends DefaultBWListener {
     @Override
     public void onFrame(){
         this.game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
-
-        if(this.player.getUnits().size() > 15) {
-                if (player.supplyTotal() - player.supplyUsed() <= 2 && player.supplyTotal() <= 400 && !this.demandManager.isOnDemandList(UnitType.Protoss_Pylon)) {
-                    this.demandManager.demandCreatingUnit(ProductionOrderFactory.createPylonOrder());
-                }
-                else if(this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Gateway) > demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Zealot)){
-                    this.demandManager.demandCreatingUnit(ProductionOrderFactory.createZealotOrder());
-                }
-            }
         this.globalBasesManager.manage();
         this.demandManager.manage();
         this.militaryManager.manage();
@@ -99,6 +91,12 @@ public class Bot extends DefaultBWListener {
             //doesn't work with assimilators
             this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unit.getType()).build());
         }
+        /*
+        if(unit.getType() == UnitType.Protoss_Pylon){
+            this.buildingManager.add(unit);
+            this.demandManager.fulfillDemandCreatingUnitWithType(UnitType.Protoss_Pylon);
+        }
+         */
     }
 
     @Override
@@ -181,10 +179,6 @@ public class Bot extends DefaultBWListener {
 
     public void setPlayer(Player player) {
         this.player = player;
-    }
-
-    private void springBeanConfig(){
-
     }
 
     @Override

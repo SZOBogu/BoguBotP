@@ -1,5 +1,6 @@
 package pojos;
 
+import bwapi.Game;
 import bwapi.UnitType;
 import helpers.BuildOrder;
 import helpers.ProductionOrder;
@@ -26,8 +27,8 @@ public class UnitDemandList implements DemandList{
     @Override
     public void fulfillDemand(Object fulfilledDemandEntity) {
         ProductionOrder order = (ProductionOrder) fulfilledDemandEntity;
-
-        this.demandList.remove(order);
+        ProductionOrder orderToRemove = this.demandList.stream().filter(o -> o.getUnitType() == order.getUnitType()).sorted().findFirst().get();
+        this.demandList.remove(orderToRemove);
     }
 
     public void fulfillDemandOnUnitType(Object fulfilledDemandEntity) {

@@ -6,9 +6,10 @@ import helpers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static bwapi.UnitType.*;
 
 @Component
 public class MilitaryManager implements IUnitManager{
@@ -18,7 +19,7 @@ public class MilitaryManager implements IUnitManager{
 //    List<Unit> transports = new ArrayList<>();  //shuttles
 //    List<Unit> mobileDetectors = new ArrayList<>(); //observers
 
-    List<Unit> attackers = new ArrayList<>();
+//    List<Unit> attackers = new ArrayList<>();
 
     private MapHelper mapHelper;
     private Unit scout;
@@ -27,9 +28,10 @@ public class MilitaryManager implements IUnitManager{
     private Game game;
     private BaseInfoTracker baseInfoTracker;
     private boolean isAttackSent;
-    private UnitType unitToProduceConstantly;
+    private UnitType unitToProduceConstantly = Protoss_Zealot;
     private DemandManager demandManager;
-
+    private BuildingManager buildingManager;
+    int targetMilitaryGroupSize = 24;
     int frames = 0;
 
     @Override
@@ -57,13 +59,14 @@ public class MilitaryManager implements IUnitManager{
             this.demandManager.demandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(this.unitToProduceConstantly).build());
         }
 
-        if(enemyBase != null && this.militaryUnits.size() > 20 && !this.isAttackSent){
+        if(enemyBase != null && this.militaryUnits.size() > this.targetMilitaryGroupSize && !this.isAttackSent){
             this.isAttackSent = true;
-            this.attackers = this.militaryUnits.stream().filter(unit -> unit != this.scout).collect(Collectors.toList());
+            this.formMilitaryGroup();
         }
         if(isAttackSent){
             this.manageAttack();
         }
+        this.demandMilitaryProduction();
     }
 
     public void tellScoutToGetToNextBase(){
@@ -106,7 +109,7 @@ public class MilitaryManager implements IUnitManager{
 
     private void manageAttack(){
        // if(!isAttackCommandIssued) {
-            if (isAttackSent && !this.areAllAttackersInPlace()) {
+            if (isAttackCommandIssued && !this.areAllAttackersInPlace()) {
                 getAttackersInOnePlace();
             }
             if (this.areAllAttackersInPlace()) {
@@ -118,7 +121,7 @@ public class MilitaryManager implements IUnitManager{
     private void getAttackersInOnePlace(){
         Position centerTile = this.mapHelper.getMap().getCenter();
         if(!this.isAttackCommandIssued){
-            this.attackers.forEach(unit -> unit.attack(centerTile));
+            this.militaryGroups.get(0).forEach(unit -> unit.attack(centerTile));
             this.isAttackCommandIssued = true;
         }
     }
@@ -127,7 +130,7 @@ public class MilitaryManager implements IUnitManager{
         Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
 
         if(!this.isAttackCommandIssued) {
-            this.attackers.forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 6, 6)));
+            this.militaryGroups.get(0).forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 6, 6)));
             this.isAttackCommandIssued = true;
         }
     }
@@ -139,12 +142,18 @@ public class MilitaryManager implements IUnitManager{
         }
         else
             this.frames++;
-        for(Unit attacker : this.attackers){
-            if(attacker.getDistance(this.attackRallyPoint) < 15){
-                return false;
+        for(List<Unit> militaryGroup : this.militaryGroups) {
+            for (Unit attacker : militaryGroup) {
+                if (attacker.getDistance(this.attackRallyPoint) < 15) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    public void formMilitaryGroup(){
+        this.militaryGroups.add(this.militaryUnits.stream().filter(unit -> unit != this.scout).collect(Collectors.toList()));
     }
 
     public void handleMilitaryDestruction(Unit unit) {
@@ -152,12 +161,46 @@ public class MilitaryManager implements IUnitManager{
             if(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()).getCenter().getDistance(this.scout.getPosition()) < 5)
                 this.baseInfoTracker.markBaseAsEnemy(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()));
         }
-        this.attackers.remove(unit);
-        if(this.attackers.isEmpty()){
-            this.isAttackSent = false;
+        for(List<Unit> militaryGroup : this.militaryGroups){
+            if(militaryGroup.contains(unit)){
+                militaryGroup.remove(unit);
+                if(militaryGroup.size() < this.targetMilitaryGroupSize/2){
+                    this.reassessStrategy();
+                }
+                if(militaryGroup.isEmpty()){
+                    this.isAttackSent = false;
+                }
+                this.remove(unit);
+            }
         }
-        this.remove(unit);
+
     }
+
+    public void reassessStrategy(){
+        if(this.unitToProduceConstantly == UnitType.Protoss_Zealot){
+            if(!game.self().hasUnitTypeRequirement(UnitType.Protoss_Dragoon)){
+                Map<UnitType, Integer> requirements = UnitType.Protoss_Dragoon.requiredUnits();
+                for(UnitType type : requirements.keySet()){
+                    if(!demandManager.isOnDemandList(type) && this.buildingManager.countAllBuildingsOfType(type) > 0)
+                        demandManager.demandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(type).build());
+                }
+            }
+            this.unitToProduceConstantly = UnitType.Protoss_Dragoon;
+        }
+        else{
+            this.unitToProduceConstantly = UnitType.Protoss_Zealot;
+        }
+    }
+
+    public void demandMilitaryProduction(){
+        List<UnitType> factories = Arrays.asList(UnitType.Protoss_Gateway, UnitType.Protoss_Robotics_Facility, UnitType.Protoss_Stargate);
+        UnitType factory = factories.stream().filter(f -> f.buildsWhat().contains(this.unitToProduceConstantly)).findFirst().get();
+
+        if(this.buildingManager.countCompletedBuildingsOfType(factory) > this.demandManager.howManyUnitsOnDemandList(this.unitToProduceConstantly)){
+            this.demandManager.demandCreatingUnit(ProductionOrderFactory.createZealotOrder());
+        }
+    }
+
     public void setGame(Game game) {
         this.game = game;
     }
@@ -177,5 +220,10 @@ public class MilitaryManager implements IUnitManager{
     @Autowired
     public void setDemandManager(DemandManager demandManager) {
         this.demandManager = demandManager;
+    }
+
+    @Autowired
+    public void setBuildingManager(BuildingManager buildingManager) {
+        this.buildingManager = buildingManager;
     }
 }

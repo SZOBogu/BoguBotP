@@ -31,12 +31,27 @@ public class BuildingManager {
         return this.buildings.stream().filter(Objects::nonNull).filter(i -> i.getType() == buildingType).filter(Unit::isCompleted).collect(Collectors.toList());
     }
 
+    public List<Unit> getUncompletedBuildingsOfType(UnitType buildingType){
+        List<Unit> uncompletedBuildings = this.getAllBuildingsOfType(buildingType);
+        List<Unit> completedBuildings = this.getCompletedBuildingsOfType(buildingType);
+        uncompletedBuildings.removeAll(completedBuildings);
+        return uncompletedBuildings;
+    }
+
     public int countAllBuildingsOfType(UnitType demandedBuildingType){
         return this.getAllBuildingsOfType(demandedBuildingType).size();
     }
 
     public int countCompletedBuildingsOfType(UnitType demandedBuildingType){
         return this.getCompletedBuildingsOfType(demandedBuildingType).size();
+    }
+
+    public int countMilitaryProductionBuildings(){
+        int count = 0;
+        count += countCompletedBuildingsOfType(UnitType.Protoss_Gateway);
+        count += countCompletedBuildingsOfType(UnitType.Protoss_Stargate);
+        count += countCompletedBuildingsOfType(UnitType.Protoss_Robotics_Facility);
+        return count;
     }
 
     public void trainUnit(ProductionOrder productionOrder){
