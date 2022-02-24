@@ -22,4 +22,10 @@ public class LoggingPointcuts {
 
     @Pointcut("execution(* helpers.BaseInfoTracker.markBaseAsUnknown(..))")
     public void markBaseAsUnknown() {}
+
+    @Pointcut("execution(* helpers.EnemyMilitaryInfoTracker.add(..))")
+    public void recordEnemyUnit() {}
+
+    @Pointcut("execution(* helpers.EnemyMilitaryInfoTracker.delete(..))")
+    public void recordEnemyUnitDestruction() {}
 }

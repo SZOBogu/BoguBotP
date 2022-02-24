@@ -10,6 +10,7 @@ import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import pojos.EnemyUnitRecord;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,11 +28,13 @@ public class Bot extends DefaultBWListener {
 
     private Game game;
     private Player player;
+    private Player enemy;
 
     @Override
     public void onStart(){
         this.game = bwClient.getGame();
         this.player = game.self();
+        this.enemy = game.enemy();
         this.mapHelper = new MapHelper(game);
 
         this.demandManager.setGame(this.game);
@@ -145,6 +148,20 @@ public class Bot extends DefaultBWListener {
         }
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit)){
             this.militaryManager.handleMilitaryDestruction(unit);
+        }
+        if(this.enemy.equals(unit.getPlayer())){
+            EnemyUnitRecord record = new EnemyUnitRecord();
+            record.setUnit(unit);
+            EnemyMilitaryInfoTracker.delete(record);
+        }
+    }
+
+    @Override
+    public void onUnitDiscover(Unit unit) {
+        Player enemy = this.enemy;
+        if(enemy.equals(unit.getPlayer()) && !unit.getType().isWorker()){
+            EnemyUnitRecord record = new EnemyUnitRecord(unit, game.elapsedTime(), unit.getPosition());
+            EnemyMilitaryInfoTracker.add(record);
         }
     }
 

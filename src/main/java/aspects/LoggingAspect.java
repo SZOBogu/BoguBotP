@@ -2,6 +2,7 @@ package aspects;
 
 import bwapi.Game;
 import bwapi.Player;
+import bwapi.Unit;
 import helpers.ProductionOrder;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -43,6 +44,18 @@ public class LoggingAspect {
     @Before("aspects.LoggingPointcuts.markBase() && !aspects.LoggingPointcuts.markBaseAsUnknown()")
     public void logBaseMarking(JoinPoint joinPoint){
         logger.info("Base scouted: " + joinPoint.getSignature());
+    }
+
+    @Before("aspects.LoggingPointcuts.recordEnemyUnit()")
+    public void logEnemyUnit(JoinPoint joinPoint){
+        Unit spottedUnit = (Unit)joinPoint.getArgs()[0];
+        logger.info(spottedUnit.getType() + " is recorded");
+    }
+
+    @Before("aspects.LoggingPointcuts.recordEnemyUnitDestruction()")
+    public void logEnemyUnitDestruction(JoinPoint joinPoint){
+        Unit spottedUnit = (Unit)joinPoint.getArgs()[0];
+        logger.info(spottedUnit.getType() + " got shit on and is removed from record");
     }
 
     public void setPlayer(Player player) {
