@@ -41,7 +41,7 @@ public class EnemyMilitaryInfoTracker {
             }
         }
         catch(StarcraftException ex){
-            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAA" + ex.getMessage());
+            System.out.println(ex.getMessage());
         }
     }
 
@@ -53,7 +53,9 @@ public class EnemyMilitaryInfoTracker {
             }
         }
         catch(StarcraftException ex){
-            System.out.println("BBBBBBBBBBBBBBBBBBBBB" + ex.getMessage());
+            System.out.println(ex.getMessage());
+            EnemyUnitRecord recordToDelete = getRecord(record.getUnit());
+            enemyUnitRecordList.remove(recordToDelete);
         }
     }
 }

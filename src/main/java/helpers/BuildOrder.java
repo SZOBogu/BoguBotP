@@ -30,7 +30,9 @@ public class BuildOrder {
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(42).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(42).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(42).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(46).build()
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Gateway).populationMark(46).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Cybernetics_Core).populationMark(56).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Citadel_of_Adun).populationMark(100).build()
                 ));
     }
     public List<ProductionOrder> getBuildOrder() {

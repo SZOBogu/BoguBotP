@@ -161,7 +161,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void manageSupply(){
-        if(this.game.self().getUnits().size() > 15) {
+        if(this.game.self().supplyUsed() > 42) {
             if (game.self().supplyTotal() - game.self().supplyUsed() <= 2 * Math.min(1, buildingManager.countMilitaryProductionBuildings()) && game.self().supplyTotal() <= 400 && !this.isOnDemandList(UnitType.Protoss_Pylon)) {
                 ProductionOrder order = ProductionOrderFactory.createPylonOrder();
                 order.setPriority(ProductionPriority.IMPORTANT);

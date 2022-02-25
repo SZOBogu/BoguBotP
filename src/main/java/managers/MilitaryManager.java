@@ -37,7 +37,7 @@ public class MilitaryManager implements IUnitManager{
     @Override
     public void add(Unit unit){
         this.militaryUnits.add(unit);
-        unit.move(rallyPoint.toPosition());
+        unit.attack(rallyPoint.toPosition());
     }
 
     @Override
@@ -49,6 +49,7 @@ public class MilitaryManager implements IUnitManager{
     public void manage() {
         if(this.scout == null && !this.militaryUnits.isEmpty()) {
             this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
+            this.militaryGroups.remove(this.scout);
         }
         if(this.scout != null) {
             this.tellScoutToGetToNextBase();
@@ -119,9 +120,8 @@ public class MilitaryManager implements IUnitManager{
     }
 
     private void getAttackersInOnePlace(){
-        Position centerTile = this.mapHelper.getMap().getCenter();
         if(!this.isAttackCommandIssued){
-            this.militaryGroups.get(0).forEach(unit -> unit.attack(centerTile));
+            this.militaryGroups.get(0).forEach(unit -> unit.attack(this.attackRallyPoint));
             this.isAttackCommandIssued = true;
         }
     }
@@ -136,7 +136,7 @@ public class MilitaryManager implements IUnitManager{
     }
 
     private boolean areAllAttackersInPlace(){
-        if(this.frames > 1000){
+        if(this.frames > 100){
             this.frames = 0;
             return true;
         }
@@ -144,7 +144,7 @@ public class MilitaryManager implements IUnitManager{
             this.frames++;
         for(List<Unit> militaryGroup : this.militaryGroups) {
             for (Unit attacker : militaryGroup) {
-                if (attacker.getDistance(this.attackRallyPoint) < 15) {
+                if (attacker.getDistance(this.attackRallyPoint) > 15) {
                     return false;
                 }
             }
@@ -157,9 +157,10 @@ public class MilitaryManager implements IUnitManager{
     }
 
     public void handleMilitaryDestruction(Unit unit) {
-        if(unit == this.scout && this.scout != null){
+        if(unit.equals(this.scout) && this.scout != null){
             if(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()).getCenter().getDistance(this.scout.getPosition()) < 5)
                 this.baseInfoTracker.markBaseAsEnemy(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()));
+            this.scout = null;
         }
         for(List<Unit> militaryGroup : this.militaryGroups){
             if(militaryGroup.contains(unit)){

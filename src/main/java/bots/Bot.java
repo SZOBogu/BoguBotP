@@ -82,7 +82,6 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onFrame(){
-        this.game.drawTextScreen(20, 20, player.getName() +  " has " + player.minerals() + " minerals");
         this.globalBasesManager.manage();
         this.demandManager.manage();
         this.militaryManager.manage();
@@ -124,7 +123,9 @@ public class Bot extends DefaultBWListener {
         if(unit.getType() == UnitType.Protoss_Forge){
             this.demandManager.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
         }
-
+        if(unit.getType() == UnitType.Protoss_Citadel_of_Adun){
+            this.demandManager.demandUpgrade(UpgradeType.Leg_Enhancements);
+        }
         if(unit.getType() == UnitType.Protoss_Cybernetics_Core) {
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
