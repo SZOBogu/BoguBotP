@@ -49,7 +49,6 @@ public class MilitaryManager implements IUnitManager{
     public void manage() {
         if(this.scout == null && !this.militaryUnits.isEmpty()) {
             this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
-            this.militaryGroups.remove(this.scout);
         }
         if(this.scout != null) {
             this.tellScoutToGetToNextBase();
@@ -67,6 +66,10 @@ public class MilitaryManager implements IUnitManager{
         if(isAttackSent){
             this.manageAttack();
         }
+
+        List<List<Unit>> militaryGroupsToClear = this.militaryGroups.stream().filter(List::isEmpty).collect(Collectors.toList());
+        this.militaryGroups.removeAll(militaryGroupsToClear);
+
         this.demandMilitaryProduction();
     }
 
@@ -128,9 +131,9 @@ public class MilitaryManager implements IUnitManager{
 
     private void attack(){
         Base base = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
-
         if(!this.isAttackCommandIssued) {
-            this.militaryGroups.get(0).forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 6, 6)));
+            for(List<Unit> militaryGroup : this.militaryGroups)
+                militaryGroup.forEach(unit -> unit.attack(AwayFromPositionGetter.getPositionAwayFromCenter(this.mapHelper.getMap(), base.getCenter(), 6, 6)));
             this.isAttackCommandIssued = true;
         }
     }
@@ -198,7 +201,7 @@ public class MilitaryManager implements IUnitManager{
         UnitType factory = factories.stream().filter(f -> f.buildsWhat().contains(this.unitToProduceConstantly)).findFirst().get();
 
         if(this.buildingManager.countCompletedBuildingsOfType(factory) > this.demandManager.howManyUnitsOnDemandList(this.unitToProduceConstantly)){
-            this.demandManager.demandCreatingUnit(ProductionOrderFactory.createZealotOrder());
+            this.demandManager.demandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(this.unitToProduceConstantly).build());
         }
     }
 
