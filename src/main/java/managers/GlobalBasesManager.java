@@ -22,7 +22,7 @@ public class GlobalBasesManager implements IBroodWarManager{
     private Player player;
     private LinkedHashMap<Base, Boolean> baseIsTakenMap;
     private final List<BaseManager> baseManagers = new ArrayList<>();
-    private DemandManager demandManager;
+    private IDemandManager demandManager;
     private MilitaryManager militaryManager;
     private BaseInfoTracker baseInfoTracker;
 
@@ -191,7 +191,7 @@ public class GlobalBasesManager implements IBroodWarManager{
     }
 
     @Autowired
-    public void setDemandManager(DemandManager demandManager) {
+    public void setDemandManager(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }
 

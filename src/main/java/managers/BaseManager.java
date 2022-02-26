@@ -17,7 +17,7 @@ public class BaseManager implements IUnitManager{
     private final Player player;
     private final Game game;
     private Worker builder;
-    private DemandManager demandManager;
+    private IDemandManager demandManager;
     private GlobalBasesManager globalBasesManager;
     private final MapHelper mapHelper;
 
@@ -38,7 +38,7 @@ public class BaseManager implements IUnitManager{
         private Unit assimilator;
         private Base base;
 
-        private DemandManager demandManager;
+        private IDemandManager demandManager;
         private GlobalBasesManager globalBasesManager;
 
         public WorkerManagerBuilder(Player player, Game game, MapHelper mapHelper, Base base){
@@ -49,7 +49,7 @@ public class BaseManager implements IUnitManager{
             System.out.println("WORKER MANAGER BUILDER: " + PositionPrinter.toString(base));
         }
 
-        public WorkerManagerBuilder demandManager(DemandManager demandManager){
+        public WorkerManagerBuilder demandManager(IDemandManager demandManager){
             this.demandManager = demandManager;
             return this;
         }
@@ -381,8 +381,7 @@ public class BaseManager implements IUnitManager{
         return base;
     }
 
-    @Autowired
-    public void setDemandManager(DemandManager demandManager) {
+    public void setDemandManager(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }
 

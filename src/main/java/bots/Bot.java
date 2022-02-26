@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class Bot extends DefaultBWListener {
     private BWClient bwClient;
 
-    private DemandManager demandManager;
+    private IDemandManager demandManager;
     private BuildingManager buildingManager;
     private MilitaryManager militaryManager;
     private GlobalBasesManager globalBasesManager;
@@ -40,7 +40,13 @@ public class Bot extends DefaultBWListener {
         this.enemy = game.enemy();
         this.mapHelper = new MapHelper(game);
 
-        this.demandManager.setGame(this.game);
+        DemandManager demandManager = new DemandManager();
+        demandManager.setGame(this.game);
+        DemandManagerProxy proxyManager = new DemandManagerProxy();
+        proxyManager.setDemandManager(demandManager);
+        this.demandManager = proxyManager;
+        this.demandManager.setBuildingManager(this.buildingManager);
+        this.buildingManager.setDemandService(this.demandManager);
 
         LoggingAspect loggingAspect = (LoggingAspect)MyApplicationContext.getBean("loggingAspect");
         loggingAspect.setGame(this.game);
@@ -72,7 +78,9 @@ public class Bot extends DefaultBWListener {
         this.militaryManager.setGame(this.game);
         this.militaryManager.setGlobalRallyPoint();
         this.militaryManager.setAttackRallyPoint();
+        this.militaryManager.setDemandManager(this.demandManager);
         this.globalBasesManager.addWorkerManager(baseManager);
+
 
         BuildOrder buildOrder = BuildOrderChooser.getBuildOrder();
         this.buildOrderName = buildOrder.getName();
@@ -83,7 +91,7 @@ public class Bot extends DefaultBWListener {
 
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
-
+        this.demandManager.setGlobalBasesManager(this.globalBasesManager);
         this.scoutingManager = new ScoutingManager();
         this.scoutingManager.setMapHelper(this.mapHelper);
         this.scoutingManager.setGame(this.game);

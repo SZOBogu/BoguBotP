@@ -20,11 +20,6 @@ public class SpringConfig {
     }
 
     @Bean
-    public DemandManager demandManager() {
-        return new DemandManager();
-    }
-
-    @Bean
     public BuildingManager buildingManager() { return new BuildingManager();}
 
     @Bean

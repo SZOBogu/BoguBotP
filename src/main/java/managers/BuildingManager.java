@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class BuildingManager {
     private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
-    private DemandManager demandManager;
+    private IDemandManager demandManager;
 
     public void add(Unit unit){
             this.buildings.add(unit);
@@ -102,7 +102,7 @@ public class BuildingManager {
     }
 
     @Autowired
-    public void setDemandService(DemandManager demandManager) {
+    public void setDemandService(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }
 

@@ -28,7 +28,7 @@ public class MilitaryManager implements IUnitManager{
     private BaseInfoTracker baseInfoTracker;
     private boolean isAttackSent;
     private UnitType unitToProduceConstantly = Protoss_Zealot;
-    private DemandManager demandManager;
+    private IDemandManager demandManager;
     private BuildingManager buildingManager;
     int targetMilitaryGroupSize = 24;
     int frames = 0;
@@ -189,8 +189,7 @@ public class MilitaryManager implements IUnitManager{
         this.baseInfoTracker = baseInfoTracker;
     }
 
-    @Autowired
-    public void setDemandManager(DemandManager demandManager) {
+    public void setDemandManager(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }
 
