@@ -231,17 +231,14 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
         }
          */
     }
-    @Override
     public void setManageSupplyPopulationMark(int manageSupplyPopulationMark) {
         this.manageSupplyPopulationMark = manageSupplyPopulationMark;
     }
 
-    @Autowired
     public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
     }
 
-    @Autowired
     public void setGlobalBasesManager(GlobalBasesManager globalBasesManager) {
         this.globalBasesManager = globalBasesManager;
     }

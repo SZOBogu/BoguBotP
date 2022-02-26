@@ -35,15 +35,7 @@ public interface IDemandManager extends IBroodWarManager {
 
     ProductionOrder getNextItemOnList();
 
-    void setManageSupplyPopulationMark(int manageSupplyPopulationMark);
-
     boolean areBuildingsDemanded();
-
-    void setGame(Game game);
-
-    void setBuildingManager(BuildingManager buildingManager);
-
-    void setGlobalBasesManager(GlobalBasesManager globalBasesManager);
 
     @Override
     void manage();

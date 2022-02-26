@@ -45,7 +45,7 @@ public class Bot extends DefaultBWListener {
         DemandManagerProxy proxyManager = new DemandManagerProxy();
         proxyManager.setDemandManager(demandManager);
         this.demandManager = proxyManager;
-        this.demandManager.setBuildingManager(this.buildingManager);
+        proxyManager.setBuildingManager(this.buildingManager);
         this.buildingManager.setDemandService(this.demandManager);
 
         LoggingAspect loggingAspect = (LoggingAspect)MyApplicationContext.getBean("loggingAspect");
@@ -87,11 +87,11 @@ public class Bot extends DefaultBWListener {
         for(ProductionOrder entry: buildOrder.getBuildOrder()) {
             this.demandManager.demandCreatingUnit(entry);
         }
-        this.demandManager.setManageSupplyPopulationMark(SupplyManagementPopulationMarkGetter.getPopulationMark(buildOrder));
+        proxyManager.setManageSupplyPopulationMark(SupplyManagementPopulationMarkGetter.getPopulationMark(buildOrder));
 
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
-        this.demandManager.setGlobalBasesManager(this.globalBasesManager);
+        proxyManager.setGlobalBasesManager(this.globalBasesManager);
         this.scoutingManager = new ScoutingManager();
         this.scoutingManager.setMapHelper(this.mapHelper);
         this.scoutingManager.setGame(this.game);

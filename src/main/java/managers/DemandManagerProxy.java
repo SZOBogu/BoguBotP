@@ -84,12 +84,10 @@ public class DemandManagerProxy implements IDemandManager{
         return this.demandManager.areBuildingsDemanded();
     }
 
-    @Override
     public void setManageSupplyPopulationMark(int manageSupplyPopulationMark) {
         this.demandManager.setManageSupplyPopulationMark(manageSupplyPopulationMark);
     }
 
-    @Override
     public void setGame(Game game) {
         this.demandManager.setGame(game);
     }
@@ -99,12 +97,10 @@ public class DemandManagerProxy implements IDemandManager{
         this.demandManager.manage();
     }
 
-    @Override
     public void setBuildingManager(BuildingManager buildingManager) {
         this.demandManager.setBuildingManager(buildingManager);
     }
 
-    @Override
     public void setGlobalBasesManager(GlobalBasesManager globalBasesManager) {
         this.demandManager.setGlobalBasesManager(globalBasesManager);
     }
