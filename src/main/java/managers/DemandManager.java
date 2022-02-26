@@ -28,6 +28,8 @@ public class DemandManager implements IBroodWarManager{
     private int lastUnitProducedTimestamp;
     private int lastBlockCheck;
 
+    private int manageSupplyPopulationMark;
+
     public DemandManager() {
         this.unitsToCreateDemandList = new UnitDemandList();
         this.workerAttentionDemandList = new UnitDemandList();
@@ -161,7 +163,7 @@ public class DemandManager implements IBroodWarManager{
     }
 
     public void manageSupply(){
-        if(this.game.self().supplyUsed() > 42) {
+        if(this.game.self().supplyUsed() > this.manageSupplyPopulationMark) {
             if (game.self().supplyTotal() - game.self().supplyUsed() <= 2 * Math.min(1, buildingManager.countMilitaryProductionBuildings()) && game.self().supplyTotal() <= 400 && !this.isOnDemandList(UnitType.Protoss_Pylon)) {
                 ProductionOrder order = ProductionOrderFactory.createPylonOrder();
                 order.setPriority(ProductionPriority.IMPORTANT);
@@ -211,6 +213,10 @@ public class DemandManager implements IBroodWarManager{
             }
         }
          */
+    }
+
+    public void setManageSupplyPopulationMark(int manageSupplyPopulationMark) {
+        this.manageSupplyPopulationMark = manageSupplyPopulationMark;
     }
 
     @Autowired

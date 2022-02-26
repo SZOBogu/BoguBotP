@@ -30,6 +30,8 @@ public class Bot extends DefaultBWListener {
     private Player player;
     private Player enemy;
 
+    private String buildOrderName;
+
     @Override
     public void onStart(){
         this.game = bwClient.getGame();
@@ -71,10 +73,12 @@ public class Bot extends DefaultBWListener {
         this.militaryManager.setAttackRallyPoint();
         this.globalBasesManager.addWorkerManager(baseManager);
 
-        BuildOrder buildOrder = new BuildOrder();
+        BuildOrder buildOrder = BuildOrderChooser.getBuildOrder();
+        this.buildOrderName = buildOrder.getName();
         for(ProductionOrder entry: buildOrder.getBuildOrder()) {
             this.demandManager.demandCreatingUnit(entry);
         }
+        this.demandManager.setManageSupplyPopulationMark(SupplyManagementPopulationMarkGetter.getPopulationMark(buildOrder));
 
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
@@ -82,6 +86,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onFrame(){
+        this.game.drawTextScreen(20, 20, "Build Order: " + this.buildOrderName);
         this.globalBasesManager.manage();
         this.demandManager.manage();
         this.militaryManager.manage();

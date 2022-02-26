@@ -329,7 +329,7 @@ public class BaseManager implements IUnitManager{
                 CostCalculator.canAfford(player, UnitType.Protoss_Probe) &&
                 !this.isOversaturated() &&
                 this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 1){
-
+            System.out.printf("probe demanded");
             this.demandManager.demandCreatingUnit(ProductionOrderFactory.createProbeOrder(this));
         }
     }
