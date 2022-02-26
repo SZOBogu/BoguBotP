@@ -28,4 +28,7 @@ public class LoggingPointcuts {
 
     @Pointcut("execution(* helpers.EnemyMilitaryInfoTracker.delete(..))")
     public void recordEnemyUnitDestruction() {}
+
+    @Pointcut("execution(* managers.MilitaryManager.isScoutAvailable(..))")
+    public void recordAskingForScout() {}
 }

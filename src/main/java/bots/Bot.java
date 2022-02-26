@@ -22,6 +22,7 @@ public class Bot extends DefaultBWListener {
     private BuildingManager buildingManager;
     private MilitaryManager militaryManager;
     private GlobalBasesManager globalBasesManager;
+    private ScoutingManager scoutingManager;
 
     private MapHelper mapHelper;
     private BaseInfoTracker baseInfoTracker;
@@ -82,6 +83,13 @@ public class Bot extends DefaultBWListener {
 
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
+
+        this.scoutingManager = new ScoutingManager();
+        this.scoutingManager.setMapHelper(this.mapHelper);
+        this.scoutingManager.setGame(this.game);
+        this.scoutingManager.setMilitaryManager(this.militaryManager);
+        this.scoutingManager.setGlobalBasesManager(this.globalBasesManager);
+        this.scoutingManager.setBaseInfoTracker(this.baseInfoTracker);
     }
 
     @Override
@@ -90,6 +98,7 @@ public class Bot extends DefaultBWListener {
         this.globalBasesManager.manage();
         this.demandManager.manage();
         this.militaryManager.manage();
+        this.scoutingManager.manage();
     }
 
     @Override
@@ -146,6 +155,9 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitDestroy(Unit unit) {
+        if(unit.getPlayer().equals(this.player)){
+            this.scoutingManager.removeScout(unit);
+        }
         if(unit.getType().isBuilding()){
             this.buildingManager.handleBuildingDestruction(unit);
         }

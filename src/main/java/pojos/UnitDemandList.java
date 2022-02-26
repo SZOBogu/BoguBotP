@@ -7,6 +7,7 @@ import helpers.ProductionOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,13 @@ public class UnitDemandList implements DemandList{
     @Override
     public void fulfillDemand(Object fulfilledDemandEntity) {
         ProductionOrder order = (ProductionOrder) fulfilledDemandEntity;
-        ProductionOrder orderToRemove = this.demandList.stream().filter(o -> o.getUnitType() == order.getUnitType()).sorted().findFirst().get();
-        this.demandList.remove(orderToRemove);
+        try{
+            ProductionOrder orderToRemove = this.demandList.stream().filter(o -> o.getUnitType() == order.getUnitType()).sorted().findFirst().get();
+            this.demandList.remove(orderToRemove);
+        }
+        catch(NoSuchElementException noSuchElementException) {
+            System.out.println("NoSuchElementException in unitDemandList");;
+        }
     }
 
     public void fulfillDemandOnUnitType(Object fulfilledDemandEntity) {

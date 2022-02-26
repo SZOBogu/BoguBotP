@@ -22,7 +22,6 @@ public class MilitaryManager implements IUnitManager{
 //    List<Unit> attackers = new ArrayList<>();
 
     private MapHelper mapHelper;
-    private Unit scout;
     private TilePosition rallyPoint;
     private Position attackRallyPoint;
     private Game game;
@@ -47,12 +46,6 @@ public class MilitaryManager implements IUnitManager{
 
     @Override
     public void manage() {
-        if(this.scout == null && !this.militaryUnits.isEmpty()) {
-            this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
-        }
-        if(this.scout != null) {
-            this.tellScoutToGetToNextBase();
-        }
         Base enemyBase = this.baseInfoTracker.getClosestBaseWithState(BaseState.ENEMY);
 
         if(this.unitToProduceConstantly != null && !this.demandManager.isOnDemandList(this.unitToProduceConstantly)){
@@ -71,32 +64,6 @@ public class MilitaryManager implements IUnitManager{
         this.militaryGroups.removeAll(militaryGroupsToClear);
 
         this.demandMilitaryProduction();
-    }
-
-    public void tellScoutToGetToNextBase(){
-        Base nextBase = this.baseInfoTracker.getClosestBaseWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
-
-        if(nextBase != null) {
-            if (!this.scout.isMoving() && !this.scout.isStuck() || this.scout.isIdle()) {
-                if (!game.isVisible(nextBase.getLocation())) {
-                    this.scout.move(nextBase.getCenter());
-                }
-                else {
-                    if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
-                        this.baseInfoTracker.markBaseAsNeutral(nextBase);
-                    }
-                    List<Base> unknownBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
-                    List<Base> enemyBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
-                    if(unknownBases.size() == 1 && enemyBases.size() < 1){
-                        this.baseInfoTracker.markBaseAsEnemy(unknownBases.get(0));
-                    }
-                }
-            } else if (this.scout.isStuck()) {
-                this.scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
-            }
-        }
-        else
-            baseInfoTracker.markAllNeutralBasesAsUnknown();
     }
 
     public void setGlobalRallyPoint(){
@@ -156,15 +123,10 @@ public class MilitaryManager implements IUnitManager{
     }
 
     public void formMilitaryGroup(){
-        this.militaryGroups.add(this.militaryUnits.stream().filter(unit -> unit != this.scout).collect(Collectors.toList()));
+        this.militaryGroups.add(this.militaryUnits);
     }
 
     public void handleMilitaryDestruction(Unit unit) {
-        if(unit.equals(this.scout) && this.scout != null){
-            if(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()).getCenter().getDistance(this.scout.getPosition()) < 5)
-                this.baseInfoTracker.markBaseAsEnemy(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()));
-            this.scout = null;
-        }
         for(List<Unit> militaryGroup : this.militaryGroups){
             if(militaryGroup.contains(unit)){
                 militaryGroup.remove(unit);
@@ -205,6 +167,16 @@ public class MilitaryManager implements IUnitManager{
         }
     }
 
+    public boolean isScoutAvailable(){
+        return !this.militaryUnits.isEmpty();
+    }
+
+    public Unit getScout(){
+        Unit scout = this.militaryUnits.get(this.militaryUnits.size() - 1);
+        this.militaryUnits.remove(scout);
+        return scout;
+    }
+
     public void setGame(Game game) {
         this.game = game;
     }
@@ -215,10 +187,6 @@ public class MilitaryManager implements IUnitManager{
     @Autowired
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;
-    }
-
-    private void setScout(Unit scout) {
-        this.scout = scout;
     }
 
     @Autowired

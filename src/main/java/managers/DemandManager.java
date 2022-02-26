@@ -41,8 +41,10 @@ public class DemandManager implements IBroodWarManager{
 
     public void demandCreatingUnit(ProductionOrder order){
         System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
-        if(order.getUnitType().getRace() == Race.Protoss)
+        if(order.getUnitType().getRace() == Race.Protoss) {
             this.unitsToCreateDemandList.demand(order);
+            System.out.println(order.getUnitType() + " demanded.");
+        }
     }
 
     public void demandUpgrade(UpgradeType upgradeType){

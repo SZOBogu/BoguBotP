@@ -347,6 +347,16 @@ public class BaseManager implements IUnitManager{
             this.freeBuilder();
     }
 
+    public boolean isScoutAvailable(){
+        return this.workers.size() > 4;
+    }
+
+    public Unit getScout(){
+        Worker scout = this.workers.get(this.workers.size() - 1);
+        scout.setWorkerRole(WorkerRole.SCOUT);
+        return scout.getWorker();
+    }
+
     @Override
     public void manage() {
         this.forceGatheringGas();

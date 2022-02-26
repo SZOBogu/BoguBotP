@@ -149,6 +149,22 @@ public class GlobalBasesManager implements IBroodWarManager{
             this.baseManagers.get(0).build(order);
     }
 
+    public boolean isScoutAvailable(){
+        for(BaseManager base : this.baseManagers){
+            if(base.isScoutAvailable())
+                return true;
+        }
+        return false;
+    }
+
+    public Unit getScout(){
+        for(BaseManager base : this.baseManagers){
+            if(base.isScoutAvailable())
+                return base.getScout();
+        }
+        return null;
+    }
+
     @Override
     public void manage() {
         this.baseManagers.forEach(BaseManager::manage);

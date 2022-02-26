@@ -37,7 +37,9 @@ public class LoggingAspect {
                 " | SUPPLY: " + player.supplyUsed()/2 + "/" + player.supplyTotal()/2);
     }
 
-    @Before("aspects.LoggingPointcuts.militaryManagerDoesAnything() && !aspects.LoggingPointcuts.manageMilitary()")
+    @Before("aspects.LoggingPointcuts.militaryManagerDoesAnything() && " +
+            "!aspects.LoggingPointcuts.manageMilitary() && " +
+            "!aspects.LoggingPointcuts.recordAskingForScout()")
     public void notifyOnMilitaryAction(JoinPoint joinPoint){
         logger.info("MILITARY ACTION: " + joinPoint.getSignature());
     }
