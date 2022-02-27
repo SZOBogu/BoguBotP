@@ -8,7 +8,10 @@ import helpers.BaseState;
 import helpers.MapHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.BaseInfoRecord;
+import pojos.TextInGame;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -44,7 +47,7 @@ public class ScoutingManager implements IBroodWarManager{
                         this.baseInfoTracker.markBaseAsNeutral(nextBase);
                     }
                     List<Base> unknownBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
-                    List<Base> enemyBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
+                    List<Base> enemyBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.ENEMY);
                     if(unknownBases.size() == 1 && enemyBases.size() < 1){
                         this.baseInfoTracker.markBaseAsEnemy(unknownBases.get(0));
                     }
@@ -74,6 +77,26 @@ public class ScoutingManager implements IBroodWarManager{
                 this.baseInfoTracker.markBaseAsEnemy(this.mapHelper.getBaseClosestToTilePosition(this.scout.getTilePosition()));
             this.scout = null;
         }
+    }
+    @Override
+    public List<TextInGame> getTextToWriteInGame(){
+        List<TextInGame> textInGameList = new ArrayList<>();
+        List<BaseInfoRecord> baseInfoRecords = this.baseInfoTracker.getBases();
+        for(BaseInfoRecord record : baseInfoRecords){
+            TextInGame text = new TextInGame.TextInGameBuilder(record.getBaseState().toString())
+                    .x(record.getBase().getLocation().toPosition().x)
+                    .y(record.getBase().getLocation().toPosition().y)
+                    .build();
+            textInGameList.add(text);
+        }
+        if(this.scout != null){
+            TextInGame scoutText = new TextInGame.TextInGameBuilder("SCOUT")
+                    .x(this.scout.getX())
+                    .y(this.scout.getY())
+                    .build();
+            textInGameList.add(scoutText);
+        }
+        return textInGameList;
     }
 
     @Autowired

@@ -4,6 +4,9 @@ import bwapi.Player;
 import helpers.ProductionOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.TextInGame;
+
+import java.util.List;
 
 @Component
 public class ResourceManager implements IBroodWarManager{
@@ -40,6 +43,11 @@ public class ResourceManager implements IBroodWarManager{
     @Override
     public void manage() {
         this.updateResourceInfo();
+    }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        return null;
     }
 
     public void setPlayer(Player player) {

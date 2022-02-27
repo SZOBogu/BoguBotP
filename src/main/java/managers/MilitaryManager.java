@@ -5,6 +5,7 @@ import bwem.Base;
 import helpers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.TextInGame;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +65,17 @@ public class MilitaryManager implements IUnitManager{
         this.militaryGroups.removeAll(militaryGroupsToClear);
 
         this.demandMilitaryProduction();
+    }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        List<TextInGame> textInGameList = new ArrayList<>();
+        TextInGame text = new TextInGame.TextInGameBuilder("Unit to constantly produce: " + this.unitToProduceConstantly)
+                .x(100)
+                .y(10)
+                .build();
+        textInGameList.add(text);
+        return textInGameList;
     }
 
     public void setGlobalRallyPoint(){

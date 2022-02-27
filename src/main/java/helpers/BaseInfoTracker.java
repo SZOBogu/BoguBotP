@@ -97,6 +97,10 @@ public class BaseInfoTracker {
         return this.checkBaseState(base) == BaseState.ENEMY || this.checkBaseState(base) == BaseState.MINE;
     }
 
+    public List<BaseInfoRecord> getBases() {
+        return bases;
+    }
+
     public void setMapHelper(MapHelper mapHelper) {
         this.mapHelper = mapHelper;
     }

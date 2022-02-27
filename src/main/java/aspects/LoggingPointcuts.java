@@ -31,4 +31,7 @@ public class LoggingPointcuts {
 
     @Pointcut("execution(* managers.MilitaryManager.isScoutAvailable(..))")
     public void recordAskingForScout() {}
+
+    @Pointcut("execution(* managers.MilitaryManager.getTextToWriteInGame(..))")
+    public void recordGettingTextToWriteOnScreen() {}
 }

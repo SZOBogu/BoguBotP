@@ -20,7 +20,7 @@ public class LoggingAspect {
     private static final Logger logger = Logger.getLogger(LoggingAspect.class.getName());
     private Player player;
     private Game game;
-
+/*
     @Before("aspects.LoggingPointcuts.demandPlacedLog()")
     public void notifyAboutDemand(JoinPoint joinPoint){
         ProductionOrder productionOrder = (ProductionOrder)joinPoint.getArgs()[0];
@@ -28,7 +28,7 @@ public class LoggingAspect {
                 " | TIME: " + TimeUnit.SECONDS.toMinutes(game.elapsedTime()) + ":" + String.format("%02d", game.elapsedTime() % 60) +
                 " | SUPPLY: " + player.supplyUsed()/2 + "/" + player.supplyTotal()/2);
     }
-
+*/
     @Before("aspects.LoggingPointcuts.demandFulfilledLog()")
     public void notifyAboutFulfillingDemand(JoinPoint joinPoint){
         ProductionOrder productionOrder = (ProductionOrder)joinPoint.getArgs()[0];
@@ -39,7 +39,8 @@ public class LoggingAspect {
 
     @Before("aspects.LoggingPointcuts.militaryManagerDoesAnything() && " +
             "!aspects.LoggingPointcuts.manageMilitary() && " +
-            "!aspects.LoggingPointcuts.recordAskingForScout()")
+            "!aspects.LoggingPointcuts.recordAskingForScout() && " +
+            "!aspects.LoggingPointcuts.recordGettingTextToWriteOnScreen()")
     public void notifyOnMilitaryAction(JoinPoint joinPoint){
         logger.info("MILITARY ACTION: " + joinPoint.getSignature());
     }

@@ -77,7 +77,7 @@ public class UnitDemandList implements DemandList{
     @Override
     public int howManyItemsOnDemandList(Object demandedType) {
         UnitType unitTypeDemanded = (UnitType)demandedType;
-        return (int) this.demandList.stream().filter(i -> i.getUnitType().equals(unitTypeDemanded)).count();
+        return (int) this.demandList.stream().filter(i -> i.getUnitType() == unitTypeDemanded).count();
     }
 
     @Override

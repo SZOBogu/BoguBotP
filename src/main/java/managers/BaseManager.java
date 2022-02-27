@@ -6,6 +6,7 @@ import bwem.Mineral;
 import enums.WorkerRole;
 import helpers.*;
 //import javafx.geometry.Pos;
+import pojos.TextInGame;
 import pojos.WorkerList;
 import pojos.Worker;
 
@@ -195,7 +196,7 @@ public class BaseManager implements IUnitManager{
     private void delegateWorkerToGatherMinerals(Worker worker){
         List<Mineral> mineralPatchesInBase = this.base.getMinerals();
         Random r = new Random();
-        worker.getWorker().gather(mineralPatchesInBase.get(r.nextInt(mineralPatchesInBase.size())).getUnit());
+        worker.getWorker().gather(mineralPatchesInBase.get(r.nextInt(mineralPatchesInBase.size())).getUnit(), true);
 
         worker.setWorkerRole(WorkerRole.MINERAL_MINE);
     }
@@ -325,9 +326,7 @@ public class BaseManager implements IUnitManager{
         if(this.nexus != null &&
                 this.nexus.getTrainingQueue().isEmpty() &&
                 AffordabilityChecker.canAfford(player, UnitType.Protoss_Probe) &&
-                !this.isOversaturated() &&
-                this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 1){
-            System.out.printf("probe demanded");
+                !this.isOversaturated()){
             this.demandManager.demandCreatingUnit(ProductionOrderFactory.createProbeOrder(this));
         }
     }
@@ -369,6 +368,24 @@ public class BaseManager implements IUnitManager{
         }
 
         this.orderNewProbe();
+
+        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() -10,"Probes: " + this.workers.getWorkerList().size(), Text.Default);
+        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY(),"Mineral miners: " + this.workers.countWorkersWithState(WorkerRole.MINERAL_MINE), Text.Cyan);
+        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() + 10,"Gas miners: " + this.workers.countWorkersWithState(WorkerRole.GAS_MINE), Text.Green);
+    }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        List<TextInGame> textInGameList = new ArrayList<>();
+        for(Worker worker : this.workers.getWorkerList()){
+            TextInGame text = new TextInGame.TextInGameBuilder(worker.getWorkerRole().toString())
+                    .x(worker.getWorker().getPosition().x)
+                    .y(worker.getWorker().getPosition().y)
+                    .build();
+            textInGameList.add(text);
+        }
+
+        return textInGameList;
     }
 
     public void setAssimilator(Unit assimilator) {

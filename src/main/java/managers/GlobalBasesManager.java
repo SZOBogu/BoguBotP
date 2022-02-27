@@ -2,7 +2,6 @@ package managers;
 
 import bwapi.*;
 import bwem.Base;
-import enums.WorkerRole;
 import exceptions.StarcraftException;
 import helpers.BaseInfoTracker;
 import helpers.MapHelper;
@@ -10,6 +9,7 @@ import helpers.PositionPrinter;
 import helpers.ProductionOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.TextInGame;
 import pojos.Worker;
 
 import java.util.*;
@@ -168,6 +168,15 @@ public class GlobalBasesManager implements IBroodWarManager{
     @Override
     public void manage() {
         this.baseManagers.forEach(BaseManager::manage);
+    }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        List<TextInGame> textInGameList = new ArrayList<>();
+        for(BaseManager baseManager : this.baseManagers){
+            textInGameList.addAll(baseManager.getTextToWriteInGame());
+        }
+        return textInGameList;
     }
 
     public void addWorkerManager(BaseManager baseManager){

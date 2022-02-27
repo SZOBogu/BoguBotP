@@ -8,9 +8,11 @@ import helpers.SupplyBlockDetector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pojos.TechDemandList;
+import pojos.TextInGame;
 import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,10 +43,9 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
 
     @Override
     public void demandCreatingUnit(ProductionOrder order){
-        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         if(order.getUnitType().getRace() == Race.Protoss) {
             this.unitsToCreateDemandList.demand(order);
-            System.out.println(order.getUnitType() + " demanded.");
+            //System.out.println(order.getUnitType() + " demanded.");
         }
     }
 
@@ -236,6 +237,18 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
         }
          */
     }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        List<TextInGame> textInGameList = new ArrayList<>();
+        TextInGame text = new TextInGame.TextInGameBuilder("DemandList for units: " + this.unitsToCreateDemandList.getList())
+                .x(30)
+                .y(10)
+                .build();
+        textInGameList.add(text);
+        return textInGameList;
+    }
+
     public void setManageSupplyPopulationMark(int manageSupplyPopulationMark) {
         this.manageSupplyPopulationMark = manageSupplyPopulationMark;
     }

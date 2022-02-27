@@ -139,20 +139,24 @@ public class ProductionOrder implements Comparable<ProductionOrder>{
 
     @Override
     public String toString() {
-        String description = this.priority + " order for: " + unitType;
+        String description = "";
+        if(this.priority !=  ProductionPriority.NORMAL)
+            description = this.priority + ": " + unitType;
+        else
+            description += unitType.toString();
 
         if(this.populationMark <= 0){
-            description += " on population of " + this.populationMark/2;
+            description += " pop: " + this.populationMark/2;
         }
         else if(this.timeMark <= 0){
-            description += " on time of " + TimeUnit.SECONDS.toMinutes(this.timeMark);
+            description += " time: " + TimeUnit.SECONDS.toMinutes(this.timeMark);
         }
         else if(this.frameMark <= 0){
-            description += " on frame of " + this.frameMark;
+            description += " frame: " + this.frameMark;
         }
 
         if(this.baseManager != null) {
-            description += " for base on " + PositionPrinter.toString(baseManager.getBase());
+            description += " base: " + PositionPrinter.toString(baseManager.getBase());
         }
         return description;
     }

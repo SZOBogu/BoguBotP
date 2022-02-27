@@ -11,6 +11,7 @@ import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pojos.EnemyUnitRecord;
+import pojos.TextInGame;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,6 +110,26 @@ public class Bot extends DefaultBWListener {
         this.demandManager.manage();
         this.militaryManager.manage();
         this.scoutingManager.manage();
+
+        List<TextInGame> textInGameList = this.scoutingManager.getTextToWriteInGame();
+        for(TextInGame text : textInGameList){
+            this.game.drawTextMap(text.getX(), text.getX(), text.getText(), text.getColor());
+        }
+
+        textInGameList = this.demandManager.getTextToWriteInGame();
+        for(TextInGame text : textInGameList){
+            this.game.drawTextScreen(text.getX(), text.getX(), text.getText(), text.getColor());
+        }
+
+        textInGameList = this.militaryManager.getTextToWriteInGame();
+        for(TextInGame text : textInGameList){
+            this.game.drawTextScreen(text.getX(), text.getX(), text.getText(), text.getColor());
+        }
+
+        textInGameList = this.globalBasesManager.getTextToWriteInGame();
+        for(TextInGame text : textInGameList){
+            this.game.drawTextMap(text.getX(), text.getX(), text.getText(), text.getColor());
+        }
     }
 
     @Override
