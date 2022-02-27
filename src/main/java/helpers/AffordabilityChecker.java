@@ -2,7 +2,7 @@ package helpers;
 
 import bwapi.*;
 
-public class CostCalculator {
+public class AffordabilityChecker {
     public static boolean canAfford(Player player, UnitType unit){
         return player.minerals() >= unit.mineralPrice() && player.gas() >= unit.gasPrice();
     }

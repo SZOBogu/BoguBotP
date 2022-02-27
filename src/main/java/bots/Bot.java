@@ -39,6 +39,8 @@ public class Bot extends DefaultBWListener {
         this.player = game.self();
         this.enemy = game.enemy();
         this.mapHelper = new MapHelper(game);
+        DemandLimitTable.init();
+        DemandLimitTable.setPlayer(this.player);
 
         DemandManager demandManager = new DemandManager();
         demandManager.setGame(this.game);
@@ -85,7 +87,7 @@ public class Bot extends DefaultBWListener {
         BuildOrder buildOrder = BuildOrderChooser.getBuildOrder();
         this.buildOrderName = buildOrder.getName();
         for(ProductionOrder entry: buildOrder.getBuildOrder()) {
-            this.demandManager.demandCreatingUnit(entry);
+            this.demandManager.forceDemandingUnit(entry);
         }
         proxyManager.setManageSupplyPopulationMark(SupplyManagementPopulationMarkGetter.getPopulationMark(buildOrder));
 
@@ -114,6 +116,9 @@ public class Bot extends DefaultBWListener {
         if(this.demandManager.isOnDemandList(unit.getType())){
             //doesn't work with assimilators
             this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unit.getType()).build());
+        }
+        if(unit.getType().isBuilding()){
+            DemandLimitTable.updateLimits(unit.getType());
         }
         /*
         if(unit.getType() == UnitType.Protoss_Pylon){

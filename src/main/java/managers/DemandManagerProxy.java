@@ -4,14 +4,24 @@ import bwapi.Game;
 import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import helpers.DemandLimitTable;
 import helpers.ProductionOrder;
 
 public class DemandManagerProxy implements IDemandManager{
     private DemandManager demandManager;
-
+    private BuildingManager buildingManager;
     @Override
     public void demandCreatingUnit(ProductionOrder order) {
-        this.demandManager.demandCreatingUnit(order);
+        int currentOrders = 0;
+        if(order.getUnitType().isBuilding()){
+            currentOrders += buildingManager.getUncompletedBuildingsOfType(order.getUnitType()).size();
+        }
+        currentOrders += this.demandManager.howManyUnitsOnDemandList(order.getUnitType());
+
+        int limit = DemandLimitTable.getLimit(order.getUnitType());
+
+        if(currentOrders < limit)
+            this.demandManager.demandCreatingUnit(order);
     }
 
     @Override
@@ -22,6 +32,11 @@ public class DemandManagerProxy implements IDemandManager{
     @Override
     public void demandTech(TechType techType) {
         this.demandManager.demandTech(techType);
+    }
+
+    @Override
+    public void forceDemandingUnit(ProductionOrder order) {
+        this.demandManager.demandCreatingUnit(order);
     }
 
     @Override
@@ -98,6 +113,7 @@ public class DemandManagerProxy implements IDemandManager{
     }
 
     public void setBuildingManager(BuildingManager buildingManager) {
+        this.buildingManager = buildingManager;
         this.demandManager.setBuildingManager(buildingManager);
     }
 

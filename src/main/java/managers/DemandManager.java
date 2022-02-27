@@ -60,6 +60,11 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
             this.techDemandList.demand(techType);
     }
 
+    @Override
+    public void forceDemandingUnit(ProductionOrder order) {
+        this.demandCreatingUnit(order);
+    }
+
     public void demandWorkerAttention(UnitType worker){
         this.workerAttentionDemandList.demand(worker);
     }

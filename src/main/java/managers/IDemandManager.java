@@ -13,6 +13,8 @@ public interface IDemandManager extends IBroodWarManager {
 
     void demandTech(TechType techType);
 
+    void forceDemandingUnit(ProductionOrder order);
+
     void fulfillDemandCreatingUnit(ProductionOrder productionOrder);
 
     boolean fulfillDemandCreatingUnitWithType(UnitType unitType);

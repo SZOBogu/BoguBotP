@@ -1,9 +1,7 @@
 package managers;
 
 import bwapi.*;
-import helpers.CostCalculator;
 import helpers.ProductionOrder;
-import helpers.ProductionOrderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

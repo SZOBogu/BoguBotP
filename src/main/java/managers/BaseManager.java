@@ -3,11 +3,9 @@ package managers;
 import bwapi.*;
 import bwem.Base;
 import bwem.Mineral;
-import enums.ProductionPriority;
 import enums.WorkerRole;
 import helpers.*;
 //import javafx.geometry.Pos;
-import org.springframework.beans.factory.annotation.Autowired;
 import pojos.WorkerList;
 import pojos.Worker;
 
@@ -326,7 +324,7 @@ public class BaseManager implements IUnitManager{
     public void orderNewProbe(){
         if(this.nexus != null &&
                 this.nexus.getTrainingQueue().isEmpty() &&
-                CostCalculator.canAfford(player, UnitType.Protoss_Probe) &&
+                AffordabilityChecker.canAfford(player, UnitType.Protoss_Probe) &&
                 !this.isOversaturated() &&
                 this.demandManager.howManyUnitsOnDemandList(UnitType.Protoss_Probe) < 1){
             System.out.printf("probe demanded");
@@ -335,7 +333,7 @@ public class BaseManager implements IUnitManager{
     }
 
     public void build(ProductionOrder order){
-        if(CostCalculator.canAfford(player, order.getUnitType())){
+        if(AffordabilityChecker.canAfford(player, order.getUnitType())){
             if(this.builder == null){
                 this.delegateWorkerToBuild();
             }

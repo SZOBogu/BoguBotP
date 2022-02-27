@@ -39,7 +39,7 @@ public class Worker {
                 ", worker position =" + PositionPrinter.toString(this.worker.getTilePosition()) +
                 '}';
     }
-
+/*
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -52,4 +52,6 @@ public class Worker {
     public int hashCode() {
         return Objects.hash(getWorker());
     }
+
+ */
 }
