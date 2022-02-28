@@ -297,7 +297,7 @@ public class BaseManager implements IUnitManager{
     }
 
     public boolean isOversaturated(){
-        return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 3);
+        return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 2);
     }
 
     private void callOversaturation(){
@@ -349,8 +349,9 @@ public class BaseManager implements IUnitManager{
     }
 
     public Unit getScout(){
-        Worker scout = this.workers.get(this.workers.size() - 1);
+        Worker scout = this.freeWorkerWithRole(WorkerRole.MINERAL_MINE);
         scout.setWorkerRole(WorkerRole.SCOUT);
+        this.workers.remove(scout.getWorker());
         return scout.getWorker();
     }
 
@@ -379,8 +380,7 @@ public class BaseManager implements IUnitManager{
         List<TextInGame> textInGameList = new ArrayList<>();
         for(Worker worker : this.workers.getWorkerList()){
             TextInGame text = new TextInGame.TextInGameBuilder(worker.getWorkerRole().toString())
-                    .x(worker.getWorker().getPosition().x)
-                    .y(worker.getWorker().getPosition().y)
+                    .position(worker.getWorker().getPosition())
                     .build();
             textInGameList.add(text);
         }

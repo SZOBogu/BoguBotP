@@ -1,5 +1,6 @@
 package pojos;
 
+import bwapi.Position;
 import bwapi.Text;
 
 public class TextInGame {
@@ -40,6 +41,13 @@ public class TextInGame {
 
         public TextInGameBuilder color(Text color){
             this.color = color;
+            return this;
+        }
+
+        public TextInGameBuilder position(Position position){
+            this.x = position.x;
+            this.y = position.y;
+
             return this;
         }
 

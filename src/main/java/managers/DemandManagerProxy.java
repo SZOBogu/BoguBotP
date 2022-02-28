@@ -1,7 +1,7 @@
 package managers;
 
 import bwapi.*;
-import helpers.DemandLimitTable;
+import helpers.DemandLimitMap;
 import helpers.ProductionOrder;
 import pojos.TextInGame;
 
@@ -13,16 +13,18 @@ public class DemandManagerProxy implements IDemandManager{
     private Game game;
     @Override
     public void demandCreatingUnit(ProductionOrder order) {
-        int currentOrders = 0;
-        if(order.getUnitType().isBuilding()){
-            currentOrders += buildingManager.getUncompletedBuildingsOfType(order.getUnitType()).size();
-        }
-        currentOrders += this.demandManager.howManyUnitsOnDemandList(order.getUnitType());
+        if (order.getUnitType().getRace() == Race.Protoss){
+            int currentOrders = 0;
+            if (order.getUnitType().isBuilding()) {
+                currentOrders += buildingManager.getUncompletedBuildingsOfType(order.getUnitType()).size();
+            }
+            currentOrders += this.demandManager.howManyUnitsOnDemandList(order.getUnitType());
 
-        int limit = DemandLimitTable.getLimit(order.getUnitType());
+            int limit = DemandLimitMap.getLimit(order.getUnitType());
 
-        if(currentOrders < limit && order.getUnitType().getRace() == Race.Protoss)
-            this.demandManager.demandCreatingUnit(order);
+            if (currentOrders < limit)
+                this.demandManager.demandCreatingUnit(order);
+            }
     }
 
     @Override

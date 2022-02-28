@@ -4,12 +4,9 @@ import applicationContext.MyApplicationContext;
 import aspects.LoggingAspect;
 import bwapi.*;
 import bwem.Base;
-import configs.SpringConfig;
-import enums.ProductionPriority;
 import helpers.*;
 import managers.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import pojos.EnemyUnitRecord;
 import pojos.TextInGame;
 
@@ -40,8 +37,8 @@ public class Bot extends DefaultBWListener {
         this.player = game.self();
         this.enemy = game.enemy();
         this.mapHelper = new MapHelper(game);
-        DemandLimitTable.init();
-        DemandLimitTable.setPlayer(this.player);
+        DemandLimitMap.init();
+        DemandLimitMap.setPlayer(this.player);
 
         DemandManager demandManager = new DemandManager();
         demandManager.setGame(this.game);
@@ -91,7 +88,7 @@ public class Bot extends DefaultBWListener {
             this.demandManager.forceDemandingUnit(entry);
         }
         proxyManager.setManageSupplyPopulationMark(SupplyManagementPopulationMarkGetter.getPopulationMark(buildOrder));
-
+        this.militaryManager.setUnitToProduceConstantly(buildOrder.getUnitToProduceConstantly());
         this.militaryManager.setBaseInfoTracker(baseInfoTracker);
         this.globalBasesManager.setBaseInfoTracker(baseInfoTracker);
         proxyManager.setGlobalBasesManager(this.globalBasesManager);
@@ -113,22 +110,22 @@ public class Bot extends DefaultBWListener {
 
         List<TextInGame> textInGameList = this.scoutingManager.getTextToWriteInGame();
         for(TextInGame text : textInGameList){
-            this.game.drawTextMap(text.getX(), text.getX(), text.getText(), text.getColor());
+            this.game.drawTextMap(text.getX(), text.getY(), text.getText(), text.getColor());
         }
 
         textInGameList = this.demandManager.getTextToWriteInGame();
         for(TextInGame text : textInGameList){
-            this.game.drawTextScreen(text.getX(), text.getX(), text.getText(), text.getColor());
+            this.game.drawTextScreen(text.getX(), text.getY(), text.getText(), text.getColor());
         }
 
         textInGameList = this.militaryManager.getTextToWriteInGame();
         for(TextInGame text : textInGameList){
-            this.game.drawTextScreen(text.getX(), text.getX(), text.getText(), text.getColor());
+            this.game.drawTextScreen(text.getX(), text.getY(), text.getText(), text.getColor());
         }
 
         textInGameList = this.globalBasesManager.getTextToWriteInGame();
         for(TextInGame text : textInGameList){
-            this.game.drawTextMap(text.getX(), text.getX(), text.getText(), text.getColor());
+            this.game.drawTextMap(text.getX(), text.getY(), text.getText(), text.getColor());
         }
     }
 
@@ -139,7 +136,7 @@ public class Bot extends DefaultBWListener {
             this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unit.getType()).build());
         }
         if(unit.getType().isBuilding()){
-            DemandLimitTable.updateLimits(unit.getType());
+            DemandLimitMap.updateLimits(unit.getType());
         }
         /*
         if(unit.getType() == UnitType.Protoss_Pylon){

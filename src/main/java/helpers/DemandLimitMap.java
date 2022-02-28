@@ -5,7 +5,7 @@ import bwapi.UnitType;
 
 import java.util.*;
 
-public class DemandLimitTable {
+public class DemandLimitMap {
     private static final HashMap<UnitType, Integer> limitTable = new HashMap<>();
     private static Player player;
 
@@ -196,6 +196,6 @@ public class DemandLimitTable {
     }
 
     public static void setPlayer(Player player) {
-        DemandLimitTable.player = player;
+        DemandLimitMap.player = player;
     }
 }

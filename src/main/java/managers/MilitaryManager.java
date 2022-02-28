@@ -209,4 +209,8 @@ public class MilitaryManager implements IUnitManager{
     public void setBuildingManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
     }
+
+    public void setUnitToProduceConstantly(UnitType unitToProduceConstantly) {
+        this.unitToProduceConstantly = unitToProduceConstantly;
+    }
 }

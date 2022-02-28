@@ -152,7 +152,8 @@ public class BuildOrderStaticFactory {
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(32).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(38).build(),
                 new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Forge).populationMark(42).build(),
-                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(46).build()
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Pylon).populationMark(46).build(),
+                new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Citadel_of_Adun).populationMark(100).build()
         ));
          BuildOrder buildOrder = new BuildOrder.BuildOrderBuilder(buildOrderList).name("Test suboptimal speedlots").build();
          return buildOrder;

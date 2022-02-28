@@ -84,15 +84,13 @@ public class ScoutingManager implements IBroodWarManager{
         List<BaseInfoRecord> baseInfoRecords = this.baseInfoTracker.getBases();
         for(BaseInfoRecord record : baseInfoRecords){
             TextInGame text = new TextInGame.TextInGameBuilder(record.getBaseState().toString())
-                    .x(record.getBase().getLocation().toPosition().x)
-                    .y(record.getBase().getLocation().toPosition().y)
+                    .position(record.getBase().getCenter())
                     .build();
             textInGameList.add(text);
         }
         if(this.scout != null){
             TextInGame scoutText = new TextInGame.TextInGameBuilder("SCOUT")
-                    .x(this.scout.getX())
-                    .y(this.scout.getY())
+                    .position(this.scout.getPosition())
                     .build();
             textInGameList.add(scoutText);
         }

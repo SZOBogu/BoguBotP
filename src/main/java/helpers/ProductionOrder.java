@@ -141,7 +141,7 @@ public class ProductionOrder implements Comparable<ProductionOrder>{
     public String toString() {
         String description = "";
         if(this.priority !=  ProductionPriority.NORMAL)
-            description = this.priority + ": " + unitType;
+            description = this.priority + ": " + unitType.toString().replaceFirst("Protoss_", "");
         else
             description += unitType.toString();
 
