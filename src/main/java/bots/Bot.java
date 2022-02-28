@@ -139,6 +139,14 @@ public class Bot extends DefaultBWListener {
             DemandLimitMap.updateLimits(unit.getType());
         }
         /*
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
+            this.globalBasesManager.assignToAppropriateWorkerService(unit);
+            Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
+            baseInfoTracker.markBaseAsMine(base);
+            this.globalBasesManager.transferProbes();
+        }
+         */
+        /*
         if(unit.getType() == UnitType.Protoss_Pylon){
             this.buildingManager.add(unit);
             this.demandManager.fulfillDemandCreatingUnitWithType(UnitType.Protoss_Pylon);
@@ -148,7 +156,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitComplete(Unit unit){
-        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
             Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
             baseInfoTracker.markBaseAsMine(base);

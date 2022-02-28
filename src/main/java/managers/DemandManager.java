@@ -13,6 +13,7 @@ import pojos.UnitDemandList;
 import pojos.UpgradeDemandList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,16 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
     @Override
     public void demandCreatingUnit(ProductionOrder order){
         if(order.getUnitType().getRace() == Race.Protoss) {
-            this.unitsToCreateDemandList.demand(order);
+            /*
+            if(order.getUnitType() == UnitType.Protoss_Probe && order.getBaseManager() != null){
+                List<ProductionOrder> orders = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getBaseManager() != null).filter(o -> o.getBaseManager().equals(order.getBaseManager())).collect(Collectors.toList());
+                if(orders.isEmpty())
+                    this.unitsToCreateDemandList.demand(order);
+
+            }
+            else
+             */
+                this.unitsToCreateDemandList.demand(order);
             //System.out.println(order.getUnitType() + " demanded.");
         }
     }
@@ -72,14 +82,12 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
 
     @Override
     public void fulfillDemandCreatingUnit(ProductionOrder productionOrder){
-        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         this.unitsToCreateDemandList.fulfillDemand(productionOrder);
         this.lastUnitProducedTimestamp = this.game.elapsedTime();
     }
 
     @Override
     public boolean fulfillDemandCreatingUnitWithType(UnitType unitType){
-        System.out.println("DemandList for units: " + this.unitsToCreateDemandList.getList());
         List<ProductionOrder> orderedUnits = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getUnitType() == unitType).sorted().collect(Collectors.toList());
         if(orderedUnits.isEmpty()){
             return false;
@@ -242,8 +250,8 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
     public List<TextInGame> getTextToWriteInGame() {
         List<TextInGame> textInGameList = new ArrayList<>();
         TextInGame text = new TextInGame.TextInGameBuilder("DemandList for units: " + this.unitsToCreateDemandList.getList())
-                .x(30)
-                .y(10)
+                .x(10)
+                .y(30)
                 .build();
         textInGameList.add(text);
         return textInGameList;

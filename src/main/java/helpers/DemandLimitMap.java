@@ -94,10 +94,10 @@ public class DemandLimitMap {
     }
 
     private static void nexus(){
-        int oldValue = limitTable.get(UnitType.Protoss_Gateway);
-        limitTable.put(UnitType.Protoss_Gateway, Math.max(1, 3 * oldValue));
-        oldValue = limitTable.get(UnitType.Protoss_Nexus);
-        limitTable.put(UnitType.Protoss_Probe, oldValue + 1);
+        int gets = limitTable.get(UnitType.Protoss_Gateway);
+        limitTable.put(UnitType.Protoss_Gateway, Math.max(1, 3 * gets));
+        int nexuses = limitTable.get(UnitType.Protoss_Nexus);
+        limitTable.put(UnitType.Protoss_Probe, nexuses * 2);
         limitTable.put(UnitType.Protoss_Forge, 2);
     }
     private static void gateway(){

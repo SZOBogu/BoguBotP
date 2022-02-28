@@ -13,6 +13,7 @@ import pojos.TextInGame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ScoutingManager implements IBroodWarManager{
@@ -44,7 +45,17 @@ public class ScoutingManager implements IBroodWarManager{
                 }
                 else {
                     if (this.baseInfoTracker.checkBaseState(nextBase) != BaseState.MINE) {
-                        this.baseInfoTracker.markBaseAsNeutral(nextBase);
+                        List<Unit> buildingsNearScout = game.getUnitsInRadius(this.scout.getPosition(), 200).stream().filter(o -> o.getType().isBuilding()).collect(Collectors.toList());
+                        List<Unit> mineBuildingsNearScout = buildingsNearScout.stream().filter(b -> game.self().getUnits().contains(b)).collect(Collectors.toList());
+                        List<Unit> enemyBuildingsNearScout = buildingsNearScout.stream().filter(b -> game.enemy().getUnits().contains(b)).collect(Collectors.toList());
+
+                        if(!buildingsNearScout.isEmpty() && !enemyBuildingsNearScout.isEmpty())
+                            this.baseInfoTracker.markBaseAsEnemy(nextBase);
+                        else if(!buildingsNearScout.isEmpty() && !mineBuildingsNearScout.isEmpty())
+                            this.baseInfoTracker.markBaseAsMine(nextBase);
+                        else
+                            this.baseInfoTracker.markBaseAsNeutral(nextBase);
+
                     }
                     List<Base> unknownBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.UNKNOWN);
                     List<Base> enemyBases = this.baseInfoTracker.getClosestBasesWithState(this.scout.getTilePosition(), BaseState.ENEMY);
@@ -52,7 +63,8 @@ public class ScoutingManager implements IBroodWarManager{
                         this.baseInfoTracker.markBaseAsEnemy(unknownBases.get(0));
                     }
                 }
-            } else if (this.scout.isStuck()) {
+            }
+            else if (this.scout.isStuck()) {
                 this.scout = null;
             }
         }

@@ -27,8 +27,6 @@ public class BaseManager implements IUnitManager{
     private boolean isOversaturationCalled;
     private final WorkerList workers;
 
-    private ProductionOrder buildingOrder;
-
     public static class WorkerManagerBuilder{
         private final Player player;
         private final Game game;
@@ -99,18 +97,11 @@ public class BaseManager implements IUnitManager{
         workers.remove(unit);
     }
 
-    //TODO: reassign gas workers if one of them was killed
-    //TODO: throws NullPointerException
     public void handleWorkerDestruction(Unit unit){
-        try {
-            if (unit == this.builder.getWorker() && this.builder != null) {
-                this.builder = null;
-            }
-            this.remove(unit);
+        if (this.builder != null && unit == this.builder.getWorker()) {
+            this.builder = null;
         }
-        catch (NullPointerException ex){
-            System.out.println("NPE on handling probe destruction");
-        }
+        this.remove(unit);
     }
 
     private List<Worker> getIdleWorkers(){
@@ -324,8 +315,8 @@ public class BaseManager implements IUnitManager{
 
     public void orderNewProbe(){
         if(this.nexus != null &&
-                this.nexus.getTrainingQueue().isEmpty() &&
                 AffordabilityChecker.canAfford(player, UnitType.Protoss_Probe) &&
+                !this.nexus.isTraining() &&
                 !this.isOversaturated()){
             this.demandManager.demandCreatingUnit(ProductionOrderFactory.createProbeOrder(this));
         }
@@ -357,23 +348,25 @@ public class BaseManager implements IUnitManager{
 
     @Override
     public void manage() {
-        this.forceGatheringGas();
-        List<Worker> idleWorkers = this.getIdleWorkers();
+            //if(this.nexus.isCompleted() && this.nexus != null){
+                this.forceGatheringGas();
+                List<Worker> idleWorkers = this.getIdleWorkers();
 
-        for(Worker worker : idleWorkers){
-            this.delegateWorkerToWork(worker);
+                for(Worker worker : idleWorkers){
+                    this.delegateWorkerToWork(worker);
+                }
+
+                if(isOversaturated() && !isOversaturationCalled){
+                    this.callOversaturation();
+                }
+
+                this.orderNewProbe();
+
+                this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() -10,"Probes: " + this.workers.getWorkerList().size(), Text.Default);
+                this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY(),"Mineral miners: " + this.workers.countWorkersWithState(WorkerRole.MINERAL_MINE), Text.Cyan);
+                this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() + 10,"Gas miners: " + this.workers.countWorkersWithState(WorkerRole.GAS_MINE), Text.Green);
+            //}
         }
-
-        if(isOversaturated() && !isOversaturationCalled){
-            this.callOversaturation();
-        }
-
-        this.orderNewProbe();
-
-        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() -10,"Probes: " + this.workers.getWorkerList().size(), Text.Default);
-        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY(),"Mineral miners: " + this.workers.countWorkersWithState(WorkerRole.MINERAL_MINE), Text.Cyan);
-        this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() + 10,"Gas miners: " + this.workers.countWorkersWithState(WorkerRole.GAS_MINE), Text.Green);
-    }
 
     @Override
     public List<TextInGame> getTextToWriteInGame() {
