@@ -167,7 +167,9 @@ public class GlobalBasesManager implements IBroodWarManager{
 
     @Override
     public void manage() {
-        this.baseManagers.forEach(BaseManager::manage);
+        for(int i  = this.baseManagers.size() - 1; i >= 0; i--){
+            this.baseManagers.get(i).manage();
+        }
     }
 
     @Override
