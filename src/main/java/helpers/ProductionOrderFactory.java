@@ -5,6 +5,8 @@ import enums.ProductionPriority;
 import managers.BaseManager;
 
 public class ProductionOrderFactory {
+    private ProductionOrderFactory() {}
+
     public static ProductionOrder createProbeOrder(){
         return new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Probe).build();
     }

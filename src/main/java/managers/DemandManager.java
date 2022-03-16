@@ -176,6 +176,20 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
             if(!orders.isEmpty())
                 order = orders.get(0);
         }
+        if(order != null && !this.game.self().hasUnitTypeRequirement(order.getUnitType())){
+            List<UnitType> requirements = new ArrayList<>(order.getUnitType().requiredUnits().keySet());
+            for(UnitType requirement : requirements){
+                if(requirement.isBuilding() && this.buildingManager.countAllBuildingsOfType(requirement) < 1) {
+                    System.out.println("demand list clogged by unit that doesnt meet requirements");
+                    ProductionOrder requirementOrder = new ProductionOrder.ProductionOrderBuilder(requirement).build();
+                    if (!isOnDemandList(requirement)){
+                        this.unitsToCreateDemandList.getList().remove(order);
+                        this.demandCreatingUnit(requirementOrder);
+                        this.demandCreatingUnit(order);
+                    }
+                }
+            }
+        }
         return order;
     }
 

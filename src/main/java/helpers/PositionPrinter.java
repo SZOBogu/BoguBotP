@@ -6,6 +6,8 @@ import bwapi.WalkPosition;
 import bwem.Base;
 
 public class PositionPrinter {
+    private PositionPrinter(){}
+
     public static String toString(Base base){
         return "Base: " + getCoordinates(base.getLocation());
     }
