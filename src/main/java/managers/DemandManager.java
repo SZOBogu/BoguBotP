@@ -167,9 +167,9 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
         if(order == null){
 
             List<ProductionOrder> orders = this.unitsToCreateDemandList.getList().stream()
-                    .filter(o -> o.getFrameMark() == 450000)
-                    .filter(o -> o.getTimeMark() == 18000)
-                    .filter(o -> o.getPopulationMark() == 1201)
+                    .filter(o -> o.getFrameMark() == 450000)     //highly unlikely to meet mark
+                    .filter(o -> o.getTimeMark() == 18000)      //highly unlikely to meet mark
+                    .filter(o -> o.getPopulationMark() == 1201) //impossible to meet mark
                     .sorted()
                     .collect(Collectors.toList());
 

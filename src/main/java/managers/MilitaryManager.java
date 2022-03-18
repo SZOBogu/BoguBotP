@@ -126,7 +126,7 @@ public class MilitaryManager implements IUnitManager{
             this.frames++;
         for(List<Unit> militaryGroup : this.militaryGroups) {
             for (Unit attacker : militaryGroup) {
-                if (attacker.getDistance(this.attackRallyPoint) > 15) {
+                if (attacker.getDistance(this.attackRallyPoint) > 10) {
                     return false;
                 }
             }

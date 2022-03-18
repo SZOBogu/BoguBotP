@@ -24,7 +24,7 @@ public class BaseManager implements IUnitManager{
     private Unit assimilator;
     private Base base;
 
-    private boolean isOversaturationCalled;
+//    private boolean isOversaturationCalled;
     private final WorkerList workers;
 
     public static class WorkerManagerBuilder{
@@ -36,7 +36,7 @@ public class BaseManager implements IUnitManager{
         private Base base;
 
         private IDemandManager demandManager;
-        private GlobalBasesManager globalBasesManager;
+//        private GlobalBasesManager globalBasesManager;
 
         public WorkerManagerBuilder(Player player, Game game, MapHelper mapHelper, Base base){
             this.player = player;
@@ -51,10 +51,10 @@ public class BaseManager implements IUnitManager{
             return this;
         }
 
-        public WorkerManagerBuilder expansionManager(GlobalBasesManager globalBasesManager){
-            this.globalBasesManager = globalBasesManager;
-            return this;
-        }
+//        public WorkerManagerBuilder expansionManager(GlobalBasesManager globalBasesManager){
+//            this.globalBasesManager = globalBasesManager;
+//            return this;
+//        }
 
         public WorkerManagerBuilder nexus(Unit nexus){
             this.nexus = nexus;
@@ -79,11 +79,11 @@ public class BaseManager implements IUnitManager{
         this.nexus = builder.nexus;
         this.assimilator = builder.assimilator;
 
-        this.isOversaturationCalled = false;
+//        this.isOversaturationCalled = false;
         this.workers = new WorkerList();
 
         this.demandManager = builder.demandManager;
-        this.globalBasesManager = builder.globalBasesManager;
+//        this.globalBasesManager = builder.globalBasesManager;
     }
 
     @Override
@@ -288,15 +288,15 @@ public class BaseManager implements IUnitManager{
     }
 
     public boolean isOversaturated(){
-        return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 2);
+        return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 2.5);
     }
-
+/*
     private void callOversaturation(){
         this.isOversaturationCalled = true;
         System.out.println("Oversaturation called");
         this.globalBasesManager.handleOversaturation();
     }
-
+*/
     public void acceptWorkerTransfer(List<Worker> workerTrain){
         System.out.println("Worker transfer allegedly received: " + workerTrain.size());
         Position position = new Position(this.base.getCenter().x + 2, this.base.getCenter().y);
@@ -356,9 +356,9 @@ public class BaseManager implements IUnitManager{
                     this.delegateWorkerToWork(worker);
                 }
 
-                if(isOversaturated() && !isOversaturationCalled){
-                    this.callOversaturation();
-                }
+//                if(isOversaturated() && !isOversaturationCalled){
+//                    this.callOversaturation();
+//                }
 
                 this.orderNewProbe();
 
@@ -393,17 +393,17 @@ public class BaseManager implements IUnitManager{
         this.demandManager = demandManager;
     }
 
-    public void setExpansionManager(GlobalBasesManager globalBasesManager) {
-        this.globalBasesManager = globalBasesManager;
-    }
+//    public void setExpansionManager(GlobalBasesManager globalBasesManager) {
+//        this.globalBasesManager = globalBasesManager;
+//    }
 
-    public boolean isOversaturationCalled() {
-        return isOversaturationCalled;
-    }
-
-    public void setOversaturationCalled(boolean oversaturationCalled) {
-        isOversaturationCalled = oversaturationCalled;
-    }
+//    public boolean isOversaturationCalled() {
+//        return isOversaturationCalled;
+//    }
+//
+//    public void setOversaturationCalled(boolean oversaturationCalled) {
+//        isOversaturationCalled = oversaturationCalled;
+//    }
 
     public void setNexus(Unit nexus) {
         this.nexus = nexus;

@@ -2,14 +2,16 @@ package managers;
 
 import bwapi.*;
 import helpers.ProductionOrder;
+import helpers.UnitTypeStringSlicer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pojos.TextInGame;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class BuildingManager {
+public class BuildingManager implements IBroodWarManager{
     private final LinkedHashSet<Unit> buildings = new LinkedHashSet<>();
     private IDemandManager demandManager;
 
@@ -107,5 +109,26 @@ public class BuildingManager {
     @Override
     public String toString() {
         return "BuildingManager";
+    }
+
+    @Override
+    public void manage() {
+
+    }
+
+    @Override
+    public List<TextInGame> getTextToWriteInGame() {
+        StringBuilder s = new StringBuilder();
+        List<TextInGame> textInGameList = new ArrayList<>();
+        for(Unit building : this.buildings){
+            s.append(UnitTypeStringSlicer.getNeatName(building.getType())).append(" : ").append(this.countAllBuildingsOfType(building.getType())).append(" ");
+        }
+        TextInGame text = new TextInGame.TextInGameBuilder(s.toString())
+                .x(10)
+                .y(50)
+                .build();
+        textInGameList.add(text);
+
+        return textInGameList;
     }
 }

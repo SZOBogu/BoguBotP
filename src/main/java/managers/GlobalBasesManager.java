@@ -60,14 +60,13 @@ public class GlobalBasesManager implements IBroodWarManager{
                     this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition())
             )
                     .demandManager(this.demandManager)
-                    .expansionManager(this)
+                    //.expansionManager(this)
                     .nexus(unit)
                     .build();
 
             baseManagers.add(baseManager);
         }
         else if(unit.getType() == UnitType.Protoss_Assimilator) {
-            //TODO: investigate NullPointerException
 //            Base closestBase = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
 //            System.out.println("assignToAppropriateWorkerService: closestBase x: " + closestBase.getLocation().x + " y: " + closestBase.getLocation().y);
 //            BaseManager manager = this.getWorkerManagerByBase(closestBase);
@@ -102,17 +101,17 @@ public class GlobalBasesManager implements IBroodWarManager{
         }
     }
 
-    public void handleOversaturation(){
-        ProductionOrder nexusOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Nexus).build();
-        ProductionOrder assimilatorOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build();
-
-        this.demandManager.demandCreatingUnit(nexusOrder);
-        this.demandManager.demandCreatingUnit(assimilatorOrder);
-    }
+//    public void handleOversaturation(){
+//        ProductionOrder nexusOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Nexus).build();
+//        ProductionOrder assimilatorOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build();
+//
+//        this.demandManager.demandCreatingUnit(nexusOrder);
+//        this.demandManager.demandCreatingUnit(assimilatorOrder);
+//    }
 
     public void transferProbes(){
         System.out.println("Probe transfer requested");
-        BaseManager oversaturatedBaseManager = this.baseManagers.stream().filter(BaseManager::isOversaturationCalled)
+        BaseManager oversaturatedBaseManager = this.baseManagers.stream().filter(BaseManager::isOversaturated)
                 .findFirst().orElse(null);
         BaseManager toBaseManager = this.baseManagers.get(this.baseManagers.size() - 1);
         System.out.println("How many base managers: " + this.baseManagers.size());
@@ -127,14 +126,14 @@ public class GlobalBasesManager implements IBroodWarManager{
             List<Worker> workersToTransfer = oversaturatedBaseManager.popWorkers(oversaturatedBaseManager.getAmountOfSurplusWorkers() + 2);
             toBaseManager.acceptWorkerTransfer(workersToTransfer);
 
-            if(!oversaturatedBaseManager.isOversaturated()){
-                oversaturatedBaseManager.setOversaturationCalled(false);
-            }
-            else{
-                List<Worker> moreWorkersToTransfer = oversaturatedBaseManager.popWorkers(1);
-                toBaseManager.acceptWorkerTransfer(moreWorkersToTransfer);
-
-            }
+//            if(!oversaturatedBaseManager.isOversaturated()){
+//                oversaturatedBaseManager.setOversaturationCalled(false);
+//            }
+//            else{
+//                List<Worker> moreWorkersToTransfer = oversaturatedBaseManager.popWorkers(1);
+//                toBaseManager.acceptWorkerTransfer(moreWorkersToTransfer);
+//
+//            }
             System.out.println("Oversaturated Base: \n" + oversaturatedBaseManager);
             System.out.println("Base accepting probes: \n" + toBaseManager);
         }
@@ -169,6 +168,16 @@ public class GlobalBasesManager implements IBroodWarManager{
     public void manage() {
         for(int i  = this.baseManagers.size() - 1; i >= 0; i--){
             this.baseManagers.get(i).manage();
+        }
+        for(BaseManager baseManager : this.baseManagers){
+            if(baseManager.isOversaturated()){
+                System.out.println("Oversaturation detected");
+                ProductionOrder nexusOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Nexus).build();
+                ProductionOrder assimilatorOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build();
+
+                this.demandManager.demandCreatingUnit(nexusOrder);
+                this.demandManager.demandCreatingUnit(assimilatorOrder);
+            }
         }
     }
 
@@ -210,6 +219,7 @@ public class GlobalBasesManager implements IBroodWarManager{
     public void setMilitaryManager(MilitaryManager militaryManager) {
         this.militaryManager = militaryManager;
     }
+
     @Autowired
     public void setBaseInfoTracker(BaseInfoTracker baseInfoTracker) {
         this.baseInfoTracker = baseInfoTracker;

@@ -141,9 +141,9 @@ public class ProductionOrder implements Comparable<ProductionOrder>{
     public String toString() {
         String description = "";
         if(this.priority !=  ProductionPriority.NORMAL)
-            description = this.priority + ": " + unitType.toString().substring(8);
+            description = this.priority + ": " + UnitTypeStringSlicer.getNeatName(this.unitType);
         else
-            description += unitType.toString().substring(8);
+            description += UnitTypeStringSlicer.getNeatName(this.unitType);
 
         if(this.populationMark <= 0){
             description += " pop: " + this.populationMark/2;

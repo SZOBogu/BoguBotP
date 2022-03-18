@@ -57,7 +57,7 @@ public class Bot extends DefaultBWListener {
                 this.mapHelper.getBaseClosestToTilePosition(player.getUnits().get(0).getTilePosition())
         )
                 .demandManager(this.demandManager)
-                .expansionManager(this.globalBasesManager)
+//                .expansionManager(this.globalBasesManager)
                 .build();
 
         for(Unit unit : player.getUnits()){
@@ -127,6 +127,11 @@ public class Bot extends DefaultBWListener {
         for(TextInGame text : textInGameList){
             this.game.drawTextMap(text.getX(), text.getY(), text.getText(), text.getColor());
         }
+
+        textInGameList = this.buildingManager.getTextToWriteInGame();
+        for(TextInGame text : textInGameList){
+            this.game.drawTextScreen(text.getX(), text.getY(), text.getText(), text.getColor());
+        }
     }
 
     @Override
@@ -135,8 +140,9 @@ public class Bot extends DefaultBWListener {
             //doesn't work with assimilators
             this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(unit.getType()).build());
         }
-        if(unit.getType().isBuilding()){
+        if(unit.getType().isBuilding() && this.player.getUnits().contains(unit)){
             DemandLimitMap.updateLimits(unit.getType());
+            this.buildingManager.add(unit);
         }
         /*
         if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countCompletedBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
@@ -156,7 +162,7 @@ public class Bot extends DefaultBWListener {
 
     @Override
     public void onUnitComplete(Unit unit){
-        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Nexus) == this.globalBasesManager.amountOfWorkerManagers()){
+        if(unit.getType() == UnitType.Protoss_Nexus && player.getUnits().contains(unit) && this.buildingManager.countAllBuildingsOfType(UnitType.Protoss_Nexus) != this.globalBasesManager.amountOfWorkerManagers()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
             Base base = this.mapHelper.getBaseClosestToTilePosition(unit.getTilePosition());
             baseInfoTracker.markBaseAsMine(base);
@@ -167,6 +173,7 @@ public class Bot extends DefaultBWListener {
         }
         if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
             this.buildingManager.add(unit);
+            DemandLimitMap.updateLimits(unit.getType());
         }
         if(unit.getType() == UnitType.Protoss_Assimilator){
             this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build());

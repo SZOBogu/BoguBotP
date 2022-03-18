@@ -1,0 +1,28 @@
+Nexus: {Probe=1}
+Pylon: {Probe=1}
+Assimilator: {Probe=1}
+Gateway: {Probe=1, Nexus=1}
+Forge: {Probe=1, Nexus=1}
+Photon_Cannon: {Probe=1, Forge=1}
+Cybernetics_Core: {Probe=1, Gateway=1}
+Shield_Battery: {Probe=1, Gateway=1}
+Robotics_Facility: {Probe=1, Cybernetics_Core=1}
+Stargate: {Probe=1, Cybernetics_Core=1}
+Citadel_of_Adun: {Probe=1, Cybernetics_Core=1}
+Robotics_Support_Bay: {Probe=1, Robotics_Support_Bay=1}
+Fleet_Beacon: {Stargate=1, Probe=1}
+Templar_Archives: {Probe=1, Citadel_of_Adun=1}
+Observatory: {Probe=1, Robotics_Facility=1}
+Arbiter_Tribunal: {Stargate=1, Probe=1, Templar_Archives=1}
+Probe: {Nexus=1}
+Zealot: {Gateway=1}
+Dragoon: {Cybernetics_Core=1, Gateway=1}
+High_Templar: {Templar_Archives=1, Gateway=1}
+Dark_Templar: {Templar_Archives=1, Gateway=1}
+Shuttle: {Robotics_Facility=1}
+Reaver: {Robotics_Facility=1, Robotics_Support_Bay=1}
+Observer: {Robotics_Facility=1, Observatory=1}
+Scout: {Stargate=1}
+Carrier: {Stargate=1, Fleet_Beacon=1}
+Arbiter: {Stargate=1, Arbiter_Tribunal=1}
+Corsair: {Stargate=1}
