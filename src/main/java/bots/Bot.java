@@ -72,6 +72,7 @@ public class Bot extends DefaultBWListener {
         this.globalBasesManager.setMapHelper(this.mapHelper);
         this.globalBasesManager.setGame(game);
         this.globalBasesManager.setPlayer(player);
+        this.globalBasesManager.setDemandManager(proxyManager);
         this.globalBasesManager.init();
 
         this.militaryManager.setMapHelper(this.mapHelper);
@@ -168,34 +169,34 @@ public class Bot extends DefaultBWListener {
             baseInfoTracker.markBaseAsMine(base);
             this.globalBasesManager.transferProbes();
         }
-        if(unit.getType().isWorker()){
+        else if(unit.getType().isWorker()){
             this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
-        if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
+        else if(unit.getType().isBuilding() && player.getUnits().contains(unit)){
             this.buildingManager.add(unit);
             DemandLimitMap.updateLimits(unit.getType());
         }
-        if(unit.getType() == UnitType.Protoss_Assimilator){
-            this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build());
-            this.globalBasesManager.assignToAppropriateWorkerService(unit);
-        }
-
         if(unit.getType() == UnitType.Protoss_Forge){
             this.demandManager.demandUpgrade(UpgradeType.Protoss_Ground_Weapons);
         }
-        if(unit.getType() == UnitType.Protoss_Citadel_of_Adun){
+        else if(unit.getType() == UnitType.Protoss_Citadel_of_Adun){
             this.demandManager.demandUpgrade(UpgradeType.Leg_Enhancements);
         }
-        if(unit.getType() == UnitType.Protoss_Cybernetics_Core) {
+        else if(unit.getType() == UnitType.Protoss_Cybernetics_Core) {
             this.demandManager.demandUpgrade(UpgradeType.Singularity_Charge);
         }
         if(MilitaryUnitChecker.checkIfUnitIsMilitary(unit) && player.getUnits().contains(unit)){
             this.militaryManager.add(unit);
         }
-        if(this.game.enemy().getUnits().contains(unit) && unit.getType().isBuilding()){
+        else if(this.game.enemy().getUnits().contains(unit) && unit.getType().isBuilding()){
             List<Base> allBases = this.mapHelper.getBasesClosestToTilePosition(unit.getTilePosition());
             Base enemyBase = allBases.stream().filter(base -> this.baseInfoTracker.checkBaseState(base) == BaseState.UNKNOWN).collect(Collectors.toList()).get(0);
             this.baseInfoTracker.markBaseAsEnemy(enemyBase);
+        }
+
+        if(unit.getType() == UnitType.Protoss_Assimilator){
+            this.demandManager.fulfillDemandCreatingUnit(new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build());
+            this.globalBasesManager.assignToAppropriateWorkerService(unit);
         }
     }
 

@@ -45,17 +45,10 @@ public class DemandManager implements IBroodWarManager, IDemandManager {
     @Override
     public void demandCreatingUnit(ProductionOrder order){
         if(order.getUnitType().getRace() == Race.Protoss) {
-            /*
-            if(order.getUnitType() == UnitType.Protoss_Probe && order.getBaseManager() != null){
-                List<ProductionOrder> orders = this.unitsToCreateDemandList.getList().stream().filter(o -> o.getBaseManager() != null).filter(o -> o.getBaseManager().equals(order.getBaseManager())).collect(Collectors.toList());
-                if(orders.isEmpty())
-                    this.unitsToCreateDemandList.demand(order);
-
-            }
-            else
-             */
                 this.unitsToCreateDemandList.demand(order);
-            //System.out.println(order.getUnitType() + " demanded.");
+        }
+        if(order.getUnitType() == UnitType.Protoss_Nexus){
+            System.out.println("NEXUS ORDERED");
         }
     }
 

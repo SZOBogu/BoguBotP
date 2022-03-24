@@ -171,12 +171,13 @@ public class GlobalBasesManager implements IBroodWarManager{
         }
         for(BaseManager baseManager : this.baseManagers){
             if(baseManager.isOversaturated()){
-                System.out.println("Oversaturation detected");
                 ProductionOrder nexusOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Nexus).build();
                 ProductionOrder assimilatorOrder = new ProductionOrder.ProductionOrderBuilder(UnitType.Protoss_Assimilator).build();
 
-                this.demandManager.demandCreatingUnit(nexusOrder);
-                this.demandManager.demandCreatingUnit(assimilatorOrder);
+                if(!this.demandManager.isOnDemandList(UnitType.Protoss_Nexus))
+                    this.demandManager.demandCreatingUnit(nexusOrder);
+                if(!this.demandManager.isOnDemandList(UnitType.Protoss_Assimilator))
+                    this.demandManager.demandCreatingUnit(assimilatorOrder);
             }
         }
     }
@@ -210,7 +211,6 @@ public class GlobalBasesManager implements IBroodWarManager{
         this.player = player;
     }
 
-    @Autowired
     public void setDemandManager(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }

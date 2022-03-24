@@ -17,14 +17,13 @@ public class BaseManager implements IUnitManager{
     private final Game game;
     private Worker builder;
     private IDemandManager demandManager;
-    private GlobalBasesManager globalBasesManager;
     private final MapHelper mapHelper;
 
     private Unit nexus;
     private Unit assimilator;
     private Base base;
 
-//    private boolean isOversaturationCalled;
+    private boolean isOversaturationCalled;
     private final WorkerList workers;
 
     public static class WorkerManagerBuilder{
@@ -36,7 +35,6 @@ public class BaseManager implements IUnitManager{
         private Base base;
 
         private IDemandManager demandManager;
-//        private GlobalBasesManager globalBasesManager;
 
         public WorkerManagerBuilder(Player player, Game game, MapHelper mapHelper, Base base){
             this.player = player;
@@ -50,11 +48,6 @@ public class BaseManager implements IUnitManager{
             this.demandManager = demandManager;
             return this;
         }
-
-//        public WorkerManagerBuilder expansionManager(GlobalBasesManager globalBasesManager){
-//            this.globalBasesManager = globalBasesManager;
-//            return this;
-//        }
 
         public WorkerManagerBuilder nexus(Unit nexus){
             this.nexus = nexus;
@@ -79,11 +72,10 @@ public class BaseManager implements IUnitManager{
         this.nexus = builder.nexus;
         this.assimilator = builder.assimilator;
 
-//        this.isOversaturationCalled = false;
+        this.isOversaturationCalled = false;
         this.workers = new WorkerList();
 
         this.demandManager = builder.demandManager;
-//        this.globalBasesManager = builder.globalBasesManager;
     }
 
     @Override
@@ -247,7 +239,12 @@ public class BaseManager implements IUnitManager{
 
     private TilePosition getTileToBuildOn(UnitType buildingType){
         if(buildingType == UnitType.Protoss_Nexus){
-            return this.globalBasesManager.getNextNonTakenBase().getLocation();
+            List<Base> closestBases = this.mapHelper.getBasesClosestToTilePosition(base.getLocation());
+            for(Base base : closestBases){
+                if(!base.equals(this.base))
+                    return base.getLocation();
+            }
+            return closestBases.get(0).getLocation();
         }
         else
             return game.getBuildLocation(buildingType, player.getStartLocation());
@@ -290,13 +287,7 @@ public class BaseManager implements IUnitManager{
     public boolean isOversaturated(){
         return (this.workers.size() > (this.base.getGeysers().size() + this.base.getMinerals().size()) * 2.5);
     }
-/*
-    private void callOversaturation(){
-        this.isOversaturationCalled = true;
-        System.out.println("Oversaturation called");
-        this.globalBasesManager.handleOversaturation();
-    }
-*/
+
     public void acceptWorkerTransfer(List<Worker> workerTrain){
         System.out.println("Worker transfer allegedly received: " + workerTrain.size());
         Position position = new Position(this.base.getCenter().x + 2, this.base.getCenter().y);
@@ -348,7 +339,7 @@ public class BaseManager implements IUnitManager{
 
     @Override
     public void manage() {
-            //if(this.nexus.isCompleted() && this.nexus != null){
+            if(this.nexus.isCompleted() && this.nexus != null){
                 this.forceGatheringGas();
                 List<Worker> idleWorkers = this.getIdleWorkers();
 
@@ -356,16 +347,17 @@ public class BaseManager implements IUnitManager{
                     this.delegateWorkerToWork(worker);
                 }
 
-//                if(isOversaturated() && !isOversaturationCalled){
-//                    this.callOversaturation();
-//                }
+                if(isOversaturated() && !isOversaturationCalled){
+                    this.isOversaturationCalled = true;
+                    System.out.println("Oversaturation called");
+                }
 
                 this.orderNewProbe();
 
                 this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() -10,"Probes: " + this.workers.getWorkerList().size(), Text.Default);
                 this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY(),"Mineral miners: " + this.workers.countWorkersWithState(WorkerRole.MINERAL_MINE), Text.Cyan);
                 this.game.drawTextMap(this.nexus.getPosition().getX(), this.nexus.getPosition().getY() + 10,"Gas miners: " + this.workers.countWorkersWithState(WorkerRole.GAS_MINE), Text.Green);
-            //}
+            }
         }
 
     @Override
@@ -392,18 +384,6 @@ public class BaseManager implements IUnitManager{
     public void setDemandManager(IDemandManager demandManager) {
         this.demandManager = demandManager;
     }
-
-//    public void setExpansionManager(GlobalBasesManager globalBasesManager) {
-//        this.globalBasesManager = globalBasesManager;
-//    }
-
-//    public boolean isOversaturationCalled() {
-//        return isOversaturationCalled;
-//    }
-//
-//    public void setOversaturationCalled(boolean oversaturationCalled) {
-//        isOversaturationCalled = oversaturationCalled;
-//    }
 
     public void setNexus(Unit nexus) {
         this.nexus = nexus;

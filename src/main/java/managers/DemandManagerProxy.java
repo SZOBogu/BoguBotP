@@ -24,7 +24,10 @@ public class DemandManagerProxy implements IDemandManager{
 
             if (currentOrders < limit)
                 this.demandManager.demandCreatingUnit(order);
-            }
+        }
+        if(order.getUnitType() == UnitType.Protoss_Nexus){
+            System.out.println("NEXUS ORDERED");
+        }
     }
 
     @Override
